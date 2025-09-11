@@ -112,18 +112,11 @@
         /* --- Specific Section Styling --- */
         .controls { display: flex; align-items: center; gap: 0.5rem; }
         #clipboardStatus { font-size: 0.75rem; font-weight: 500; }
-        #messagePreview {
-            min-height: 40px;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            background-color: var(--info-bg);
-            border: 1px solid var(--border-color);
-            font-size: 0.875rem;
-            color: var(--subtle-text);
-            overflow-y: auto;
-            max-height: 80px;
+        
+        textarea#messageInput {
+            min-height: 60px;
+            max-height: 120px;
         }
-        #messagePreview:not(:empty) { color: var(--text-color); }
 
         #relationshipTypeSelector { display: flex; gap: 0.5rem; }
         #relationshipTypeSelector .btn { flex: 1; padding: 0.4rem 0.2rem; }
@@ -194,10 +187,10 @@
                     <h2 class="section-title">Received Message</h2>
                     <div class="controls">
                         <span id="clipboardStatus" class="text-success">Monitoring</span>
-                        <label class="toggle-switch"><input type="checkbox" id="clipboardToggle" checked><span class="toggle-slider"></span></label>
+                        <label class="toggle-switch"><input type="checkbox" id="clipboardToggle"><span class="toggle-slider"></span></label>
                     </div>
                 </div>
-                <div id="messagePreview">Clipboard monitoring is active...</div>
+                <textarea id="messageInput" class="input-field" placeholder="Paste message here..."></textarea>
             </section>
             
             <section class="section">
@@ -282,7 +275,7 @@
     // data (API key, profiles) securely in the user's local browser storage.
 
     const dom = {
-        messagePreview: document.getElementById('messagePreview'), userInput: document.getElementById('userInput'),
+        messageInput: document.getElementById('messageInput'), userInput: document.getElementById('userInput'),
         clipboardToggle: document.getElementById('clipboardToggle'), personSelector: document.getElementById('personSelector'),
         relationshipTypeSelector: document.getElementById('relationshipTypeSelector'),
         personSelectorContainer: document.getElementById('personSelectorContainer'),
@@ -298,7 +291,7 @@
     };
 
     let state = {
-        detectedMessage: '', lastClipboardContent: '', isClipboardMonitoringActive: true,
+        detectedMessage: '', lastClipboardContent: '', isClipboardMonitoringActive: false,
         selectedPersonId: null, selectedRelationshipType: null, sessionHistory: [],
         settings: { apiKey: '' },
     };
@@ -515,7 +508,7 @@
                 if (text && text.trim() && text !== state.lastClipboardContent) {
                     state.lastClipboardContent = text;
                     state.detectedMessage = text;
-                    dom.messagePreview.textContent = text;
+                    dom.messageInput.value = text;
                     if (state.selectedRelationshipType) handleAnalysisRequest();
                 }
             } catch (err) { /* Fail silently */ }
@@ -533,6 +526,10 @@
         await UIManager.populatePeopleSelector(profiles);
         
         startClipboardMonitor();
+        
+        dom.messageInput.addEventListener('input', () => {
+            state.detectedMessage = dom.messageInput.value;
+        });
 
         dom.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); handleAnalysisRequest(); } });
         dom.clipboardToggle.addEventListener('change', (e) => { state.isClipboardMonitoringActive = e.target.checked; UIManager.updateClipboardStatus(state.isClipboardMonitoringActive); });
@@ -547,7 +544,13 @@
             }
         });
         dom.personSelector.addEventListener('change', (e) => { state.selectedPersonId = e.target.value; });
-        dom.resetBtn.addEventListener('click', () => { state.sessionHistory = []; dom.translationResult.innerHTML = 'Awaiting input...'; dom.optionsContainer.innerHTML = ''; });
+        dom.resetBtn.addEventListener('click', () => { 
+            state.sessionHistory = []; 
+            state.detectedMessage = '';
+            dom.messageInput.value = '';
+            dom.translationResult.innerHTML = 'Awaiting input...'; 
+            dom.optionsContainer.innerHTML = ''; 
+        });
         
         // Modals
         dom.settingsBtn.addEventListener('click', () => dom.settingsModal.classList.remove('hidden'));
