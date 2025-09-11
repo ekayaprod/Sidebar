@@ -41,14 +41,6 @@
             box-sizing: border-box;
             gap: 0.75rem;
         }
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-        }
-        header h1 { font-size: 1.125rem; font-weight: 700; }
-        header .controls { display: flex; align-items: center; gap: 1rem; }
         main { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 4px; }
 
         /* --- General Components --- */
@@ -68,8 +60,9 @@
             font-size: 0.9rem;
             font-weight: 600;
             margin: 0;
+            white-space: nowrap;
         }
-        .input-field, #personSelector {
+        .input-field, #personSelector, #relationshipTypeSelector {
             width: 100%;
             box-sizing: border-box;
             font-size: 0.875rem;
@@ -80,7 +73,7 @@
             background-color: var(--info-bg);
             color: var(--text-color);
         }
-        .input-field:focus, #personSelector:focus {
+        .input-field:focus, #personSelector:focus, #relationshipTypeSelector:focus {
             outline: 2px solid var(--primary-color);
             outline-offset: -1px;
             background-color: var(--panel-bg);
@@ -104,13 +97,14 @@
         .btn-primary:hover { filter: brightness(110%); }
         .btn-danger { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
         .btn-danger:hover { filter: brightness(110%); }
-        .btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
-        #resetBtn { background: none; border: none; font-size: 0.75rem; color: var(--subtle-text); cursor: pointer; }
+        #resetBtn { background: none; border: none; font-size: 0.75rem; color: var(--subtle-text); cursor: pointer; padding: 0.25rem; }
         #resetBtn:hover { color: var(--text-color); }
-        #settingsBtn { background: none; border: none; font-size: 1.25rem; cursor: pointer; }
+        #settingsBtn { background: none; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem; }
 
         /* --- Specific Section Styling --- */
         .controls { display: flex; align-items: center; gap: 0.5rem; }
+        .section-header .controls { flex-grow: 1; justify-content: flex-end; }
+        
         #clipboardStatus { font-size: 0.75rem; font-weight: 500; }
         
         textarea#messageInput {
@@ -118,12 +112,9 @@
             max-height: 120px;
         }
 
-        #relationshipTypeSelector { display: flex; gap: 0.5rem; }
-        #relationshipTypeSelector .btn { flex: 1; padding: 0.4rem 0.2rem; }
-        #personSelectorContainer { display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; }
-        #personSelectorContainer .label { font-size: 0.875rem; font-weight: 500; color: var(--subtle-text); }
-        #personSelectorContainer .controls { flex-grow: 1; justify-content: flex-end; }
-        #personSelector { width: auto; flex-grow: 1; }
+        #relationshipTypeSelector { flex-basis: 110px; flex-shrink: 0; }
+        #personSelectorContainer { display: flex; flex-grow: 1; gap: 0.5rem; align-items: center; }
+        #personSelector { flex-grow: 1; }
 
         .loader { display: none; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--subtle-text); }
         .loader-dot { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
@@ -173,14 +164,6 @@
 </head>
 <body>
     <div id="app">
-        <header>
-            <h1>Sidebar</h1>
-            <div class="controls">
-                <button id="settingsBtn" title="Settings">⚙️</button>
-                <button id="resetBtn">Reset Session</button>
-            </div>
-        </header>
-
         <main>
             <section class="section">
                 <div class="section-header">
@@ -188,30 +171,31 @@
                     <div class="controls">
                         <span id="clipboardStatus" class="text-success">Monitoring</span>
                         <label class="toggle-switch"><input type="checkbox" id="clipboardToggle"><span class="toggle-slider"></span></label>
+                        <button id="resetBtn">Reset</button>
+                        <button id="settingsBtn" title="Settings">⚙️</button>
                     </div>
                 </div>
                 <textarea id="messageInput" class="input-field" placeholder="Paste message here..."></textarea>
             </section>
             
             <section class="section">
-                <div id="relationshipTypeSelector">
-                    <button class="btn" data-value="Manager">Manager</button>
-                    <button class="btn" data-value="Teammate">Teammate</button>
-                    <button class="btn" data-value="Client">Client</button>
-                    <button class="btn" data-value="Other">Other</button>
-                </div>
-                <div id="personSelectorContainer" class="hidden">
-                     <span class="label">Person:</span>
+                <div class="section-header">
+                    <h2 class="section-title">Context</h2>
                     <div class="controls">
-                        <select id="personSelector" class="input-field"></select>
-                        <button id="managePeopleBtn" class="btn">Manage</button>
+                        <select id="relationshipTypeSelector">
+                            <option value="">Select Role...</option>
+                            <option value="Manager">Manager</option>
+                            <option value="Teammate">Teammate</option>
+                            <option value="Client">Client</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <div id="personSelectorContainer" class="hidden">
+                            <select id="personSelector"></select>
+                            <button id="managePeopleBtn" class="btn">Manage</button>
+                        </div>
                     </div>
                 </div>
-            </section>
-
-            <section class="section">
-                <h2 class="section-title">Your Guidance</h2>
-                <textarea id="userInput" class="input-field" rows="3" placeholder="Describe your goal, then press Ctrl+Enter."></textarea>
+                <textarea id="userInput" class="input-field" rows="2" placeholder="Optional: Describe your goal, then press Ctrl+Enter."></textarea>
             </section>
 
             <section id="analysisSection" class="section">
@@ -296,6 +280,14 @@
         settings: { apiKey: '' },
     };
 
+    const debounce = (func, delay) => {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    };
+
     class ProfileStorage {
         constructor() { this.storageKey = 'sidebar_person_profiles_v4'; }
         async getPersonProfile(personId) { const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); return p[personId] || null; }
@@ -310,14 +302,19 @@
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
-                    temperature: options.temperature || 0.6, maxOutputTokens: 1500,
+                    temperature: options.temperature || 0.6, maxOutputTokens: 2048, // Increased token limit
                     responseMimeType: "application/json", responseSchema: options.responseSchema
                 }
             };
             for (let attempt = 0; attempt < this.retryCount; attempt++) {
                 try {
-                    const response = await this.makeRequest(payload);
-                    return JSON.parse(response);
+                    const responseText = await this.makeRequest(payload);
+                    try {
+                        return JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.error("Failed to parse API response JSON:", responseText);
+                        throw new Error("The AI returned an invalid or incomplete response. This can happen if the input message is too long.");
+                    }
                 } catch (error) {
                     if (attempt === this.retryCount - 1 || error.name === 'AbortError') throw error;
                     await new Promise(resolve => setTimeout(resolve, this.retryDelay * Math.pow(2, attempt)));
@@ -385,6 +382,7 @@
             Analyze the context. Use the general rules for the relationship TYPE as a baseline, then apply the specific learned profile of the PERSON as an overriding layer of context.
             In ${mode} Mode, generate analysis and response drafts.
             Crucially, provide a concise observation about the sender's behavior to build their profile.
+            Keep all analysis and responses concise and strictly adhere to the JSON schema.
             </task>
             <input>
                 <mode>${mode}</mode>
@@ -460,7 +458,10 @@
         getRiskColor(risk) { const r = (risk || '').toLowerCase(); if (r.includes('high')) return 'text-danger'; if (r.includes('medium')) return 'text-warning'; return 'text-success'; },
         async populatePeopleSelector(profiles) {
             const type = state.selectedRelationshipType;
-            if (!type) { dom.personSelectorContainer.classList.add('hidden'); return; }
+            if (!type || !Object.values(profiles).some(p => p.type === type)) {
+                 dom.personSelectorContainer.classList.add('hidden');
+                 return;
+            }
             const peopleInType = Object.values(profiles).filter(p => p.type === type);
             dom.personSelector.innerHTML = `<option value="">-- General ${type} --</option>`;
             peopleInType.forEach(p => dom.personSelector.add(new Option(p.name, p.id)));
@@ -483,7 +484,14 @@
     const agent = new PersonalizedWorkplaceAgent(apiClient, storage);
 
     async function handleAnalysisRequest() {
-        if (!state.selectedRelationshipType) { UIManager.displayError(new Error("Please select a relationship type.")); return; }
+        if (!state.selectedRelationshipType) { 
+            dom.translationResult.textContent = 'Please select a relationship type to begin analysis.';
+            return; 
+        }
+        if (!state.detectedMessage.trim()) {
+            dom.translationResult.textContent = 'Awaiting input...';
+            return;
+        }
         UIManager.setLoading(true);
         UIManager.clearError();
         dom.translationResult.textContent = 'Analyzing...';
@@ -527,23 +535,29 @@
         
         startClipboardMonitor();
         
+        const debouncedAnalysis = debounce(handleAnalysisRequest, 1000);
+
         dom.messageInput.addEventListener('input', () => {
             state.detectedMessage = dom.messageInput.value;
+            debouncedAnalysis();
         });
 
         dom.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); handleAnalysisRequest(); } });
         dom.clipboardToggle.addEventListener('change', (e) => { state.isClipboardMonitoringActive = e.target.checked; UIManager.updateClipboardStatus(state.isClipboardMonitoringActive); });
-        dom.relationshipTypeSelector.addEventListener('click', async (e) => {
-            if (e.target.tagName === 'BUTTON') {
-                document.querySelectorAll('#relationshipTypeSelector .btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                state.selectedRelationshipType = e.target.dataset.value;
-                state.selectedPersonId = null;
-                const profiles = await storage.getAllProfiles();
-                await UIManager.populatePeopleSelector(profiles);
-            }
+        
+        dom.relationshipTypeSelector.addEventListener('change', async (e) => {
+            state.selectedRelationshipType = e.target.value;
+            state.selectedPersonId = null;
+            const profiles = await storage.getAllProfiles();
+            await UIManager.populatePeopleSelector(profiles);
+            handleAnalysisRequest();
         });
-        dom.personSelector.addEventListener('change', (e) => { state.selectedPersonId = e.target.value; });
+
+        dom.personSelector.addEventListener('change', (e) => { 
+            state.selectedPersonId = e.target.value;
+            handleAnalysisRequest();
+        });
+
         dom.resetBtn.addEventListener('click', () => { 
             state.sessionHistory = []; 
             state.detectedMessage = '';
@@ -576,8 +590,7 @@
         });
         dom.peopleList.addEventListener('click', async (e) => {
             if (e.target.tagName === 'BUTTON' && e.target.dataset.id) {
-                // Using custom modal instead of confirm()
-                if (window.confirm('Delete this person and all their data?')) { // NOTE: This will be replaced by a custom modal UI in a real app
+                if (window.confirm('Delete this person and all their data?')) {
                     const profiles = await storage.getAllProfiles();
                     const idToDelete = e.target.dataset.id;
                     delete profiles[idToDelete];
@@ -603,4 +616,5 @@
     </script>
 </body>
 </html>
+
 
