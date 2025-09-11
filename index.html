@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #1a1a1a; --surface-color: #2c2c2c; --primary-color: #3b82f6;
+            --text-color: #e0e0e0; --text-muted-color: #a0a0a0; --border-color: #444444;
+            --success-color: #22c55e; --warning-color: #f97316; --danger-color: #ef4444;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); font-size: 0.875rem; }
+        .surface-bg { background-color: var(--surface-color); }
+        .input-field { background-color: #3a3a3a; border: 1px solid var(--border-color); color: var(--text-color); border-radius: 0.5rem; font-size: inherit; }
+        .input-field:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); }
+        .btn { border-radius: 0.5rem; transition: all 0.2s ease-in-out; font-weight: 500; padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+        .btn-primary { background-color: var(--primary-color); color: white; } .btn-primary:hover { background-color: #2563eb; }
+        .btn-secondary { background-color: var(--surface-color); color: var(--text-color); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background-color: #3a3a3a; }
+        .btn-danger { background-color: var(--danger-color); color: white; } .btn-danger:hover { background-color: #dc2626; }
+        .btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .section { border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 0.75rem; margin-bottom: 0.75rem; }
+        .section-title { font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; font-size: 0.875rem; }
+        .toggle-switch { position: relative; display: inline-block; width: 34px; height: 20px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 20px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .toggle-slider { background-color: var(--success-color); }
+        input:checked + .toggle-slider:before { transform: translateX(14px); }
+        .loader-dot { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--surface-color); padding: 1.5rem; border-radius: 0.75rem; max-width: 90%; width: 380px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); }
+        .text-success { color: var(--success-color); } .text-warning { color: var(--warning-color); } .text-danger { color: var(--danger-color); }
+        .prose-styles details > summary { cursor: pointer; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--primary-color); }
+        .prose-styles p { margin-bottom: 0.5rem; line-height: 1.5; padding-left: 0.75rem; border-left: 2px solid var(--border-color); }
+        .prose-styles strong { color: var(--text-muted-color); }
+        .prose-styles ul { list-style-position: inside; padding-left: 0.75rem; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body class="h-full">
+
+    <div id="app" class="w-full max-w-md mx-auto flex flex-col h-screen p-2">
+        <header class="flex items-center justify-between pb-2 flex-shrink-0">
+            <h1 class="text-base font-bold flex items-center">Sidebar</h1>
+            <div class="flex items-center gap-3">
+                <button id="settingsBtn" class="text-base" title="Settings">⚙️</button>
+                <button id="resetBtn" class="text-xs text-gray-400 hover:text-white transition-colors">Reset Session</button>
+            </div>
+        </header>
+
+        <main class="flex-grow overflow-y-auto pr-1">
+            <section class="section">
+                <div class="flex justify-between items-center mb-2">
+                     <h2 class="section-title !mb-0">Received Message</h2>
+                     <div class="flex items-center space-x-2">
+                        <span id="clipboardStatus" class="text-xs font-medium text-success">Monitoring</span>
+                        <label class="toggle-switch"><input type="checkbox" id="clipboardToggle" checked><span class="toggle-slider"></span></label>
+                     </div>
+                </div>
+                <div id="messagePreview" class="text-sm text-gray-400 italic h-10 overflow-y-auto p-2 rounded-md bg-gray-800">Clipboard monitoring is active...</div>
+            </section>
+            
+            <section class="section !p-2">
+                <div class="space-y-2">
+                    <div id="relationshipTypeSelector" class="flex items-center justify-around w-full text-xs">
+                         <button class="btn btn-secondary flex-1 !py-1" data-value="Manager">Manager</button>
+                         <button class="btn btn-secondary flex-1 !py-1" data-value="Teammate">Teammate</button>
+                         <button class="btn btn-secondary flex-1 !py-1" data-value="Client">Client</button>
+                         <button class="btn btn-secondary flex-1 !py-1" data-value="Other">Other</button>
+                    </div>
+                    <div id="personSelectorContainer" class="flex items-center justify-between w-full text-xs hidden">
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium text-gray-400">Person:</span>
+                            <select id="personSelector" class="input-field !text-xs !py-1 !px-2 w-28"></select>
+                            <button id="managePeopleBtn" class="btn btn-secondary !px-2 !py-1">Manage</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Your Guidance</h2>
+                <textarea id="userInput" class="w-full p-2 text-sm input-field" rows="3" placeholder="Describe your goal, then press Ctrl+Enter."></textarea>
+            </section>
+
+             <section id="analysisSection" class="section">
+                <div class="flex justify-between items-center">
+                    <h2 class="section-title !mb-0">AI Analysis</h2>
+                    <div id="translationLoader" class="text-sm text-gray-400 hidden items-center"><span class="loader-dot">●</span><span class="ml-2">Analyzing...</span></div>
+                </div>
+                <div id="translationResult" class="text-sm text-gray-300 mt-2 p-1 rounded-md bg-gray-800 prose-styles">Awaiting input...</div>
+            </section>
+
+            <section class="section">
+                <div class="flex justify-between items-center">
+                    <h2 class="section-title !mb-0">Suggested Responses</h2>
+                     <div id="outputLoader" class="text-sm text-gray-400 hidden items-center"><span class="loader-dot">●</span><span class="ml-2">Generating...</span></div>
+                </div>
+                <div id="optionsContainer" class="space-y-2 mt-2"></div>
+                <div id="errorContainer" class="text-center py-2 hidden text-danger text-sm"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="settingsModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="text-lg font-bold mb-4">Settings</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="apiKeyInput" class="block text-sm font-medium text-gray-300 mb-1">Google AI API Key</label>
+                    <input type="password" id="apiKeyInput" class="input-field w-full p-2" placeholder="Enter your API key">
+                    <p class="text-xs text-gray-500 mt-1">Your key is stored securely in your browser's local storage.</p>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button id="cancelSettingsBtn" class="btn btn-secondary">Cancel</button>
+                <button id="saveSettingsBtn" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+    <div id="peopleModal" class="modal-overlay hidden">
+       <div class="modal-content">
+            <h2 class="text-lg font-bold mb-4">Manage People</h2>
+            <div class="mb-4">
+                <h3 class="font-semibold mb-2 text-sm">Add New Person</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="newPersonName" class="input-field w-full p-2" placeholder="Person's Name">
+                    <button id="addPersonBtn" class="btn btn-primary">Add</button>
+                </div>
+            </div>
+            <div id="peopleList" class="space-y-2 max-h-60 overflow-y-auto">
+                <!-- People will be listed here -->
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button id="closePeopleBtn" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+    // --- BRIEF ---
+    // This is "Sidebar", a personal workplace communication tool. Its AI agent, "The Strategic Gatekeeper",
+    // analyzes messages, provides strategic insights, and drafts diplomatic responses. It uses a sophisticated,
+    // class-based architecture to learn communication patterns for specific people, storing all confidential
+    // data (API key, profiles) securely in the user's local browser storage.
+
+    const dom = {
+        messagePreview: document.getElementById('messagePreview'), userInput: document.getElementById('userInput'),
+        clipboardToggle: document.getElementById('clipboardToggle'), personSelector: document.getElementById('personSelector'),
+        relationshipTypeSelector: document.getElementById('relationshipTypeSelector'),
+        personSelectorContainer: document.getElementById('personSelectorContainer'),
+        resetBtn: document.getElementById('resetBtn'), settingsBtn: document.getElementById('settingsBtn'),
+        managePeopleBtn: document.getElementById('managePeopleBtn'), clipboardStatus: document.getElementById('clipboardStatus'),
+        translationLoader: document.getElementById('translationLoader'), translationResult: document.getElementById('translationResult'),
+        outputLoader: document.getElementById('outputLoader'), optionsContainer: document.getElementById('optionsContainer'),
+        errorContainer: document.getElementById('errorContainer'), settingsModal: document.getElementById('settingsModal'),
+        peopleModal: document.getElementById('peopleModal'), apiKeyInput: document.getElementById('apiKeyInput'),
+        saveSettingsBtn: document.getElementById('saveSettingsBtn'), cancelSettingsBtn: document.getElementById('cancelSettingsBtn'),
+        peopleList: document.getElementById('peopleList'), newPersonName: document.getElementById('newPersonName'),
+        addPersonBtn: document.getElementById('addPersonBtn'), closePeopleBtn: document.getElementById('closePeopleBtn'),
+    };
+
+    let state = {
+        detectedMessage: '', lastClipboardContent: '', isClipboardMonitoringActive: true,
+        selectedPersonId: null, selectedRelationshipType: null, sessionHistory: [],
+        settings: { apiKey: '' },
+    };
+
+    class ProfileStorage {
+        constructor() { this.storageKey = 'sidebar_person_profiles_v4'; }
+        async getPersonProfile(personId) { const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); return p[personId] || null; }
+        async savePersonProfile(personId, profile) { const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); p[personId] = profile; localStorage.setItem(this.storageKey, JSON.stringify(p)); }
+        async getAllProfiles() { return JSON.parse(localStorage.getItem(this.storageKey) || '{}'); }
+        async saveAllProfiles(profiles) { localStorage.setItem(this.storageKey, JSON.stringify(profiles)); }
+    }
+    
+    class EnhancedApiClient {
+        constructor() { this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent'; this.retryCount = 2; this.retryDelay = 1000; this.timeout = 15000; }
+        async call(prompt, options = {}) {
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    temperature: options.temperature || 0.6, maxOutputTokens: 1500,
+                    responseMimeType: "application/json", responseSchema: options.responseSchema
+                }
+            };
+            for (let attempt = 0; attempt < this.retryCount; attempt++) {
+                try {
+                    const response = await this.makeRequest(payload);
+                    return JSON.parse(response);
+                } catch (error) {
+                    if (attempt === this.retryCount - 1 || error.name === 'AbortError') throw error;
+                    await new Promise(resolve => setTimeout(resolve, this.retryDelay * Math.pow(2, attempt)));
+                }
+            }
+        }
+        async makeRequest(payload) {
+            const apiKey = state.settings.apiKey;
+            if (!apiKey) throw new Error("API Key not set in Settings.");
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+            try {
+                const url = `${this.baseUrl}?key=${apiKey}`;
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(`API Error ${response.status}: ${errorData.error?.message || response.statusText}`);
+                }
+                const result = await response.json();
+                if (!result.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error('Invalid API response structure');
+                return result.candidates[0].content.parts[0].text;
+            } finally { clearTimeout(timeoutId); }
+        }
+    }
+
+    class PersonalizedWorkplaceAgent {
+        constructor(apiClient, storage) {
+            this.apiClient = apiClient;
+            this.storage = storage;
+            this.personProfiles = new Map();
+        }
+        async analyze(message, userInput, personId, type) {
+            const personProfile = await this.getPersonProfile(personId);
+            const prompt = this.buildPrompt(message, userInput, personProfile, type);
+            const result = await this.apiClient.call(prompt, {
+                responseSchema: {
+                    type: "OBJECT",
+                    properties: {
+                        "analysis": {
+                            type: "OBJECT",
+                            properties: {
+                                "intent": { "type": "STRING" }, "risk": { "type": "STRING" },
+                                "perception_check": { "type": "STRING" }, "strategy": { "type": "STRING" },
+                                "profile_update": { "type": "STRING" }
+                            }
+                        },
+                        "responses": {
+                            type: "OBJECT",
+                            properties: { "diplomatic": { "type": "STRING" }, "professional": { "type": "STRING" }, "strategic": { "type": "STRING" }}
+                        }
+                    }
+                }
+            });
+            if (personId && result.analysis?.profile_update) {
+                await this.updatePersonProfile(personId, result.analysis.profile_update);
+            }
+            return result;
+        }
+
+        buildPrompt(message, userInput, personProfile, type) {
+            const isCompose = !message;
+            const mode = isCompose ? 'Compose' : 'Response';
+            return `You are "The Strategic Gatekeeper," an elite AI specializing in workplace communication. Your mission is to protect the user's reputation.
+            <task>
+            Analyze the context. Use the general rules for the relationship TYPE as a baseline, then apply the specific learned profile of the PERSON as an overriding layer of context.
+            In ${mode} Mode, generate analysis and response drafts.
+            Crucially, provide a concise observation about the sender's behavior to build their profile.
+            </task>
+            <input>
+                <mode>${mode}</mode>
+                <context>
+                    <type>${type || 'Not specified'}</type>
+                    <person_name>${personProfile?.name || 'General'}</person_name>
+                    <learned_profile>${personProfile?.profile || 'No history yet.'}</learned_profile>
+                </context>
+                ${isCompose ? `<user_prompt>${userInput}</user_prompt>` : `<message_to_analyze>${message}</message_to_analyze><user_guidance>${userInput || 'Initial analysis.'}</user_guidance>`}
+            </input>`;
+        }
+        
+        async getPersonProfile(personId) {
+            if (!personId) return null;
+            if (this.personProfiles.has(personId)) return this.personProfiles.get(personId);
+            const stored = await this.storage.getPersonProfile(personId);
+            if (stored) {
+                this.personProfiles.set(personId, stored);
+                return stored;
+            }
+            return null;
+        }
+
+        async updatePersonProfile(personId, profileUpdate) {
+            const profile = await this.getPersonProfile(personId);
+            if (!profile) return;
+            const timestamp = new Date().toISOString().split('T')[0];
+            const newEntry = `\n- [${timestamp}] ${profileUpdate}`;
+            profile.profile = (profile.profile || '') + newEntry;
+            await this.storage.savePersonProfile(personId, profile);
+            this.personProfiles.set(personId, profile);
+        }
+    }
+
+    const UIManager = {
+        init() { this.setLoading(false); this.updateClipboardStatus(state.isClipboardMonitoringActive); },
+        setLoading(isLoading) { const d = isLoading ? 'flex' : 'hidden'; dom.translationLoader.style.display = d; dom.outputLoader.style.display = d; },
+        displayError(error) { dom.errorContainer.textContent = error.message; dom.errorContainer.classList.remove('hidden'); console.error(error); },
+        clearError() { dom.errorContainer.classList.add('hidden'); },
+        displayAnalysis(analysis) {
+            if (!analysis) { dom.translationResult.textContent = 'No analysis available.'; return; }
+            dom.translationResult.innerHTML = `
+                <details open class="mb-2"><summary>Core Analysis</summary>
+                <p><strong>Intent:</strong> ${analysis.intent || 'N/A'}</p>
+                <p><strong>Risk:</strong> <span class="${this.getRiskColor(analysis.risk)}">${analysis.risk || 'N/A'}</span></p>
+                <p><strong>Perception Check:</strong> ${analysis.perception_check || 'N/A'}</p>
+                <p><strong>Strategy:</strong> ${analysis.strategy || 'N/A'}</p>
+                </details>
+            `;
+        },
+        displayResponses(responses) {
+            dom.optionsContainer.innerHTML = '';
+            if (!responses) return;
+            Object.entries(responses).forEach(([key, value]) => {
+                const card = document.createElement('div');
+                card.className = 'p-2 rounded-md bg-gray-800 border border-gray-700';
+                card.innerHTML = `<div class="flex justify-between items-center mb-1">
+                    <h4 class="text-xs font-bold uppercase text-primary-400">${key}</h4>
+                    <button class="copy-btn text-xs btn btn-secondary !p-1 !text-xs" data-text="${escape(value)}">Copy</button>
+                </div><p class="text-sm text-gray-300">${value}</p>`;
+                dom.optionsContainer.appendChild(card);
+            });
+        },
+        updateClipboardStatus(isActive, message = null) {
+            dom.clipboardStatus.textContent = isActive ? 'Monitoring' : 'Paused';
+            dom.clipboardStatus.classList.toggle('text-success', isActive);
+        },
+        getRiskColor(risk) { const r = (risk || '').toLowerCase(); if (r.includes('high')) return 'text-danger'; if (r.includes('medium')) return 'text-warning'; return 'text-success'; },
+        async populatePeopleSelector(profiles) {
+            const type = state.selectedRelationshipType;
+            if (!type) { dom.personSelectorContainer.classList.add('hidden'); return; }
+            const peopleInType = Object.values(profiles).filter(p => p.type === type);
+            dom.personSelector.innerHTML = `<option value="">-- General ${type} --</option>`;
+            peopleInType.forEach(p => dom.personSelector.add(new Option(p.name, p.id)));
+            dom.personSelector.value = state.selectedPersonId || "";
+            dom.personSelectorContainer.classList.remove('hidden');
+        },
+        async renderPeopleList(profiles) {
+            dom.peopleList.innerHTML = '';
+            Object.values(profiles).forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-2 bg-gray-800 rounded';
+                div.innerHTML = `<span>${p.name} (${p.type})</span><button class="btn btn-danger !p-1 !text-xs" data-id="${p.id}">Delete</button>`;
+                dom.peopleList.appendChild(div);
+            });
+        }
+    };
+    
+    const storage = new ProfileStorage();
+    const apiClient = new EnhancedApiClient();
+    const agent = new PersonalizedWorkplaceAgent(apiClient, storage);
+
+    async function handleAnalysisRequest() {
+        if (!state.selectedRelationshipType) { UIManager.displayError(new Error("Please select a relationship type.")); return; }
+        UIManager.setLoading(true);
+        UIManager.clearError();
+        dom.translationResult.textContent = 'Analyzing...';
+        dom.optionsContainer.innerHTML = '';
+        try {
+            const result = await agent.analyze(state.detectedMessage, dom.userInput.value, state.selectedPersonId, state.selectedRelationshipType);
+            UIManager.displayAnalysis(result.analysis);
+            UIManager.displayResponses(result.responses);
+        } catch (error) {
+            UIManager.displayError(error);
+            dom.translationResult.textContent = 'An error occurred during analysis.';
+        } finally {
+            UIManager.setLoading(false);
+        }
+    }
+    
+    async function startClipboardMonitor() {
+        setInterval(async () => {
+            if (!state.isClipboardMonitoringActive || !document.hasFocus()) return;
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text && text.trim() && text !== state.lastClipboardContent) {
+                    state.lastClipboardContent = text;
+                    state.detectedMessage = text;
+                    dom.messagePreview.textContent = text;
+                    dom.messagePreview.classList.remove('italic', 'text-gray-400');
+                    if (state.selectedRelationshipType) handleAnalysisRequest();
+                }
+            } catch (err) { /* Fail silently */ }
+        }, 1500);
+    }
+    
+    async function main() {
+        UIManager.init();
+        
+        const savedSettings = JSON.parse(localStorage.getItem('sidebar_settings_v1') || '{}');
+        state.settings = { ...state.settings, ...savedSettings };
+        if (state.settings.apiKey) dom.apiKeyInput.value = state.settings.apiKey;
+
+        const profiles = await storage.getAllProfiles();
+        await UIManager.populatePeopleSelector(profiles);
+        
+        startClipboardMonitor();
+
+        dom.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); handleAnalysisRequest(); } });
+        dom.clipboardToggle.addEventListener('change', (e) => { state.isClipboardMonitoringActive = e.target.checked; UIManager.updateClipboardStatus(state.isClipboardMonitoringActive); });
+        dom.relationshipTypeSelector.addEventListener('click', async (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                document.querySelectorAll('#relationshipTypeSelector .btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.selectedRelationshipType = e.target.dataset.value;
+                state.selectedPersonId = null;
+                const profiles = await storage.getAllProfiles();
+                await UIManager.populatePeopleSelector(profiles);
+            }
+        });
+        dom.personSelector.addEventListener('change', (e) => { state.selectedPersonId = e.target.value; });
+        dom.resetBtn.addEventListener('click', () => { state.sessionHistory = []; dom.translationResult.innerHTML = 'Awaiting input...'; dom.optionsContainer.innerHTML = ''; });
+        
+        // Modals
+        dom.settingsBtn.addEventListener('click', () => dom.settingsModal.classList.remove('hidden'));
+        dom.cancelSettingsBtn.addEventListener('click', () => dom.settingsModal.classList.add('hidden'));
+        dom.saveSettingsBtn.addEventListener('click', () => { state.settings.apiKey = dom.apiKeyInput.value; localStorage.setItem('sidebar_settings_v1', JSON.stringify(state.settings)); dom.settingsModal.classList.add('hidden'); });
+        
+        dom.managePeopleBtn.addEventListener('click', async () => {
+            const profiles = await storage.getAllProfiles();
+            await UIManager.renderPeopleList(profiles);
+            dom.peopleModal.classList.remove('hidden');
+        });
+        dom.closePeopleBtn.addEventListener('click', () => dom.peopleModal.classList.add('hidden'));
+        dom.addPersonBtn.addEventListener('click', async () => {
+            const name = dom.newPersonName.value.trim();
+            if (!name || !state.selectedRelationshipType) { alert("Name and relationship type are required."); return; }
+            const id = `person_${Date.now()}`;
+            const newProfile = { id, name, type: state.selectedRelationshipType, profile: `Profile created for ${name}.`, interactionHistory: [] };
+            await storage.savePersonProfile(id, newProfile);
+            dom.newPersonName.value = '';
+            const allProfiles = await storage.getAllProfiles();
+            await UIManager.renderPeopleList(allProfiles);
+            await UIManager.populatePeopleSelector(allProfiles);
+        });
+        dom.peopleList.addEventListener('click', async (e) => {
+            if (e.target.tagName === 'BUTTON' && e.target.dataset.id) {
+                if (confirm('Delete this person and all their data?')) {
+                    const profiles = await storage.getAllProfiles();
+                    const idToDelete = e.target.dataset.id;
+                    delete profiles[idToDelete];
+                    await storage.saveAllProfiles(profiles);
+                    if (state.selectedPersonId === idToDelete) state.selectedPersonId = null;
+                    await UIManager.renderPeopleList(profiles);
+                    await UIManager.populatePeopleSelector(profiles);
+                }
+            }
+        });
+        document.body.addEventListener('click', async (e) => {
+            const button = e.target.closest('.copy-btn');
+            if (button) {
+                navigator.clipboard.writeText(unescape(button.dataset.text)).then(() => {
+                    button.textContent = 'Copied!';
+                    setTimeout(() => button.textContent = 'Copy', 2000);
+                });
+            }
+        });
+    }
+    
+    main();
+    </script>
+</body>
+</html>
+
