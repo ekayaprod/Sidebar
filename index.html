@@ -71,6 +71,8 @@
         /* --- Analysis & Response Display --- */
         #analysisSection { transition: all 0.3s ease-in-out; }
         #translationResult { font-size: 0.875rem; color: var(--subtle-text); padding: 0.75rem; border-radius: 0.375rem; background-color: var(--info-bg); }
+        #apiKeyCta { text-align: center; padding: 1rem; background-color: var(--info-bg); border-radius: .5rem; }
+        #apiKeyCta p { margin: 0 0 0.75rem 0; color: var(--text-color); }
         .prose-styles details > summary { cursor: pointer; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--primary-color); }
         .prose-styles p { margin: 0 0 0.5rem; line-height: 1.5; padding-left: 0.75rem; border-left: 2px solid var(--border-color); color: var(--text-color); }
         .prose-styles strong { color: var(--subtle-text); font-weight: 600; }
@@ -182,7 +184,11 @@
                     <h2 class="section-title">AI Analysis</h2>
                     <div id="translationLoader" class="loader"><span class="loader-dot">●</span><span>Analyzing...</span></div>
                 </div>
-                <div id="translationResult">Ready for analysis. Paste a message above to begin.</div>
+                <div id="translationResult"></div>
+                <div id="apiKeyCta" class="hidden">
+                    <p>Please set your API key to enable AI features.</p>
+                    <button id="ctaSettingsBtn" class="btn btn-primary">Open Settings</button>
+                </div>
             </section>
 
             <section class="section">
@@ -211,6 +217,7 @@
             <div class="form-group">
                 <label for="geminiApiKeyInput">Google AI API Key</label>
                 <input type="password" id="geminiApiKeyInput" class="input-field" placeholder="Enter your API key">
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="help-link">How to get a Google AI API key?</a>
             </div>
              <div class="form-group">
                 <label for="passphraseInput">Encryption Passphrase</label>
@@ -331,6 +338,7 @@
         managePeopleBtn: document.getElementById('managePeopleBtn'), clipboardStatus: document.getElementById('clipboardStatus'),
         ephemeralBadge: document.getElementById('ephemeralBadge'),
         translationLoader: document.getElementById('translationLoader'), translationResult: document.getElementById('translationResult'),
+        apiKeyCta: document.getElementById('apiKeyCta'), ctaSettingsBtn: document.getElementById('ctaSettingsBtn'),
         outputLoader: document.getElementById('outputLoader'), optionsContainer: document.getElementById('optionsContainer'),
         errorContainer: document.getElementById('errorContainer'), 
         contextControls: document.getElementById('contextControls'), endConversationBtn: document.getElementById('endConversationBtn'),
@@ -541,23 +549,26 @@
             if (!sessionHistory || sessionHistory.length === 0) return '';
             return `<short_term_memory_conversation_history>${sessionHistory.map(h => `${h.role}: ${h.content}`).join('\n')}</short_term_memory_conversation_history>`;
         }
-        _buildContextBlock(mode, type, personProfile, persona) {
-            return `<input><mode>${mode}</mode><persona>${persona}</persona><context><type>${type || 'Not specified'}</type><person_name>${personProfile?.name || 'General'}</person_name><long_term_memory_summary>${personProfile?.summary || 'No summary yet.'}</long_term_memory_summary></context>`;
+        _buildContext(type, personProfile) {
+            return `<context><type>${type || 'Not specified'}</type><person_name>${personProfile?.name || 'General'}</person_name><long_term_memory_summary>${personProfile?.summary || 'No summary yet.'}</long_term_memory_summary></context>`;
         }
-        _buildInputBlock(message, userInput, mode) {
+        _buildUserInput(message, userInput, mode) {
             const sanitizedMessage = this._sanitizePromptInput(message);
             const sanitizedUserInput = this._sanitizePromptInput(userInput);
             if (mode === 'Compose') {
-                return `<user_prompt>${sanitizedUserInput}</user_prompt></input>`;
+                return `<user_prompt>${sanitizedUserInput}</user_prompt>`;
             }
-            return `<message_to_analyze>${sanitizedMessage}</message_to_analyze><user_guidance>${sanitizedUserInput || 'Initial analysis.'}</user_guidance></input>`;
+            return `<message_to_analyze>${sanitizedMessage}</message_to_analyze><user_guidance>${sanitizedUserInput || 'Initial analysis.'}</user_guidance>`;
         }
         _buildAnalysisPrompt(message, userInput, personProfile, type, persona, sessionHistory) {
             const mode = !message ? 'Compose' : 'Response';
             const historyBlock = this._buildHistoryBlock(sessionHistory);
-            const contextBlock = this._buildContextBlock(mode, type, personProfile, persona);
-            const inputBlock = this._buildInputBlock(message, userInput, mode);
-            return `${this._promptHeader(mode, persona)}${historyBlock}${contextBlock}${inputBlock}\n\nCRITICAL: Respond ONLY with valid JSON matching the exact schema. No additional text, explanations, or markdown. If unable to comply, return {"error": "schema_violation"}.`;
+            const contextBlock = this._buildContext(type, personProfile);
+            const inputBlock = this._buildUserInput(message, userInput, mode);
+            
+            const fullInput = `<input><mode>${mode}</mode><persona>${persona}</persona>${historyBlock}${contextBlock}${inputBlock}</input>`;
+            
+            return `${this._promptHeader(mode, persona)}${fullInput}\n\nCRITICAL: Respond ONLY with valid JSON matching the exact schema. No additional text, explanations, or markdown. If unable to comply, return {"error": "schema_violation"}.`;
         }
         _buildSummarizationPrompt(existingSummary, newInsights) { return `You are a profile synthesizer. Your task is to integrate new information from a recent conversation into an existing personality summary. Maintain a concise, third-person, analytical tone. Combine the existing summary with the new insights into a single, coherent, updated summary paragraph. <existing_summary>${existingSummary || 'This is the first observation for this person.'}</existing_summary> <new_insights_from_conversation>${newInsights.join(' ')}</new_insights_from_conversation> Respond with only the updated summary paragraph.`; }
         async getPersonProfile(personId) { if (!personId) return null; if (this.personProfiles.has(personId)) return this.personProfiles.get(personId); const stored = await this.storage.getPersonProfile(personId); if (stored) { this.personProfiles.set(personId, stored); return stored; } return null; }
@@ -579,26 +590,19 @@
             if (focusedElementBeforeModal) focusedElementBeforeModal.focus();
         },
         updateUIState(isLoading = false) {
-            const isApiReady = !!state.decryptedApiKey;
             const loaderDisplay = isLoading ? 'flex' : 'none';
             dom.translationLoader.style.display = loaderDisplay;
             dom.outputLoader.style.display = loaderDisplay;
-            const isLocked = isLoading || !isApiReady;
+
             const controlsToLock = [dom.messageInput, dom.userInput, dom.personaSelector, dom.clipboardToggle, dom.relationshipTypeSelector, dom.personSelector, dom.managePeopleBtn, dom.endConversationBtn, dom.clearInputsBtn];
-            controlsToLock.forEach(c => c.disabled = isLocked);
-            if (!isLocked) {
-                const isRoleSelected = !!state.selectedRelationshipType;
+            controlsToLock.forEach(c => c.disabled = isLoading);
+            
+            if (!isLoading) {
+                 const isRoleSelected = !!state.selectedRelationshipType;
                 dom.personSelector.disabled = !isRoleSelected;
                 dom.managePeopleBtn.disabled = !isRoleSelected;
                 const isPersonSelected = !!state.selectedPersonId;
                 dom.endConversationBtn.classList.toggle('hidden', !isPersonSelected);
-            } else {
-                dom.endConversationBtn.classList.add('hidden');
-            }
-            if (!isApiReady && !isLoading) {
-                dom.translationResult.textContent = 'Please set your API key in Settings to begin analysis.';
-                dom.optionsContainer.replaceChildren();
-                this.clearError();
             }
         },
         displayError(error) {
@@ -616,6 +620,14 @@
             console.error(error);
         },
         clearError() { dom.errorContainer.classList.add('hidden'); },
+        showApiKeyCta() {
+            dom.translationResult.classList.add('hidden');
+            dom.apiKeyCta.classList.remove('hidden');
+        },
+        hideApiKeyCta() {
+            dom.translationResult.classList.remove('hidden');
+            dom.apiKeyCta.classList.add('hidden');
+        },
         displayAnalysis(analysis) {
             dom.translationResult.replaceChildren(); 
             if (!analysis) { 
@@ -799,7 +811,10 @@
     const agent = new PersonalizedWorkplaceAgent(apiManager, storage, sessionManager);
 
     async function handleAnalysisRequest() {
-        if (!state.decryptedApiKey) { UIManager.displayError(new Error("API Key is not unlocked. Please check settings.")); return; }
+        if (!state.decryptedApiKey) {
+            UIManager.showApiKeyCta();
+            return;
+        }
         if (!state.detectedMessage.trim() && !dom.userInput.value.trim()) { dom.translationResult.textContent = 'Ready for analysis. Paste a message above to begin.'; dom.analysisSection.classList.remove('hidden'); return; }
         UIManager.updateUIState(true); UIManager.clearError();
         dom.translationResult.textContent = 'Analyzing...'; dom.optionsContainer.replaceChildren();
@@ -821,6 +836,7 @@
             settingsToSave.providers.gemini.encryptedKey = encryptedKey;
             state.settings.providers.gemini.encryptedKey = encryptedKey;
             state.decryptedApiKey = apiKey;
+            UIManager.hideApiKeyCta();
         }
         if (!state.ephemeralMode) { localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(settingsToSave)); }
         UIManager.closeModal(dom.settingsModal);
@@ -887,6 +903,7 @@
             state.detectedMessage = ''; 
             dom.messageInput.value = ''; 
             dom.userInput.value = ''; 
+            UIManager.hideApiKeyCta();
             dom.translationResult.textContent = 'Ready for analysis. Paste a message above to begin.'; 
             dom.optionsContainer.replaceChildren(); 
             dom.analysisSection.classList.remove('hidden'); 
@@ -895,6 +912,7 @@
         dom.endConversationBtn.addEventListener('click', async () => { UIManager.updateUIState(true); await agent.summarizeSession(state.selectedPersonId); UIManager.updateUIState(false); });
 
         dom.settingsBtn.addEventListener('click', () => { renderSettings(); UIManager.openModal(dom.settingsModal); });
+        dom.ctaSettingsBtn.addEventListener('click', () => dom.settingsBtn.click());
         dom.cancelSettingsBtn.addEventListener('click', () => UIManager.closeModal(dom.settingsModal));
         dom.saveSettingsBtn.addEventListener('click', saveSettings);
         dom.clearDataBtn.addEventListener('click', async () => {
@@ -988,7 +1006,7 @@
                     if (decrypted) {
                         state.decryptedApiKey = decrypted;
                         UIManager.closeModal(dom.unlockModal);
-                        initializeApp().catch(console.error);
+                        await initializeApp();
                     } else {
                         alert('Incorrect passphrase.');
                         dom.unlockPassphraseInput.value = '';
@@ -1008,11 +1026,14 @@
                 if(!state.ephemeralMode) localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify({onboardingDismissed: true}));
                 dom.onboardingOverlay.classList.add('hidden');
                 dom.app.classList.remove('hidden');
-                initializeApp().catch(console.error);
+                initializeApp().then(() => {
+                    if (!state.decryptedApiKey) UIManager.showApiKeyCta();
+                }).catch(console.error);
             }, { once: true });
         } else {
             dom.app.classList.remove('hidden');
             await initializeApp();
+            if (!state.decryptedApiKey) UIManager.showApiKeyCta();
         }
     }
     
