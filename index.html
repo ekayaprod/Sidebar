@@ -59,27 +59,27 @@
 
         /* --- Specific UI Sections --- */
         .controls { display: flex; align-items: center; gap: 0.5rem; }
-        .section-header .controls { flex-grow: 1; justify-content: flex-end; flex-wrap: wrap; }
+        .section-header .controls { flex-grow: 1; justify-content: flex-end; flex-wrap: nowrap; } /* UX FIX: prevent wrapping */
         textarea#messageInput { min-height: 60px; max-height: 120px; }
         #relationshipTypeSelector { flex-basis: 120px; flex-shrink: 1; }
-        #personSelectorContainer { display: flex; flex-grow: 1; gap: 0.5rem; align-items: center; flex-basis: 150px; }
+        #personSelectorContainer { display: flex; flex-grow: 1; gap: 0.5rem; align-items: center; min-width: 100px; }
         #personSelector { flex-grow: 1; }
+        #personaSelector { max-width: 120px; } /* UX FIX */
         .loader { display: none; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--subtle-text); }
         .loader-dot { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         /* --- Analysis & Response Display --- */
         #analysisSection { transition: all 0.3s ease-in-out; }
-        #translationResult { font-size: 0.875rem; color: var(--subtle-text); padding: 0.75rem; border-radius: 0.375rem; background-color: var(--info-bg); }
+        #translationResult { font-size: 0.875rem; color: var(--text-color); padding: 0.75rem; border-radius: 0.375rem; background-color: var(--info-bg); }
         #apiKeyCta { text-align: center; padding: 1rem; background-color: var(--info-bg); border-radius: .5rem; }
         #apiKeyCta p { margin: 0 0 0.75rem 0; color: var(--text-color); }
-        .prose-styles details > summary { cursor: pointer; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--primary-color); }
-        .prose-styles p { margin: 0 0 0.5rem; line-height: 1.5; padding-left: 0.75rem; border-left: 2px solid var(--border-color); color: var(--text-color); }
+        .prose-styles p { margin: 0 0 0.75rem; line-height: 1.5; color: var(--text-color); }
         .prose-styles strong { color: var(--subtle-text); font-weight: 600; }
         #optionsContainer { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
         .response-card { padding: 0.75rem; border-radius: 0.375rem; background-color: var(--panel-bg); border: 1px solid var(--border-color); }
         .response-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-        .response-card-header h4 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--primary-color); letter-spacing: 0.05em; }
+        .response-card-header h4 { font-size: 0.8rem; font-weight: 700; color: var(--primary-color); }
         .response-card p { font-size: 0.875rem; color: var(--text-color); margin: 0; white-space: pre-wrap; white-space: pre-line; }
         #errorContainer { padding: 0.5rem; text-align: center; color: var(--danger-color); font-size: 0.875rem; }
         #errorContainer button { font-size: inherit; text-decoration: underline; background: none; border: none; color: var(--primary-color); cursor: pointer; padding: 0; }
@@ -113,7 +113,6 @@
         
         .hidden { display: none !important; }
 
-        /* --- FIX: Added Missing Utility & Toggle Classes --- */
         .text-success { color: var(--success-color); }
         .text-warning { color: var(--warning-color); }
         .text-danger { color: var(--danger-color); }
@@ -162,7 +161,6 @@
                 <div class="section-header">
                     <h2 class="section-title">Optional Context</h2>
                     <div id="contextControls" class="controls">
-                         <button id="endConversationBtn" class="btn hidden" title="Summarizes the current conversation into the person's long-term profile and clears the short-term memory.">Save & Clear Session</button>
                         <select id="relationshipTypeSelector">
                             <option value="">Select Role...</option>
                             <option value="Manager">Manager</option>
@@ -172,8 +170,9 @@
                         </select>
                         <div id="personSelectorContainer" class="hidden">
                             <select id="personSelector"></select>
-                            <button id="managePeopleBtn" class="btn">Manage</button>
                         </div>
+                         <button id="managePeopleBtn" class="btn hidden">Manage</button>
+                         <button id="endConversationBtn" class="btn hidden" title="Summarizes the current conversation into the person's long-term profile.">Save Session</button>
                     </div>
                 </div>
                 <textarea id="userInput" class="input-field" rows="2" placeholder="Optional: Describe your goal..."></textarea>
@@ -184,7 +183,7 @@
                     <h2 class="section-title">AI Analysis</h2>
                     <div id="translationLoader" class="loader"><span class="loader-dot">●</span><span>Analyzing...</span></div>
                 </div>
-                <div id="translationResult"></div>
+                <div id="translationResult" class="prose-styles"></div>
                 <div id="apiKeyCta" class="hidden">
                     <p>Please set your API key to enable AI features.</p>
                     <button id="ctaSettingsBtn" class="btn btn-primary">Open Settings</button>
@@ -197,7 +196,7 @@
                     <div class="controls">
                         <select id="personaSelector">
                             <option value="gatekeeper" title="Protects your time and manages expectations.">Gatekeeper</option>
-                            <option value="diplomat" title="Prioritizes harmony and de-escalates tension.">Diplomat</option>
+                            <option value="diplomat" selected title="Prioritizes harmony and de-escalates tension.">Diplomat</option>
                             <option value="challenger" title="Sets clear boundaries and respectfully pushes back.">Challenger</option>
                             <option value="strategist" title="Thinks two steps ahead to position you for success.">Strategist</option>
                         </select>
@@ -357,7 +356,7 @@
 
     let state = {
         detectedMessage: '', lastClipboardContent: '', isClipboardMonitoringActive: false,
-        selectedPersonId: null, selectedRelationshipType: null, selectedPersona: 'gatekeeper',
+        selectedPersonId: null, selectedRelationshipType: null, selectedPersona: 'diplomat',
         ephemeralMode: false,
         settings: { selectedProvider: 'gemini', providers: { gemini: { encryptedKey: null } }, onboardingDismissed: false },
         decryptedApiKey: null, // Held in memory only for the session
@@ -373,10 +372,8 @@
             t = setTimeout(() => fn(...args), delay);
         };
     };
-    // LLM-SECURITY: This function is critical for preventing XSS. Use it on all user-controlled content before rendering as HTML.
     function sanitizeText(str) { if (!str) return ''; return str.replace(/[&<>"']/g, (match) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' }[match])); }
 
-    // LLM-SECURITY: This function handles secure key encryption using the Web Crypto API. Do not simplify or replace with weaker methods like simple XOR.
     async function encryptApiKey(apiKey, userPassphrase) {
         const encoder = new TextEncoder();
         const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -402,7 +399,6 @@
         }
     }
 
-    // --- UI HELPER: Custom confirmation modal to replace window.confirm() ---
     function showConfirmationModal(title, message) {
         return new Promise((resolve) => {
             dom.confirmTitle.textContent = title;
@@ -423,12 +419,12 @@
         });
     }
 
-    // LLM-SECURITY: Validates the structure of the AI's JSON response to prevent processing malformed, incomplete, or unexpected data.
+    // UX FIX: Updated validation to match new, simpler schema
     function validateAIResponse(response) {
       if (!response || typeof response !== 'object') return false;
       if (!response.analysis || typeof response.analysis !== 'object') return false;
       if (!Array.isArray(response.responses)) return false;
-      const requiredAnalysisFields = ['intent', 'risk', 'strategy', 'unspoken_ask', 'reputation_impact', 'perception_check'];
+      const requiredAnalysisFields = ['insight', 'strategy'];
       if (!requiredAnalysisFields.every(field => typeof response.analysis[field] === 'string')) return false;
       return response.responses.every(r => r && typeof r.title === 'string' && typeof r.text === 'string' && r.title.length > 0 && r.text.length > 0);
     }
@@ -496,25 +492,44 @@
         async call(prompt, options = {}) { return this.getClient().call(prompt, options); }
     }
 
-    // LLM-AGENT-NOTE: This class is the "brain" of the application. It constructs prompts, calls the API via ApiManager, and processes results.
     class PersonalizedWorkplaceAgent {
         constructor(apiManager, storage, sessionManager) { this.apiManager = apiManager; this.storage = storage; this.sessionManager = sessionManager; this.personProfiles = new Map(); }
         async analyze(message, userInput, personId, type, persona) {
             const personProfile = await this.getPersonProfile(personId);
             const session = this.sessionManager.getSession(personId);
             const prompt = this._buildAnalysisPrompt(message, userInput, personProfile, type, persona, session?.history);
-            const result = await this.apiManager.call(prompt, { responseSchema: { type: "OBJECT", properties: { "analysis": { type: "OBJECT", properties: { "intent": { "type": "STRING" }, "risk": { "type": "STRING" }, "perception_check": { "type": "STRING" }, "strategy": { "type": "STRING" }, "unspoken_ask": {"type": "STRING"}, "reputation_impact": {"type": "STRING"} } }, "responses": { type: "ARRAY", items: { type: "OBJECT", properties: { "title": { "type": "STRING" }, "text": { "type": "STRING" } }, required: ["title", "text"] } } } } });
+            const result = await this.apiManager.call(prompt, { 
+                responseSchema: { 
+                    type: "OBJECT", 
+                    properties: { 
+                        "analysis": { 
+                            type: "OBJECT", 
+                            properties: { 
+                                "insight": { "type": "STRING" }, 
+                                "strategy": { "type": "STRING" }
+                            } 
+                        }, 
+                        "responses": { 
+                            type: "ARRAY", 
+                            items: { 
+                                type: "OBJECT", 
+                                properties: { 
+                                    "title": { "type": "STRING" }, 
+                                    "text": { "type": "STRING" } 
+                                }, 
+                                required: ["title", "text"] 
+                            } 
+                        } 
+                    } 
+                } 
+            });
             if (!validateAIResponse(result)) { throw new Error("AI returned an invalid or incomplete response."); }
             if (personId) {
                 const fullUserMessage = [message, userInput].filter(Boolean).join('\n');
-                const safeAnalysis = {
-                   unspoken_ask: (result.analysis.unspoken_ask || '').slice(0, 300),
-                   strategy: (result.analysis.strategy || '').slice(0, 300),
-                   reputation_impact: (result.analysis.reputation_impact || '').slice(0, 300),
-                };
+                const safeInsight = (result.analysis.insight || '').slice(0, 300);
                 this.sessionManager.updateSession(personId, { 
                   history: { role: 'user', content: fullUserMessage }, 
-                  insight: safeAnalysis.unspoken_ask
+                  insight: safeInsight
                 });
             }
             return result;
@@ -541,9 +556,14 @@
         }
         _sanitizePromptInput(content) { if (!content) return ''; return content.replace(/[<>]/g, match => ({ '<': '&lt;', '>': '&gt;' }[match])).replace(/```[\s\S]*?```/g, '[CODE_BLOCK_REMOVED]').replace(/{{.*?}}/g, '[TEMPLATE_REMOVED]').slice(0, 2000); }
         
-        // LLM-PROMPT-ENGINEERING: The following methods construct the final prompt sent to the AI. Edits here will directly impact AI performance, cost, and response quality.
+        // UX FIX: Updated prompt to be more concise
         _promptHeader(mode, persona) {
-            return `You are "The Strategic Gatekeeper," an elite AI specializing in workplace communication. Your current persona is "${persona}". <task>Analyze the context using long-term memory and short-term history. In ${mode} Mode, generate analysis and response drafts. Your analysis MUST include the "unspoken_ask" and the "reputation_impact". Based on your persona, generate 3 distinct response options, each with a "title" and "text". Keep all analysis and responses concise and strictly adhere to the JSON schema.</task>`;
+            return `You are "The Strategic Gatekeeper," an elite AI specializing in workplace communication. Your current persona is "${persona}".
+<task>
+1.  **Analyze**: Create a concise analysis with two fields: "insight" (the core intent/unspoken ask) and "strategy" (the recommended action, risk, and reputation impact combined).
+2.  **Respond**: Generate 3 distinct response options. Each response must have a short "title" (1-3 words) and "text".
+3.  **Format**: Respond ONLY with valid JSON matching the schema. No extra text or markdown.
+</task>`;
         }
         _buildHistoryBlock(sessionHistory) {
             if (!sessionHistory || sessionHistory.length === 0) return '';
@@ -565,18 +585,15 @@
             const historyBlock = this._buildHistoryBlock(sessionHistory);
             const contextBlock = this._buildContext(type, personProfile);
             const inputBlock = this._buildUserInput(message, userInput, mode);
-            
             const fullInput = `<input><mode>${mode}</mode><persona>${persona}</persona>${historyBlock}${contextBlock}${inputBlock}</input>`;
-            
-            return `${this._promptHeader(mode, persona)}${fullInput}\n\nCRITICAL: Respond ONLY with valid JSON matching the exact schema. No additional text, explanations, or markdown. If unable to comply, return {"error": "schema_violation"}.`;
+            return `${this._promptHeader(mode, persona)}${fullInput}`;
         }
         _buildSummarizationPrompt(existingSummary, newInsights) { return `You are a profile synthesizer. Your task is to integrate new information from a recent conversation into an existing personality summary. Maintain a concise, third-person, analytical tone. Combine the existing summary with the new insights into a single, coherent, updated summary paragraph. <existing_summary>${existingSummary || 'This is the first observation for this person.'}</existing_summary> <new_insights_from_conversation>${newInsights.join(' ')}</new_insights_from_conversation> Respond with only the updated summary paragraph.`; }
         async getPersonProfile(personId) { if (!personId) return null; if (this.personProfiles.has(personId)) return this.personProfiles.get(personId); const stored = await this.storage.getPersonProfile(personId); if (stored) { this.personProfiles.set(personId, stored); return stored; } return null; }
     }
 
-    // LLM-UI-NOTE: The UIManager handles all direct DOM manipulation. Prefer methods like .textContent and .replaceChildren() over .innerHTML to prevent XSS vulnerabilities.
     const UIManager = {
-        init() { this.updateUIState(false); this.updateClipboardStatus(state.isClipboardMonitoringActive); },
+        init() { this.updateUIState(); this.updateClipboardStatus(state.isClipboardMonitoringActive); },
         openModal(modalElement) {
             focusedElementBeforeModal = document.activeElement;
             modalElement.classList.remove('hidden');
@@ -600,7 +617,7 @@
             if (!isLoading) {
                  const isRoleSelected = !!state.selectedRelationshipType;
                 dom.personSelector.disabled = !isRoleSelected;
-                dom.managePeopleBtn.disabled = !isRoleSelected;
+                dom.managePeopleBtn.classList.toggle('hidden', !isRoleSelected);
                 const isPersonSelected = !!state.selectedPersonId;
                 dom.endConversationBtn.classList.toggle('hidden', !isPersonSelected);
             }
@@ -627,60 +644,27 @@
         hideApiKeyCta() {
             dom.translationResult.classList.remove('hidden');
             dom.apiKeyCta.classList.add('hidden');
+            dom.translationResult.textContent = 'Ready for analysis. Paste a message above to begin.';
         },
+        // UX FIX: Display new, simpler analysis fields
         displayAnalysis(analysis) {
             dom.translationResult.replaceChildren(); 
             if (!analysis) { 
                 dom.translationResult.textContent = 'No analysis available.';
                 return;
             }
-            const isRisky = analysis.risk && (analysis.risk.toLowerCase().includes('high') || analysis.risk.toLowerCase().includes('medium'));
-            if (!isRisky && !analysis.unspoken_ask) { 
-                dom.translationResult.textContent = 'No major risks or unspoken needs detected.';
-                dom.analysisSection.classList.remove('hidden');
-                return;
-            }
-            dom.analysisSection.classList.remove('hidden');
             
-            const summary = document.createElement('div');
-            const strong = document.createElement('strong');
-            strong.textContent = "Bottom Line: ";
-            summary.appendChild(strong);
-            summary.append(sanitizeText(analysis.strategy || 'N/A'));
-            
-            const details = document.createElement('details');
-            const summaryEl = document.createElement('summary');
-            summaryEl.textContent = "More Details";
+            const insightP = document.createElement('p');
+            const insightStrong = document.createElement('strong');
+            insightStrong.textContent = "Insight: ";
+            insightP.append(insightStrong, analysis.insight || 'N/A');
 
-            const container = document.createElement('div');
-            container.className = "prose-styles";
+            const strategyP = document.createElement('p');
+            const strategyStrong = document.createElement('strong');
+            strategyStrong.textContent = "Strategy: ";
+            strategyP.append(strategyStrong, analysis.strategy || 'N/A');
 
-            [
-              ["Risks", analysis.risk],
-              ["Unspoken Ask", analysis.unspoken_ask],
-              ["Reputation Impact", analysis.reputation_impact],
-              ["Perception Check", analysis.perception_check]
-            ].forEach(([label, value]) => {
-              if (value && value.toLowerCase() !== 'n/a' && value.toLowerCase() !== 'none') {
-                  const p = document.createElement('p');
-                  const strong = document.createElement('strong');
-                  strong.textContent = `${label}: `;
-                  p.appendChild(strong);
-                  
-                  if (label === 'Risks') {
-                      const span = document.createElement('span');
-                      span.className = this.getRiskColor(value);
-                      span.textContent = sanitizeText(value);
-                      p.appendChild(span);
-                  } else {
-                      p.append(sanitizeText(value));
-                  }
-                  container.appendChild(p);
-              }
-            });
-
-            details.append(summaryEl, container);
-            dom.translationResult.append(summary, details);
+            dom.translationResult.append(insightP, strategyP);
         },
         displayResponses(responses) {
             dom.optionsContainer.replaceChildren();
@@ -903,10 +887,9 @@
             state.detectedMessage = ''; 
             dom.messageInput.value = ''; 
             dom.userInput.value = ''; 
-            UIManager.hideApiKeyCta();
-            dom.translationResult.textContent = 'Ready for analysis. Paste a message above to begin.'; 
+            if(state.decryptedApiKey) UIManager.hideApiKeyCta();
+            else UIManager.showApiKeyCta();
             dom.optionsContainer.replaceChildren(); 
-            dom.analysisSection.classList.remove('hidden'); 
             UIManager.clearError(); 
         });
         dom.endConversationBtn.addEventListener('click', async () => { UIManager.updateUIState(true); await agent.summarizeSession(state.selectedPersonId); UIManager.updateUIState(false); });
@@ -972,7 +955,6 @@
         
         setInterval(() => { if (state.isClipboardMonitoringActive && document.hasFocus()) { navigator.clipboard.readText().then(text => { if (text && text.trim() && text !== state.lastClipboardContent) { state.lastClipboardContent = text; state.detectedMessage = text; dom.messageInput.value = text; debouncedAnalysis(); } }).catch(err => { state.isClipboardMonitoringActive = false; dom.clipboardToggle.checked = false; UIManager.updateClipboardStatus(false, 'Permission Denied', 'danger'); console.warn("Clipboard read permission may have been denied."); }); } }, CONFIG.CLIPBOARD_POLL_MS);
     
-        // Accessibility: Focus trapping for modals
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && activeModal) UIManager.closeModal(activeModal);
             if (e.key === 'Tab' && activeModal) {
@@ -1007,6 +989,7 @@
                         state.decryptedApiKey = decrypted;
                         UIManager.closeModal(dom.unlockModal);
                         await initializeApp();
+                        UIManager.hideApiKeyCta();
                     } else {
                         alert('Incorrect passphrase.');
                         dom.unlockPassphraseInput.value = '';
