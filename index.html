@@ -166,6 +166,9 @@
                             <option value="Manager">Manager</option>
                             <option value="Teammate">Teammate</option>
                             <option value="Client">Client</option>
+                            <option value="Direct Report">Direct Report</option>
+                            <option value="Stakeholder">Stakeholder</option>
+                            <option value="Vendor">Vendor</option>
                             <option value="Other">Other</option>
                         </select>
                         <div id="personSelectorContainer" class="hidden">
@@ -246,10 +249,11 @@
             <h2>Manage People</h2>
             <div class="form-group">
                 <h3>Add New Person</h3>
-                <div style="display: flex; gap: 0.5rem;">
-                    <input type="text" id="newPersonName" class="input-field" placeholder="Person's Name">
-                    <button id="addPersonBtn" class="btn btn-primary">Add</button>
+                <input type="text" id="newPersonName" class="input-field" placeholder="Person's Name" style="margin-bottom: 0.5rem;">
+                <div id="customRoleGroup" class="form-group hidden">
+                    <input type="text" id="newPersonRole" class="input-field" placeholder="Specify Role (e.g., Contractor)">
                 </div>
+                <button id="addPersonBtn" class="btn btn-primary">Add</button>
             </div>
             <div id="peopleList"></div>
             <div class="modal-actions">
@@ -324,6 +328,7 @@
         PROFILE_SUMMARY_WARNING_LENGTH: 1500,
         DEBOUNCE_MS: 500,
         CLIPBOARD_POLL_MS: 2000,
+        STANDARD_ROLES: ["Manager", "Teammate", "Client", "Direct Report", "Stakeholder", "Vendor"],
     };
 
     const dom = {
@@ -347,6 +352,7 @@
         saveSettingsBtn: document.getElementById('saveSettingsBtn'), cancelSettingsBtn: document.getElementById('cancelSettingsBtn'), 
         peopleModal: document.getElementById('peopleModal'), peopleList: document.getElementById('peopleList'), 
         newPersonName: document.getElementById('newPersonName'), addPersonBtn: document.getElementById('addPersonBtn'), 
+        customRoleGroup: document.getElementById('customRoleGroup'), newPersonRole: document.getElementById('newPersonRole'),
         closePeopleBtn: document.getElementById('closePeopleBtn'),
         analysisSection: document.getElementById('analysisSection'),
         unlockModal: document.getElementById('unlockModal'), unlockPassphraseInput: document.getElementById('unlockPassphraseInput'), unlockBtn: document.getElementById('unlockBtn'),
@@ -419,7 +425,6 @@
         });
     }
 
-    // UX FIX: Updated validation to match new, simpler schema
     function validateAIResponse(response) {
       if (!response || typeof response !== 'object') return false;
       if (!response.analysis || typeof response.analysis !== 'object') return false;
@@ -556,7 +561,6 @@
         }
         _sanitizePromptInput(content) { if (!content) return ''; return content.replace(/[<>]/g, match => ({ '<': '&lt;', '>': '&gt;' }[match])).replace(/```[\s\S]*?```/g, '[CODE_BLOCK_REMOVED]').replace(/{{.*?}}/g, '[TEMPLATE_REMOVED]').slice(0, 2000); }
         
-        // UX FIX: Updated prompt to be more concise
         _promptHeader(mode, persona) {
             return `You are "The Strategic Gatekeeper," an elite AI specializing in workplace communication. Your current persona is "${persona}".
 <task>
@@ -646,7 +650,6 @@
             dom.apiKeyCta.classList.add('hidden');
             dom.translationResult.textContent = 'Ready for analysis. Paste a message above to begin.';
         },
-        // UX FIX: Display new, simpler analysis fields
         displayAnalysis(analysis) {
             dom.translationResult.replaceChildren(); 
             if (!analysis) { 
@@ -700,8 +703,16 @@
         async populatePeopleSelector(profiles) {
             const type = state.selectedRelationshipType;
             if (!type) { dom.personSelectorContainer.classList.add('hidden'); return; }
+            
             dom.personSelectorContainer.classList.remove('hidden');
-            const peopleInType = Object.values(profiles).filter(p => p.type === type);
+            
+            let peopleInType;
+            if (type === 'Other') {
+                peopleInType = Object.values(profiles).filter(p => !CONFIG.STANDARD_ROLES.includes(p.type));
+            } else {
+                peopleInType = Object.values(profiles).filter(p => p.type === type);
+            }
+
             dom.personSelector.innerHTML = `<option value="">-- General ${type} --</option>`;
             peopleInType.forEach(p => dom.personSelector.add(new Option(p.name, p.id)));
             dom.personSelector.add(new Option('-- Add New Person --', 'add_new_person'));
@@ -876,6 +887,7 @@
         dom.relationshipTypeSelector.addEventListener('change', async (e) => { await agent.summarizeSession(state.selectedPersonId); state.selectedRelationshipType = e.target.value; state.selectedPersonId = null; await UIManager.populatePeopleSelector(await storage.getAllProfiles()); UIManager.updateUIState(); handleAnalysisRequest(); });
         
         dom.personSelector.addEventListener('change', async () => {
+            dom.customRoleGroup.classList.toggle('hidden', state.selectedRelationshipType !== 'Other');
             if (dom.personSelector.value === 'add_new_person') {
                 await UIManager.renderPeopleList(await storage.getAllProfiles());
                 UIManager.openModal(dom.peopleModal);
@@ -905,23 +917,46 @@
             }
         });
         
-        dom.managePeopleBtn.addEventListener('click', async () => { await UIManager.renderPeopleList(await storage.getAllProfiles()); UIManager.openModal(dom.peopleModal); });
+        dom.managePeopleBtn.addEventListener('click', async () => {
+            dom.customRoleGroup.classList.toggle('hidden', state.selectedRelationshipType !== 'Other');
+            await UIManager.renderPeopleList(await storage.getAllProfiles()); 
+            UIManager.openModal(dom.peopleModal); 
+        });
         dom.closePeopleBtn.addEventListener('click', () => UIManager.closeModal(dom.peopleModal));
         dom.addPersonBtn.addEventListener('click', async () => {
             const formGroup = dom.addPersonBtn.closest('.form-group');
             const existingError = formGroup.querySelector('.error-message');
             if (existingError) existingError.remove();
+            
             const name = dom.newPersonName.value.trim();
-            if (!name || !state.selectedRelationshipType) {
+            let role = state.selectedRelationshipType;
+
+            if (role === 'Other') {
+                role = dom.newPersonRole.value.trim();
+                if (!role) {
+                    const errorSpan = document.createElement('div');
+                    errorSpan.textContent = "Please specify a custom role.";
+                    errorSpan.className = 'error-message';
+                    dom.customRoleGroup.appendChild(errorSpan);
+                    return;
+                }
+            }
+
+            if (!name) {
                 const errorSpan = document.createElement('div');
-                errorSpan.textContent = "A name must be entered and a role selected on the main screen.";
+                errorSpan.textContent = "A name must be entered.";
                 errorSpan.className = 'error-message';
-                formGroup.appendChild(errorSpan);
+                dom.newPersonName.insertAdjacentElement('afterend', errorSpan);
                 return;
             }
-            const id = `person_${Date.now()}`; const newProfile = { id, name, type: state.selectedRelationshipType, summary: `Profile created for ${name}.` };
+
+            const id = `person_${Date.now()}`; 
+            const newProfile = { id, name, type: role, summary: `Profile created for ${name}.` };
+            
             await storage.savePersonProfile(id, newProfile);
             dom.newPersonName.value = '';
+            dom.newPersonRole.value = '';
+            
             const allProfiles = await storage.getAllProfiles();
             await UIManager.renderPeopleList(allProfiles);
             await UIManager.populatePeopleSelector(allProfiles);
