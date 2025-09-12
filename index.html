@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+<!-- LLM-NOTE: This application is optimized exclusively for Microsoft Edge. Do not add cross-browser compatibility code. -->
 <html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sidebar</title>
     <style>
-        /* UI adapted from the Dashboard's aesthetic */
+        /* LLM-NOTE: All styling is self-contained. Do not introduce external CSS frameworks. */
         :root {
             --bg-color: #f4f7fa; --panel-bg: #ffffff; --border-color: #e2e8f0;
             --text-color: #1e293b; --subtle-text: #64748b; --primary-color: #3b82f6;
@@ -31,157 +32,135 @@
             display: flex;
         }
 
-        /* --- Layout --- */
-        #app {
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 0.75rem;
-            box-sizing: border-box;
-            gap: 0.75rem;
-        }
-        main { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 4px; }
-
-        /* --- General Components --- */
-        .section {
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-            padding: 0.75rem;
-        }
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-        .section-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin: 0;
-            white-space: nowrap;
-        }
-        .input-field, #personSelector, #relationshipTypeSelector {
-            width: 100%;
-            box-sizing: border-box;
-            font-size: 0.875rem;
-            padding: 0.4rem 0.6rem;
-            border-radius: 0.375rem;
-            border: 1px solid var(--border-color);
-            font-family: inherit;
-            background-color: var(--info-bg);
-            color: var(--text-color);
-        }
-        .input-field:focus, #personSelector:focus, #relationshipTypeSelector:focus {
-            outline: 2px solid var(--primary-color);
-            outline-offset: -1px;
-            background-color: var(--panel-bg);
-        }
+        /* --- Layout & Core Components --- */
+        #app { width: 100%; height: 100vh; display: flex; flex-direction: column; padding: 0.75rem; box-sizing: border-box; gap: 0.5rem; }
+        main { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 4px; }
+        .section { background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.5rem; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+        .section-title { font-size: 0.9rem; font-weight: 600; margin: 0; white-space: nowrap; }
+        .input-field, select { width: 100%; box-sizing: border-box; font-size: 0.875rem; padding: 0.4rem 0.6rem; border-radius: 0.375rem; border: 1px solid var(--border-color); font-family: inherit; background-color: var(--info-bg); color: var(--text-color); }
+        .input-field:focus, select:focus { outline: 2px solid var(--primary-color); outline-offset: -1px; background-color: var(--panel-bg); }
         textarea.input-field { resize: vertical; }
 
-        /* --- Buttons --- */
-        .btn {
-            padding: 0.35rem 0.6rem;
-            font-size: 0.8rem;
-            border: 1px solid var(--border-color);
-            border-radius: 0.375rem;
-            cursor: pointer;
-            background-color: var(--panel-bg);
-            transition: all 0.2s;
-            font-weight: 500;
-            color: var(--text-color);
-        }
+        /* --- Buttons & Controls --- */
+        .btn { padding: 0.35rem 0.6rem; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: 0.375rem; cursor: pointer; background-color: var(--panel-bg); transition: background-color 0.2s; font-weight: 500; color: var(--text-color); }
+        .section-header .controls .btn, .section-header .controls select { padding-top: 0.2rem; padding-bottom: 0.2rem; font-size: 0.75rem; }
         .btn:hover { background-color: var(--info-bg); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-primary { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
         .btn-primary:hover { filter: brightness(110%); }
         .btn-danger { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
         .btn-danger:hover { filter: brightness(110%); }
-        #resetBtn { background: none; border: none; font-size: 0.75rem; color: var(--subtle-text); cursor: pointer; padding: 0.25rem; }
-        #resetBtn:hover { color: var(--text-color); }
-        #settingsBtn { background: none; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem; }
+        #clearInputsBtn, #settingsBtn { background: none; border: none; font-size: 0.75rem; color: var(--subtle-text); cursor: pointer; padding: 0.2rem; }
+        #settingsBtn { font-size: 1.1rem; }
+        #clearInputsBtn:hover, #settingsBtn:hover { color: var(--text-color); }
+        
+        #ephemeralBadge { font-size: 0.65rem; font-weight: 700; background-color: var(--warning-color); color: white; padding: 0.1rem 0.4rem; border-radius: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
 
-        /* --- Specific Section Styling --- */
+        /* --- Specific UI Sections --- */
         .controls { display: flex; align-items: center; gap: 0.5rem; }
-        .section-header .controls { flex-grow: 1; justify-content: flex-end; }
-        
-        #clipboardStatus { font-size: 0.75rem; font-weight: 500; }
-        
-        textarea#messageInput {
-            min-height: 60px;
-            max-height: 120px;
-        }
-
-        #relationshipTypeSelector { flex-basis: 110px; flex-shrink: 0; }
-        #personSelectorContainer { display: flex; flex-grow: 1; gap: 0.5rem; align-items: center; }
+        .section-header .controls { flex-grow: 1; justify-content: flex-end; flex-wrap: wrap; }
+        textarea#messageInput { min-height: 60px; max-height: 120px; }
+        #relationshipTypeSelector { flex-basis: 120px; flex-shrink: 1; }
+        #personSelectorContainer { display: flex; flex-grow: 1; gap: 0.5rem; align-items: center; flex-basis: 150px; }
         #personSelector { flex-grow: 1; }
-
         .loader { display: none; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--subtle-text); }
         .loader-dot { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        #translationResult {
-            font-size: 0.875rem;
-            color: var(--text-color);
-            margin-top: 0.75rem;
-            padding: 0.75rem;
-            border-radius: 0.375rem;
-            background-color: var(--info-bg);
-        }
+        /* --- Analysis & Response Display --- */
+        #analysisSection { transition: all 0.3s ease-in-out; }
+        #translationResult { font-size: 0.875rem; color: var(--subtle-text); padding: 0.75rem; border-radius: 0.375rem; background-color: var(--info-bg); }
         .prose-styles details > summary { cursor: pointer; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--primary-color); }
-        .prose-styles p { margin: 0 0 0.5rem; line-height: 1.5; padding-left: 0.75rem; border-left: 2px solid var(--border-color); }
+        .prose-styles p { margin: 0 0 0.5rem; line-height: 1.5; padding-left: 0.75rem; border-left: 2px solid var(--border-color); color: var(--text-color); }
         .prose-styles strong { color: var(--subtle-text); font-weight: 600; }
-
         #optionsContainer { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
         .response-card { padding: 0.75rem; border-radius: 0.375rem; background-color: var(--panel-bg); border: 1px solid var(--border-color); }
         .response-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
         .response-card-header h4 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--primary-color); letter-spacing: 0.05em; }
-        .response-card p { font-size: 0.875rem; color: var(--text-color); margin: 0; }
-        
+        .response-card p { font-size: 0.875rem; color: var(--text-color); margin: 0; white-space: pre-wrap; white-space: pre-line; }
         #errorContainer { padding: 0.5rem; text-align: center; color: var(--danger-color); font-size: 0.875rem; }
+        #errorContainer button { font-size: inherit; text-decoration: underline; background: none; border: none; color: var(--primary-color); cursor: pointer; padding: 0; }
 
-        /* --- Toggle Switch --- */
-        .toggle-switch { position: relative; display: inline-block; width: 34px; height: 20px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 20px; }
-        .toggle-slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .toggle-slider { background-color: var(--success-color); }
-        input:checked + .toggle-slider:before { transform: translateX(14px); }
-
-        /* --- Modals --- */
+        /* --- Modals & Overlays --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(100,116,139,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--panel-bg); padding: 1.5rem; border-radius: 0.75rem; max-width: 90%; width: 380px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); }
+        .modal-content { background: var(--panel-bg); padding: 1.5rem; border-radius: 0.75rem; max-width: 95%; width: 420px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); display: flex; flex-direction: column; max-height: 90vh; }
         .modal-content h2 { margin: 0 0 1rem 0; font-size: 1.25rem; }
         .modal-content h3 { margin: 0 0 0.5rem 0; font-size: 0.9rem; font-weight: 600; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; }
-        #peopleList .person-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background-color: var(--info-bg); border-radius: 0.25rem; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; flex-shrink: 0; }
+        #peopleList .person-item { display: flex; flex-direction: column; padding: 0.5rem; background-color: var(--info-bg); border-radius: 0.25rem; }
+        .person-item-header { display: flex; justify-content: space-between; align-items: center; }
+        #peopleList .person-controls { display: flex; gap: 0.5rem; }
         #peopleList { display: flex; flex-direction: column; gap: 0.5rem; max-height: 240px; overflow-y: auto; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label, .form-group p, .help-link { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; }
+        .form-group p { font-size: 0.75rem; color: var(--subtle-text); margin-top: 0.25rem; }
+        .help-link { color: var(--primary-color); text-decoration: none; margin-top: 0.5rem; }
+        .profile-details { margin-top: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem; }
+        .profile-details h4 { font-size: 0.8rem; font-weight: 600; margin: 0 0 0.5rem 0; }
+        .summary-warning { font-size: 0.75rem; color: var(--warning-color); margin-bottom: 0.5rem; }
+        .summary-char-count { font-size: 0.75rem; color: var(--subtle-text); text-align: right; }
+        .form-group .error-message { font-size: 0.75rem; color: var(--danger-color); margin-top: 0.25rem; }
         
-        /* Utility */
+        #onboardingOverlay { position: fixed; inset: 0; background: var(--bg-color); z-index: 2000; padding: 2rem; color: var(--text-color); }
+        #onboardingContent { max-width: 600px; margin: auto; }
+        #onboardingContent h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+        #onboardingContent p, #onboardingContent li { line-height: 1.6; margin-bottom: 1rem; }
+        #onboardingContent ol { padding-left: 1.5rem; }
+        #onboardingContent kbd { background: var(--border-color); padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-family: monospace; }
+        
         .hidden { display: none !important; }
-        .text-success { color: var(--success-color); } .text-warning { color: var(--warning-color); } .text-danger { color: var(--danger-color); }
+
+        /* --- FIX: Added Missing Utility & Toggle Classes --- */
+        .text-success { color: var(--success-color); }
+        .text-warning { color: var(--warning-color); }
+        .text-danger { color: var(--danger-color); }
+
+        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; vertical-align: middle; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 24px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .toggle-slider { background-color: var(--primary-color); }
+        input:checked + .toggle-slider:before { transform: translateX(20px); }
     </style>
 </head>
 <body>
-    <div id="app">
+    <div id="onboardingOverlay" class="hidden">
+        <div id="onboardingContent">
+            <h1>Welcome to Sidebar</h1>
+            <p>This application is designed to run in the Microsoft Edge sidebar for the best experience.</p>
+            <h3>Recommended Setup:</h3>
+            <ol>
+                <li><strong>Enable the Sidebar:</strong> In Edge, go to Settings (`...`) > `Sidebar`, or press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>/</kbd>.</li>
+                <li><strong>Add This App:</strong> In the sidebar, click the `+` icon, find this app under "Open tabs," and pin it.</li>
+                <li><strong>Set Your API Key:</strong> To activate the AI, you need a Google AI API key. You can add this in the app's settings (⚙️). <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="help-link">Get your key here.</a></li>
+                <li><strong>Keyboard Shortcut:</strong> Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> in the context box to trigger analysis.</li>
+            </ol>
+            <button id="dismissOnboardingBtn" class="btn btn-primary" style="margin-top: 1rem;">Continue to App</button>
+        </div>
+    </div>
+
+    <div id="app" class="hidden">
         <main>
             <section class="section">
                 <div class="section-header">
                     <h2 class="section-title">Received Message</h2>
-                    <div class="controls">
-                        <span id="clipboardStatus" class="text-success">Monitoring</span>
+                     <div class="controls">
+                        <span id="ephemeralBadge" class="hidden">Ephemeral</span>
+                        <span id="clipboardStatus"></span>
                         <label class="toggle-switch"><input type="checkbox" id="clipboardToggle"><span class="toggle-slider"></span></label>
-                        <button id="resetBtn">Reset</button>
-                        <button id="settingsBtn" title="Settings">⚙️</button>
+                        <button id="clearInputsBtn" aria-label="Clear all inputs">Clear</button>
+                        <button id="settingsBtn" title="Settings" aria-label="Open settings">⚙️</button>
                     </div>
                 </div>
-                <textarea id="messageInput" class="input-field" placeholder="Paste message here..."></textarea>
+                <textarea id="messageInput" class="input-field" placeholder="Paste a message here to get started..."></textarea>
             </section>
             
             <section class="section">
                 <div class="section-header">
-                    <h2 class="section-title">Context</h2>
-                    <div class="controls">
+                    <h2 class="section-title">Optional Context</h2>
+                    <div id="contextControls" class="controls">
+                         <button id="endConversationBtn" class="btn hidden" title="Summarizes the current conversation into the person's long-term profile and clears the short-term memory.">Save & Clear Session</button>
                         <select id="relationshipTypeSelector">
                             <option value="">Select Role...</option>
                             <option value="Manager">Manager</option>
@@ -195,7 +174,7 @@
                         </div>
                     </div>
                 </div>
-                <textarea id="userInput" class="input-field" rows="2" placeholder="Optional: Describe your goal, then press Ctrl+Enter."></textarea>
+                <textarea id="userInput" class="input-field" rows="2" placeholder="Optional: Describe your goal..."></textarea>
             </section>
 
             <section id="analysisSection" class="section">
@@ -203,13 +182,21 @@
                     <h2 class="section-title">AI Analysis</h2>
                     <div id="translationLoader" class="loader"><span class="loader-dot">●</span><span>Analyzing...</span></div>
                 </div>
-                <div id="translationResult" class="prose-styles">Awaiting input...</div>
+                <div id="translationResult">Ready for analysis. Paste a message above to begin.</div>
             </section>
 
             <section class="section">
                 <div class="section-header">
                     <h2 class="section-title">Suggested Responses</h2>
-                    <div id="outputLoader" class="loader"><span class="loader-dot">●</span><span>Generating...</span></div>
+                    <div class="controls">
+                        <select id="personaSelector">
+                            <option value="gatekeeper" title="Protects your time and manages expectations.">Gatekeeper</option>
+                            <option value="diplomat" title="Prioritizes harmony and de-escalates tension.">Diplomat</option>
+                            <option value="challenger" title="Sets clear boundaries and respectfully pushes back.">Challenger</option>
+                            <option value="strategist" title="Thinks two steps ahead to position you for success.">Strategist</option>
+                        </select>
+                        <div id="outputLoader" class="loader"><span class="loader-dot">●</span><span>Generating...</span></div>
+                    </div>
                 </div>
                 <div id="optionsContainer"></div>
                 <div id="errorContainer" class="hidden"></div>
@@ -218,370 +205,720 @@
     </div>
 
     <!-- Modals -->
-    <div id="settingsModal" class="modal-overlay hidden">
-        <div class="modal-content">
+    <div id="settingsModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+       <div class="modal-content">
             <h2>Settings</h2>
-            <div>
-                <label for="apiKeyInput" style="display: block; font-weight: 500; margin-bottom: 0.25rem;">Google AI API Key</label>
-                <input type="password" id="apiKeyInput" class="input-field" placeholder="Enter your API key">
-                <p style="font-size: 0.75rem; color: var(--subtle-text); margin-top: 0.25rem;">Your key is stored securely in your browser's local storage.</p>
+            <div class="form-group">
+                <label for="geminiApiKeyInput">Google AI API Key</label>
+                <input type="password" id="geminiApiKeyInput" class="input-field" placeholder="Enter your API key">
             </div>
+             <div class="form-group">
+                <label for="passphraseInput">Encryption Passphrase</label>
+                <input type="password" id="passphraseInput" class="input-field" placeholder="Required to save/load key">
+                <p>A passphrase is used to encrypt your API key. It is never stored. You must re-enter it each session.</p>
+            </div>
+             <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label class="toggle-switch"><input type="checkbox" id="ephemeralToggle"><span class="toggle-slider"></span></label>
+                    <span>Ephemeral Mode</span>
+                </label>
+                 <p>When enabled, no profiles or session data will be saved to your device.</p>
+             </div>
+             <div class="form-group" style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                <label>Data Management</label>
+                <button id="clearDataBtn" class="btn btn-danger">Clear All Local Data</button>
+                <p>This will permanently delete all saved profiles and session history from this browser.</p>
+             </div>
             <div class="modal-actions">
                 <button id="cancelSettingsBtn" class="btn">Cancel</button>
                 <button id="saveSettingsBtn" class="btn btn-primary">Save</button>
             </div>
         </div>
     </div>
-    <div id="peopleModal" class="modal-overlay hidden">
+    <div id="peopleModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
        <div class="modal-content">
             <h2>Manage People</h2>
-            <div style="margin-bottom: 1rem;">
+            <div class="form-group">
                 <h3>Add New Person</h3>
                 <div style="display: flex; gap: 0.5rem;">
                     <input type="text" id="newPersonName" class="input-field" placeholder="Person's Name">
                     <button id="addPersonBtn" class="btn btn-primary">Add</button>
                 </div>
             </div>
-            <div id="peopleList">
-                <!-- People will be listed here -->
-            </div>
+            <div id="peopleList"></div>
             <div class="modal-actions">
                 <button id="closePeopleBtn" class="btn">Close</button>
             </div>
         </div>
     </div>
-
+    <div id="unlockModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+       <div class="modal-content">
+            <h2>Unlock API Key</h2>
+            <div class="form-group">
+                <label for="unlockPassphraseInput">Enter Passphrase</label>
+                <input type="password" id="unlockPassphraseInput" class="input-field">
+                <p>Your API key is encrypted. Enter your passphrase to unlock it for this session.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="unlockBtn" class="btn btn-primary">Unlock</button>
+            </div>
+        </div>
+    </div>
+     <div id="confirmModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+       <div class="modal-content">
+            <h2 id="confirmTitle">Confirm Action</h2>
+            <p id="confirmMessage" style="line-height: 1.5;"></p>
+            <div class="modal-actions">
+                <button id="confirmCancelBtn" class="btn">Cancel</button>
+                <button id="confirmOkBtn" class="btn btn-danger">OK</button>
+            </div>
+        </div>
+    </div>
+    
     <script type="module">
-    // --- BRIEF ---
-    // This is "Sidebar", a personal workplace communication tool. Its AI agent, "The Strategic Gatekeeper",
-    // analyzes messages, provides strategic insights, and drafts diplomatic responses. It uses a sophisticated,
-    // class-based architecture to learn communication patterns for specific people, storing all confidential
-    // data (API key, profiles) securely in the user's local browser storage.
+    /**************************************************************************************************
+     * LLM-EDITING-GUIDE (Updated Sept 2025)
+     *
+     * Welcome, AI assistant! This is a self-contained, single-file HTML application.
+     * Your goal is to modify this file safely and effectively. Please adhere to these rules:
+     *
+     * 1.  **SINGLE-FILE CONSTRAINT**: ALL HTML, CSS, and JavaScript logic MUST remain in this
+     * single `sidebar.html` file. Do not create or reference external files.
+     *
+     * 2.  **ARCHITECTURE**: The app uses a modular, class-based design.
+     * - `UIManager`: Handles ALL direct DOM manipulation.
+     * - `PersonalizedWorkplaceAgent`: The "brain" that builds prompts and processes AI responses.
+     * - `SessionManager` / `ProfileStorage`: Handle data persistence to localStorage.
+     * - `main()`: The entry point at the bottom of the script.
+     *
+     * 3.  **STATE MANAGEMENT**: A single global `state` object holds the application's live state.
+     * It is the single source of truth. Modify it directly as needed.
+     *
+     * 4.  **SECURITY IS PARAMOUNT**:
+     * - **NO `innerHTML`**: Avoid `element.innerHTML = ...` with user or AI-generated content.
+     * Use `element.textContent`, `element.append()`, and `document.createElement()` instead.
+     * The `sanitizeText()` function is a fallback for simple, controlled cases.
+     * - **CRITICAL FUNCTIONS**: `sanitizeText`, `encryptApiKey`, `validateAIResponse` are
+     * security-critical. Do not weaken or remove them.
+     *
+     * 5.  **PROMPT ENGINEERING**: The `_buildAnalysisPrompt` and its helper methods are sensitive.
+     * Changes here directly affect the AI's performance, cost, and response quality.
+     * Ensure prompts are clear, concise, and enforce the required JSON output format.
+     *
+     * 6.  **ENVIRONMENT**: This app is for the MS Edge sidebar ONLY. Modern JavaScript (ES2020+)
+     * and Web APIs are safe to use. No cross-browser compatibility code is needed.
+     **************************************************************************************************/
+    'use strict';
+
+    const CONFIG = {
+        SESSION_TIME_WINDOW_MS: 10 * 60 * 1000,
+        STORAGE_KEYS: { PROFILES: 'sidebar_person_profiles_v9', SESSIONS: 'sidebar_conversation_sessions_v3', SETTINGS: 'sidebar_settings_v4' },
+        API_RETRY_COUNT: 2, API_TIMEOUT_MS: 15000,
+        SIDEBAR_MAX_WIDTH: 400,
+        PROFILE_SUMMARY_WARNING_LENGTH: 1500,
+        DEBOUNCE_MS: 500,
+        CLIPBOARD_POLL_MS: 2000,
+    };
 
     const dom = {
+        app: document.getElementById('app'), onboardingOverlay: document.getElementById('onboardingOverlay'), dismissOnboardingBtn: document.getElementById('dismissOnboardingBtn'),
         messageInput: document.getElementById('messageInput'), userInput: document.getElementById('userInput'),
         clipboardToggle: document.getElementById('clipboardToggle'), personSelector: document.getElementById('personSelector'),
         relationshipTypeSelector: document.getElementById('relationshipTypeSelector'),
+        personaSelector: document.getElementById('personaSelector'),
         personSelectorContainer: document.getElementById('personSelectorContainer'),
-        resetBtn: document.getElementById('resetBtn'), settingsBtn: document.getElementById('settingsBtn'),
+        clearInputsBtn: document.getElementById('clearInputsBtn'), settingsBtn: document.getElementById('settingsBtn'),
         managePeopleBtn: document.getElementById('managePeopleBtn'), clipboardStatus: document.getElementById('clipboardStatus'),
+        ephemeralBadge: document.getElementById('ephemeralBadge'),
         translationLoader: document.getElementById('translationLoader'), translationResult: document.getElementById('translationResult'),
         outputLoader: document.getElementById('outputLoader'), optionsContainer: document.getElementById('optionsContainer'),
-        errorContainer: document.getElementById('errorContainer'), settingsModal: document.getElementById('settingsModal'),
-        peopleModal: document.getElementById('peopleModal'), apiKeyInput: document.getElementById('apiKeyInput'),
-        saveSettingsBtn: document.getElementById('saveSettingsBtn'), cancelSettingsBtn: document.getElementById('cancelSettingsBtn'),
-        peopleList: document.getElementById('peopleList'), newPersonName: document.getElementById('newPersonName'),
-        addPersonBtn: document.getElementById('addPersonBtn'), closePeopleBtn: document.getElementById('closePeopleBtn'),
+        errorContainer: document.getElementById('errorContainer'), 
+        contextControls: document.getElementById('contextControls'), endConversationBtn: document.getElementById('endConversationBtn'),
+        settingsModal: document.getElementById('settingsModal'), geminiApiKeyInput: document.getElementById('geminiApiKeyInput'),
+        passphraseInput: document.getElementById('passphraseInput'), ephemeralToggle: document.getElementById('ephemeralToggle'),
+        clearDataBtn: document.getElementById('clearDataBtn'),
+        saveSettingsBtn: document.getElementById('saveSettingsBtn'), cancelSettingsBtn: document.getElementById('cancelSettingsBtn'), 
+        peopleModal: document.getElementById('peopleModal'), peopleList: document.getElementById('peopleList'), 
+        newPersonName: document.getElementById('newPersonName'), addPersonBtn: document.getElementById('addPersonBtn'), 
+        closePeopleBtn: document.getElementById('closePeopleBtn'),
+        analysisSection: document.getElementById('analysisSection'),
+        unlockModal: document.getElementById('unlockModal'), unlockPassphraseInput: document.getElementById('unlockPassphraseInput'), unlockBtn: document.getElementById('unlockBtn'),
+        confirmModal: document.getElementById('confirmModal'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
+        confirmCancelBtn: document.getElementById('confirmCancelBtn'), confirmOkBtn: document.getElementById('confirmOkBtn'),
     };
 
     let state = {
         detectedMessage: '', lastClipboardContent: '', isClipboardMonitoringActive: false,
-        selectedPersonId: null, selectedRelationshipType: null, sessionHistory: [],
-        settings: { apiKey: '' },
+        selectedPersonId: null, selectedRelationshipType: null, selectedPersona: 'gatekeeper',
+        ephemeralMode: false,
+        settings: { selectedProvider: 'gemini', providers: { gemini: { encryptedKey: null } }, onboardingDismissed: false },
+        decryptedApiKey: null, // Held in memory only for the session
     };
 
-    const debounce = (func, delay) => {
-        let timeout;
+    let activeModal = null;
+    let focusedElementBeforeModal = null;
+
+    const debounce = (fn, delay) => {
+        let t;
         return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
+            clearTimeout(t);
+            t = setTimeout(() => fn(...args), delay);
         };
     };
+    // LLM-SECURITY: This function is critical for preventing XSS. Use it on all user-controlled content before rendering as HTML.
+    function sanitizeText(str) { if (!str) return ''; return str.replace(/[&<>"']/g, (match) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' }[match])); }
+
+    // LLM-SECURITY: This function handles secure key encryption using the Web Crypto API. Do not simplify or replace with weaker methods like simple XOR.
+    async function encryptApiKey(apiKey, userPassphrase) {
+        const encoder = new TextEncoder();
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(userPassphrase), 'PBKDF2', false, ['deriveKey']);
+        const derivedKey = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+        const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, derivedKey, encoder.encode(apiKey));
+        return { encryptedData: Array.from(new Uint8Array(encrypted)), salt: Array.from(salt), iv: Array.from(iv) };
+    }
+
+    async function decryptApiKey(encryptedData, userPassphrase) {
+        try {
+            const decoder = new TextDecoder();
+            const salt = new Uint8Array(encryptedData.salt);
+            const iv = new Uint8Array(encryptedData.iv);
+            const keyMaterial = await crypto.subtle.importKey('raw', (new TextEncoder()).encode(userPassphrase), 'PBKDF2', false, ['deriveKey']);
+            const derivedKey = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, derivedKey, new Uint8Array(encryptedData.encryptedData));
+            return decoder.decode(decrypted);
+        } catch (error) {
+            console.error("Decryption failed:", error);
+            return null;
+        }
+    }
+
+    // --- UI HELPER: Custom confirmation modal to replace window.confirm() ---
+    function showConfirmationModal(title, message) {
+        return new Promise((resolve) => {
+            dom.confirmTitle.textContent = title;
+            dom.confirmMessage.textContent = message;
+            UIManager.openModal(dom.confirmModal);
+
+            const handleConfirm = () => { cleanup(); resolve(true); };
+            const handleCancel = () => { cleanup(); resolve(false); };
+
+            const cleanup = () => {
+                dom.confirmOkBtn.removeEventListener('click', handleConfirm);
+                dom.confirmCancelBtn.removeEventListener('click', handleCancel);
+                UIManager.closeModal(dom.confirmModal);
+            };
+
+            dom.confirmOkBtn.addEventListener('click', handleConfirm, { once: true });
+            dom.confirmCancelBtn.addEventListener('click', handleCancel, { once: true });
+        });
+    }
+
+    // LLM-SECURITY: Validates the structure of the AI's JSON response to prevent processing malformed, incomplete, or unexpected data.
+    function validateAIResponse(response) {
+      if (!response || typeof response !== 'object') return false;
+      if (!response.analysis || typeof response.analysis !== 'object') return false;
+      if (!Array.isArray(response.responses)) return false;
+      const requiredAnalysisFields = ['intent', 'risk', 'strategy', 'unspoken_ask', 'reputation_impact', 'perception_check'];
+      if (!requiredAnalysisFields.every(field => typeof response.analysis[field] === 'string')) return false;
+      return response.responses.every(r => r && typeof r.title === 'string' && typeof r.text === 'string' && r.title.length > 0 && r.text.length > 0);
+    }
+
+    class SessionManager {
+        constructor() { this.storageKey = CONFIG.STORAGE_KEYS.SESSIONS; this.timeout = CONFIG.SESSION_TIME_WINDOW_MS; }
+        _shouldPersist() { return !state.ephemeralMode; }
+        getSession(personId) {
+            if (!this._shouldPersist() || !personId) return null;
+            const sessions = this._getSessions();
+            const session = sessions[personId];
+            if (!session) return null;
+            const freshHistory = session.history.filter(h => Date.now() - h.timestamp < this.timeout);
+            if (freshHistory.length === 0) {
+                this.clearSession(personId);
+                return null;
+            }
+            sessions[personId].history = freshHistory;
+            this._saveSessions(sessions);
+            return sessions[personId];
+        }
+        updateSession(personId, turnData) { if (!this._shouldPersist() || !personId) return; const sessions = this._getSessions(); let session = sessions[personId] || { history: [], insights: [] }; session.history.push({ ...turnData.history, timestamp: Date.now() }); session.insights.push(turnData.insight); sessions[personId] = session; this._saveSessions(sessions); }
+        clearSession(personId) { if (!this._shouldPersist() || !personId) return; const sessions = this._getSessions(); delete sessions[personId]; this._saveSessions(sessions); }
+        _getSessions() { return JSON.parse(localStorage.getItem(this.storageKey) || '{}'); }
+        _saveSessions(sessions) { localStorage.setItem(this.storageKey, JSON.stringify(sessions)); }
+    }
 
     class ProfileStorage {
-        constructor() { this.storageKey = 'sidebar_person_profiles_v4'; }
-        async getPersonProfile(personId) { const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); return p[personId] || null; }
-        async savePersonProfile(personId, profile) { const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); p[personId] = profile; localStorage.setItem(this.storageKey, JSON.stringify(p)); }
-        async getAllProfiles() { return JSON.parse(localStorage.getItem(this.storageKey) || '{}'); }
-        async saveAllProfiles(profiles) { localStorage.setItem(this.storageKey, JSON.stringify(profiles)); }
+        constructor() { this.storageKey = CONFIG.STORAGE_KEYS.PROFILES; }
+        _shouldPersist() { return !state.ephemeralMode; }
+        async getPersonProfile(personId) { if (!this._shouldPersist()) return null; const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); return p[personId] || null; }
+        async savePersonProfile(personId, profile) { if (!this._shouldPersist()) return; const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); p[personId] = profile; localStorage.setItem(this.storageKey, JSON.stringify(p)); }
+        async getAllProfiles() { if (!this._shouldPersist()) return {}; return JSON.parse(localStorage.getItem(this.storageKey) || '{}'); }
+        async saveAllProfiles(profiles) { if (!this._shouldPersist()) return; localStorage.setItem(this.storageKey, JSON.stringify(profiles)); }
     }
     
-    class EnhancedApiClient {
-        constructor() { this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent'; this.retryCount = 2; this.retryDelay = 1000; this.timeout = 15000; }
+    class GeminiApiClient {
+        constructor(apiKey) { this.apiKey = apiKey; this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent'; }
         async call(prompt, options = {}) {
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                    temperature: options.temperature || 0.6, maxOutputTokens: 2048, // Increased token limit
-                    responseMimeType: "application/json", responseSchema: options.responseSchema
-                }
-            };
-            for (let attempt = 0; attempt < this.retryCount; attempt++) {
-                try {
-                    const responseText = await this.makeRequest(payload);
-                    try {
-                        return JSON.parse(responseText);
-                    } catch (parseError) {
-                        console.error("Failed to parse API response JSON:", responseText);
-                        throw new Error("The AI returned an invalid or incomplete response. This can happen if the input message is too long.");
-                    }
-                } catch (error) {
-                    if (attempt === this.retryCount - 1 || error.name === 'AbortError') throw error;
-                    await new Promise(resolve => setTimeout(resolve, this.retryDelay * Math.pow(2, attempt)));
-                }
-            }
+            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: options.temperature || 0.6, maxOutputTokens: 2048 } };
+            if(options.responseSchema) { payload.generationConfig.responseMimeType = "application/json"; payload.generationConfig.responseSchema = options.responseSchema; }
+            const responseText = await this._makeRequest(payload);
+            try { return options.responseSchema ? JSON.parse(responseText) : { summary: responseText }; } catch (e) { console.error("API JSON Parse Error:", responseText); throw new Error("The AI returned an invalid response."); }
         }
-        async makeRequest(payload) {
-            const apiKey = state.settings.apiKey;
-            if (!apiKey) throw new Error("API Key not set in Settings.");
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-            try {
-                const url = `${this.baseUrl}?key=${apiKey}`;
-                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal });
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(`API Error ${response.status}: ${errorData.error?.message || response.statusText}`);
-                }
-                const result = await response.json();
-                if (!result.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error('Invalid API response structure');
-                return result.candidates[0].content.parts[0].text;
-            } finally { clearTimeout(timeoutId); }
+        async _makeRequest(payload) {
+            if (!this.apiKey) throw new Error("API Key not set.");
+            for (let attempt = 0; attempt < CONFIG.API_RETRY_COUNT; attempt++) {
+                const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT_MS);
+                try {
+                    const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(`API Error ${response.status}: ${errorData.error?.message || response.statusText}`); }
+                    const result = await response.json();
+                    if (!result.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error('Invalid API response structure');
+                    return result.candidates[0].content.parts[0].text;
+                } catch (error) { clearTimeout(timeoutId); if (attempt === CONFIG.API_RETRY_COUNT - 1 || error.name === 'AbortError') throw error; await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt))); }
+            }
+            throw new Error("API request failed after multiple retries.");
         }
     }
 
+    class ApiManager {
+        constructor() {}
+        getClient() { if (!state.decryptedApiKey) throw new Error("API Key is not available. Please set it in Settings."); return new GeminiApiClient(state.decryptedApiKey); }
+        async call(prompt, options = {}) { return this.getClient().call(prompt, options); }
+    }
+
+    // LLM-AGENT-NOTE: This class is the "brain" of the application. It constructs prompts, calls the API via ApiManager, and processes results.
     class PersonalizedWorkplaceAgent {
-        constructor(apiClient, storage) {
-            this.apiClient = apiClient;
-            this.storage = storage;
-            this.personProfiles = new Map();
-        }
-        async analyze(message, userInput, personId, type) {
+        constructor(apiManager, storage, sessionManager) { this.apiManager = apiManager; this.storage = storage; this.sessionManager = sessionManager; this.personProfiles = new Map(); }
+        async analyze(message, userInput, personId, type, persona) {
             const personProfile = await this.getPersonProfile(personId);
-            const prompt = this.buildPrompt(message, userInput, personProfile, type);
-            const result = await this.apiClient.call(prompt, {
-                responseSchema: {
-                    type: "OBJECT",
-                    properties: {
-                        "analysis": {
-                            type: "OBJECT",
-                            properties: {
-                                "intent": { "type": "STRING" }, "risk": { "type": "STRING" },
-                                "perception_check": { "type": "STRING" }, "strategy": { "type": "STRING" },
-                                "profile_update": { "type": "STRING" }
-                            }
-                        },
-                        "responses": {
-                            type: "OBJECT",
-                            properties: { "diplomatic": { "type": "STRING" }, "professional": { "type": "STRING" }, "strategic": { "type": "STRING" }}
-                        }
-                    }
-                }
-            });
-            if (personId && result.analysis?.profile_update) {
-                await this.updatePersonProfile(personId, result.analysis.profile_update);
+            const session = this.sessionManager.getSession(personId);
+            const prompt = this._buildAnalysisPrompt(message, userInput, personProfile, type, persona, session?.history);
+            const result = await this.apiManager.call(prompt, { responseSchema: { type: "OBJECT", properties: { "analysis": { type: "OBJECT", properties: { "intent": { "type": "STRING" }, "risk": { "type": "STRING" }, "perception_check": { "type": "STRING" }, "strategy": { "type": "STRING" }, "unspoken_ask": {"type": "STRING"}, "reputation_impact": {"type": "STRING"} } }, "responses": { type: "ARRAY", items: { type: "OBJECT", properties: { "title": { "type": "STRING" }, "text": { "type": "STRING" } }, required: ["title", "text"] } } } } });
+            if (!validateAIResponse(result)) { throw new Error("AI returned an invalid or incomplete response."); }
+            if (personId) {
+                const fullUserMessage = [message, userInput].filter(Boolean).join('\n');
+                const safeAnalysis = {
+                   unspoken_ask: (result.analysis.unspoken_ask || '').slice(0, 300),
+                   strategy: (result.analysis.strategy || '').slice(0, 300),
+                   reputation_impact: (result.analysis.reputation_impact || '').slice(0, 300),
+                };
+                this.sessionManager.updateSession(personId, { 
+                  history: { role: 'user', content: fullUserMessage }, 
+                  insight: safeAnalysis.unspoken_ask
+                });
             }
             return result;
         }
-
-        buildPrompt(message, userInput, personProfile, type) {
-            const isCompose = !message;
-            const mode = isCompose ? 'Compose' : 'Response';
-            return `You are "The Strategic Gatekeeper," an elite AI specializing in workplace communication. Your mission is to protect the user's reputation.
-            <task>
-            Analyze the context. Use the general rules for the relationship TYPE as a baseline, then apply the specific learned profile of the PERSON as an overriding layer of context.
-            In ${mode} Mode, generate analysis and response drafts.
-            Crucially, provide a concise observation about the sender's behavior to build their profile.
-            Keep all analysis and responses concise and strictly adhere to the JSON schema.
-            </task>
-            <input>
-                <mode>${mode}</mode>
-                <context>
-                    <type>${type || 'Not specified'}</type>
-                    <person_name>${personProfile?.name || 'General'}</person_name>
-                    <learned_profile>${personProfile?.profile || 'No history yet.'}</learned_profile>
-                </context>
-                ${isCompose ? `<user_prompt>${userInput}</user_prompt>` : `<message_to_analyze>${message}</message_to_analyze><user_guidance>${userInput || 'Initial analysis.'}</user_guidance>`}
-            </input>`;
+        async summarizeSession(personId) {
+            if (!personId) return;
+            try {
+                const session = this.sessionManager.getSession(personId);
+                const profile = await this.getPersonProfile(personId);
+                if (!session || !profile || session.insights.length === 0) { this.sessionManager.clearSession(personId); return; }
+                const prompt = this._buildSummarizationPrompt(profile.summary, session.insights);
+                const result = await this.apiManager.call(prompt, { temperature: 0.2 });
+                if (result?.summary?.trim()) {
+                    if (/confidential|private|salary|personal/i.test(result.summary)) {
+                        const confirmed = await showConfirmationModal("Sensitive Data Detected", "The generated summary appears to contain sensitive information. Do you still want to save it to this person's local profile?");
+                        if (!confirmed) return;
+                    }
+                    profile.summary = result.summary.trim();
+                    await this.storage.savePersonProfile(personId, profile);
+                    this.personProfiles.set(personId, profile);
+                }
+                this.sessionManager.clearSession(personId);
+            } catch (error) { console.error('Session summarization failed:', error); }
         }
+        _sanitizePromptInput(content) { if (!content) return ''; return content.replace(/[<>]/g, match => ({ '<': '&lt;', '>': '&gt;' }[match])).replace(/```[\s\S]*?```/g, '[CODE_BLOCK_REMOVED]').replace(/{{.*?}}/g, '[TEMPLATE_REMOVED]').slice(0, 2000); }
         
-        async getPersonProfile(personId) {
-            if (!personId) return null;
-            if (this.personProfiles.has(personId)) return this.personProfiles.get(personId);
-            const stored = await this.storage.getPersonProfile(personId);
-            if (stored) {
-                this.personProfiles.set(personId, stored);
-                return stored;
+        // LLM-PROMPT-ENGINEERING: The following methods construct the final prompt sent to the AI. Edits here will directly impact AI performance, cost, and response quality.
+        _promptHeader(mode, persona) {
+            return `You are "The Strategic Gatekeeper," an elite AI specializing in workplace communication. Your current persona is "${persona}". <task>Analyze the context using long-term memory and short-term history. In ${mode} Mode, generate analysis and response drafts. Your analysis MUST include the "unspoken_ask" and the "reputation_impact". Based on your persona, generate 3 distinct response options, each with a "title" and "text". Keep all analysis and responses concise and strictly adhere to the JSON schema.</task>`;
+        }
+        _buildHistoryBlock(sessionHistory) {
+            if (!sessionHistory || sessionHistory.length === 0) return '';
+            return `<short_term_memory_conversation_history>${sessionHistory.map(h => `${h.role}: ${h.content}`).join('\n')}</short_term_memory_conversation_history>`;
+        }
+        _buildContextBlock(mode, type, personProfile, persona) {
+            return `<input><mode>${mode}</mode><persona>${persona}</persona><context><type>${type || 'Not specified'}</type><person_name>${personProfile?.name || 'General'}</person_name><long_term_memory_summary>${personProfile?.summary || 'No summary yet.'}</long_term_memory_summary></context>`;
+        }
+        _buildInputBlock(message, userInput, mode) {
+            const sanitizedMessage = this._sanitizePromptInput(message);
+            const sanitizedUserInput = this._sanitizePromptInput(userInput);
+            if (mode === 'Compose') {
+                return `<user_prompt>${sanitizedUserInput}</user_prompt></input>`;
             }
-            return null;
+            return `<message_to_analyze>${sanitizedMessage}</message_to_analyze><user_guidance>${sanitizedUserInput || 'Initial analysis.'}</user_guidance></input>`;
         }
-
-        async updatePersonProfile(personId, profileUpdate) {
-            const profile = await this.getPersonProfile(personId);
-            if (!profile) return;
-            const timestamp = new Date().toISOString().split('T')[0];
-            const newEntry = `\n- [${timestamp}] ${profileUpdate}`;
-            profile.profile = (profile.profile || '') + newEntry;
-            await this.storage.savePersonProfile(personId, profile);
-            this.personProfiles.set(personId, profile);
+        _buildAnalysisPrompt(message, userInput, personProfile, type, persona, sessionHistory) {
+            const mode = !message ? 'Compose' : 'Response';
+            const historyBlock = this._buildHistoryBlock(sessionHistory);
+            const contextBlock = this._buildContextBlock(mode, type, personProfile, persona);
+            const inputBlock = this._buildInputBlock(message, userInput, mode);
+            return `${this._promptHeader(mode, persona)}${historyBlock}${contextBlock}${inputBlock}\n\nCRITICAL: Respond ONLY with valid JSON matching the exact schema. No additional text, explanations, or markdown. If unable to comply, return {"error": "schema_violation"}.`;
         }
+        _buildSummarizationPrompt(existingSummary, newInsights) { return `You are a profile synthesizer. Your task is to integrate new information from a recent conversation into an existing personality summary. Maintain a concise, third-person, analytical tone. Combine the existing summary with the new insights into a single, coherent, updated summary paragraph. <existing_summary>${existingSummary || 'This is the first observation for this person.'}</existing_summary> <new_insights_from_conversation>${newInsights.join(' ')}</new_insights_from_conversation> Respond with only the updated summary paragraph.`; }
+        async getPersonProfile(personId) { if (!personId) return null; if (this.personProfiles.has(personId)) return this.personProfiles.get(personId); const stored = await this.storage.getPersonProfile(personId); if (stored) { this.personProfiles.set(personId, stored); return stored; } return null; }
     }
 
+    // LLM-UI-NOTE: The UIManager handles all direct DOM manipulation. Prefer methods like .textContent and .replaceChildren() over .innerHTML to prevent XSS vulnerabilities.
     const UIManager = {
-        init() { this.setLoading(false); this.updateClipboardStatus(state.isClipboardMonitoringActive); },
-        setLoading(isLoading) {
-             const display = isLoading ? 'flex' : 'none';
-             dom.translationLoader.style.display = display;
-             dom.outputLoader.style.display = display;
+        init() { this.updateUIState(false); this.updateClipboardStatus(state.isClipboardMonitoringActive); },
+        openModal(modalElement) {
+            focusedElementBeforeModal = document.activeElement;
+            modalElement.classList.remove('hidden');
+            activeModal = modalElement;
+            const firstFocusable = modalElement.querySelector('input, button, select, textarea');
+            if (firstFocusable) firstFocusable.focus();
         },
-        displayError(error) { dom.errorContainer.textContent = error.message; dom.errorContainer.classList.remove('hidden'); console.error(error); },
+        closeModal(modalElement) {
+            modalElement.classList.add('hidden');
+            if (activeModal === modalElement) activeModal = null;
+            if (focusedElementBeforeModal) focusedElementBeforeModal.focus();
+        },
+        updateUIState(isLoading = false) {
+            const isApiReady = !!state.decryptedApiKey;
+            const loaderDisplay = isLoading ? 'flex' : 'none';
+            dom.translationLoader.style.display = loaderDisplay;
+            dom.outputLoader.style.display = loaderDisplay;
+            const isLocked = isLoading || !isApiReady;
+            const controlsToLock = [dom.messageInput, dom.userInput, dom.personaSelector, dom.clipboardToggle, dom.relationshipTypeSelector, dom.personSelector, dom.managePeopleBtn, dom.endConversationBtn, dom.clearInputsBtn];
+            controlsToLock.forEach(c => c.disabled = isLocked);
+            if (!isLocked) {
+                const isRoleSelected = !!state.selectedRelationshipType;
+                dom.personSelector.disabled = !isRoleSelected;
+                dom.managePeopleBtn.disabled = !isRoleSelected;
+                const isPersonSelected = !!state.selectedPersonId;
+                dom.endConversationBtn.classList.toggle('hidden', !isPersonSelected);
+            } else {
+                dom.endConversationBtn.classList.add('hidden');
+            }
+            if (!isApiReady && !isLoading) {
+                dom.translationResult.textContent = 'Please set your API key in Settings to begin analysis.';
+                dom.optionsContainer.replaceChildren();
+                this.clearError();
+            }
+        },
+        displayError(error) {
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = sanitizeText(error.message);
+            dom.errorContainer.replaceChildren(messageSpan);
+            if (error.message.includes('API Key')) {
+                 const settingsBtn = document.createElement('button');
+                 settingsBtn.textContent = 'Open Settings';
+                 settingsBtn.onclick = () => dom.settingsBtn.click();
+                 dom.errorContainer.appendChild(document.createTextNode(' → '));
+                 dom.errorContainer.appendChild(settingsBtn);
+            }
+            dom.errorContainer.classList.remove('hidden');
+            console.error(error);
+        },
         clearError() { dom.errorContainer.classList.add('hidden'); },
         displayAnalysis(analysis) {
-            if (!analysis) { dom.translationResult.textContent = 'No analysis available.'; return; }
-            dom.translationResult.innerHTML = `
-                <details open>
-                    <summary>Core Analysis</summary>
-                    <p><strong>Intent:</strong> ${analysis.intent || 'N/A'}</p>
-                    <p><strong>Risk:</strong> <span class="${this.getRiskColor(analysis.risk)}">${analysis.risk || 'N/A'}</span></p>
-                    <p><strong>Perception Check:</strong> ${analysis.perception_check || 'N/A'}</p>
-                    <p><strong>Strategy:</strong> ${analysis.strategy || 'N/A'}</p>
-                </details>
-            `;
+            dom.translationResult.replaceChildren(); 
+            if (!analysis) { 
+                dom.translationResult.textContent = 'No analysis available.';
+                return;
+            }
+            const isRisky = analysis.risk && (analysis.risk.toLowerCase().includes('high') || analysis.risk.toLowerCase().includes('medium'));
+            if (!isRisky && !analysis.unspoken_ask) { 
+                dom.translationResult.textContent = 'No major risks or unspoken needs detected.';
+                dom.analysisSection.classList.remove('hidden');
+                return;
+            }
+            dom.analysisSection.classList.remove('hidden');
+            
+            const summary = document.createElement('div');
+            const strong = document.createElement('strong');
+            strong.textContent = "Bottom Line: ";
+            summary.appendChild(strong);
+            summary.append(sanitizeText(analysis.strategy || 'N/A'));
+            
+            const details = document.createElement('details');
+            const summaryEl = document.createElement('summary');
+            summaryEl.textContent = "More Details";
+
+            const container = document.createElement('div');
+            container.className = "prose-styles";
+
+            [
+              ["Risks", analysis.risk],
+              ["Unspoken Ask", analysis.unspoken_ask],
+              ["Reputation Impact", analysis.reputation_impact],
+              ["Perception Check", analysis.perception_check]
+            ].forEach(([label, value]) => {
+              if (value && value.toLowerCase() !== 'n/a' && value.toLowerCase() !== 'none') {
+                  const p = document.createElement('p');
+                  const strong = document.createElement('strong');
+                  strong.textContent = `${label}: `;
+                  p.appendChild(strong);
+                  
+                  if (label === 'Risks') {
+                      const span = document.createElement('span');
+                      span.className = this.getRiskColor(value);
+                      span.textContent = sanitizeText(value);
+                      p.appendChild(span);
+                  } else {
+                      p.append(sanitizeText(value));
+                  }
+                  container.appendChild(p);
+              }
+            });
+
+            details.append(summaryEl, container);
+            dom.translationResult.append(summary, details);
         },
         displayResponses(responses) {
-            dom.optionsContainer.innerHTML = '';
-            if (!responses) return;
-            Object.entries(responses).forEach(([key, value]) => {
+            dom.optionsContainer.replaceChildren();
+            if (!Array.isArray(responses)) return;
+            responses.forEach(response => {
                 const card = document.createElement('div');
                 card.className = 'response-card';
-                card.innerHTML = `<div class="response-card-header">
-                    <h4>${key}</h4>
-                    <button class="copy-btn btn" data-text="${escape(value)}">Copy</button>
-                </div><p>${value}</p>`;
+                const header = document.createElement('div');
+                header.className = 'response-card-header';
+                const title = document.createElement('h4');
+                title.textContent = response.title;
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn btn';
+                copyBtn.textContent = 'Copy';
+                copyBtn.dataset.text = response.text;
+                header.append(title, copyBtn);
+                const p = document.createElement('p');
+                p.textContent = response.text;
+                card.append(header, p);
                 dom.optionsContainer.appendChild(card);
             });
         },
-        updateClipboardStatus(isActive, message = null) {
-            dom.clipboardStatus.textContent = isActive ? 'Monitoring' : 'Paused';
-            dom.clipboardStatus.className = isActive ? 'text-success' : 'text-warning';
+        updateClipboardStatus(isActive, message = null, type = null) {
+            if (message) {
+                dom.clipboardStatus.textContent = message;
+                dom.clipboardStatus.className = type === 'danger' ? 'text-danger' : 'text-warning';
+            } else {
+                dom.clipboardStatus.textContent = isActive ? 'Monitoring' : 'Paused';
+                dom.clipboardStatus.className = isActive ? 'text-success' : 'text-warning';
+            }
         },
         getRiskColor(risk) { const r = (risk || '').toLowerCase(); if (r.includes('high')) return 'text-danger'; if (r.includes('medium')) return 'text-warning'; return 'text-success'; },
         async populatePeopleSelector(profiles) {
             const type = state.selectedRelationshipType;
-            if (!type || !Object.values(profiles).some(p => p.type === type)) {
-                 dom.personSelectorContainer.classList.add('hidden');
-                 return;
-            }
+            if (!type) { dom.personSelectorContainer.classList.add('hidden'); return; }
+            dom.personSelectorContainer.classList.remove('hidden');
             const peopleInType = Object.values(profiles).filter(p => p.type === type);
             dom.personSelector.innerHTML = `<option value="">-- General ${type} --</option>`;
             peopleInType.forEach(p => dom.personSelector.add(new Option(p.name, p.id)));
+            dom.personSelector.add(new Option('-- Add New Person --', 'add_new_person'));
             dom.personSelector.value = state.selectedPersonId || "";
-            dom.personSelectorContainer.classList.remove('hidden');
         },
         async renderPeopleList(profiles) {
-            dom.peopleList.innerHTML = '';
-            Object.values(profiles).forEach(p => {
+            dom.peopleList.replaceChildren();
+            Object.values(profiles).forEach(p => { 
                 const div = document.createElement('div');
                 div.className = 'person-item';
-                div.innerHTML = `<span>${p.name} (${p.type})</span><button class="btn btn-danger" data-id="${p.id}">Delete</button>`;
-                dom.peopleList.appendChild(div);
+                
+                const header = document.createElement('div');
+                header.className = "person-item-header";
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = `${p.name} (${p.type})`;
+                
+                const controlsDiv = document.createElement('div');
+                controlsDiv.className = "person-controls";
+
+                const profileBtn = document.createElement('button');
+                profileBtn.className = "btn view-profile-btn";
+                profileBtn.dataset.id = p.id;
+                profileBtn.textContent = "Profile";
+
+                const delBtn = document.createElement('button');
+                delBtn.className = "btn btn-danger";
+                delBtn.dataset.id = p.id;
+                delBtn.textContent = "Delete";
+
+                controlsDiv.append(profileBtn, delBtn);
+                header.append(nameSpan, controlsDiv);
+                div.append(header);
+                dom.peopleList.appendChild(div); 
             });
-        }
+        },
+        toggleProfileAccordion(personItem, personProfile) {
+            const existingDetails = personItem.querySelector('.profile-details');
+            if (existingDetails) { existingDetails.remove(); return; }
+            
+            const detailsDiv = document.createElement('div');
+            detailsDiv.className = 'profile-details';
+
+            const h4 = document.createElement('h4');
+            h4.textContent = "AI Summary";
+            detailsDiv.appendChild(h4);
+
+            if (personProfile.summary && personProfile.summary.length > CONFIG.PROFILE_SUMMARY_WARNING_LENGTH) {
+                const warnP = document.createElement('p');
+                warnP.className = "summary-warning";
+                warnP.textContent = "Note: This summary is becoming long. Consider editing for clarity and efficiency.";
+                detailsDiv.appendChild(warnP);
+            }
+
+            const summaryText = personProfile.summary || '';
+            const textarea = document.createElement('textarea');
+            textarea.id = `summary-${personProfile.id}`;
+            textarea.className = 'input-field';
+            textarea.rows = 6;
+            textarea.value = summaryText;
+
+            const charCountP = document.createElement('p');
+            charCountP.className = 'summary-char-count';
+            charCountP.id = `count-${personProfile.id}`;
+            charCountP.textContent = `${summaryText.length} / ${CONFIG.PROFILE_SUMMARY_WARNING_LENGTH}`;
+
+            textarea.addEventListener('input', () => { 
+                charCountP.textContent = `${textarea.value.length} / ${CONFIG.PROFILE_SUMMARY_WARNING_LENGTH}`; 
+            });
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'modal-actions';
+            actionsDiv.style.marginTop = '0.5rem';
+
+            const saveBtn = document.createElement('button');
+            saveBtn.className = "btn btn-primary save-profile-btn";
+            saveBtn.dataset.id = personProfile.id;
+            saveBtn.textContent = "Save Profile";
+
+            actionsDiv.appendChild(saveBtn);
+            detailsDiv.append(textarea, charCountP, actionsDiv);
+            personItem.appendChild(detailsDiv);
+        },
+        updateContextualControls(personId) { dom.endConversationBtn.classList.toggle('hidden', !personId); },
+        updateEphemeralBadge() { dom.ephemeralBadge.classList.toggle('hidden', !state.ephemeralMode); }
     };
     
     const storage = new ProfileStorage();
-    const apiClient = new EnhancedApiClient();
-    const agent = new PersonalizedWorkplaceAgent(apiClient, storage);
+    const sessionManager = new SessionManager();
+    const apiManager = new ApiManager();
+    const agent = new PersonalizedWorkplaceAgent(apiManager, storage, sessionManager);
 
     async function handleAnalysisRequest() {
-        if (!state.selectedRelationshipType) { 
-            dom.translationResult.textContent = 'Please select a relationship type to begin analysis.';
-            return; 
-        }
-        if (!state.detectedMessage.trim()) {
-            dom.translationResult.textContent = 'Awaiting input...';
-            return;
-        }
-        UIManager.setLoading(true);
-        UIManager.clearError();
-        dom.translationResult.textContent = 'Analyzing...';
-        dom.optionsContainer.innerHTML = '';
-        try {
-            const result = await agent.analyze(state.detectedMessage, dom.userInput.value, state.selectedPersonId, state.selectedRelationshipType);
-            UIManager.displayAnalysis(result.analysis);
-            UIManager.displayResponses(result.responses);
-        } catch (error) {
-            UIManager.displayError(error);
-            dom.translationResult.textContent = 'An error occurred during analysis.';
-        } finally {
-            UIManager.setLoading(false);
-        }
+        if (!state.decryptedApiKey) { UIManager.displayError(new Error("API Key is not unlocked. Please check settings.")); return; }
+        if (!state.detectedMessage.trim() && !dom.userInput.value.trim()) { dom.translationResult.textContent = 'Ready for analysis. Paste a message above to begin.'; dom.analysisSection.classList.remove('hidden'); return; }
+        UIManager.updateUIState(true); UIManager.clearError();
+        dom.translationResult.textContent = 'Analyzing...'; dom.optionsContainer.replaceChildren();
+        try { const result = await agent.analyze(state.detectedMessage, dom.userInput.value, state.selectedPersonId, state.selectedRelationshipType, state.selectedPersona); UIManager.displayAnalysis(result.analysis); UIManager.displayResponses(result.responses); } catch (error) { UIManager.displayError(error); dom.translationResult.textContent = `An error occurred.`; dom.analysisSection.classList.remove('hidden'); } finally { UIManager.updateUIState(false); }
     }
     
-    async function startClipboardMonitor() {
-        setInterval(async () => {
-            if (!state.isClipboardMonitoringActive || !document.hasFocus()) return;
-            try {
-                const text = await navigator.clipboard.readText();
-                if (text && text.trim() && text !== state.lastClipboardContent) {
-                    state.lastClipboardContent = text;
-                    state.detectedMessage = text;
-                    dom.messageInput.value = text;
-                    if (state.selectedRelationshipType) handleAnalysisRequest();
-                }
-            } catch (err) { /* Fail silently */ }
-        }, 1500);
+    function loadSettings() { const saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SETTINGS) || '{}'); state.settings.onboardingDismissed = saved.onboardingDismissed || false; state.ephemeralMode = saved.ephemeralMode || false; if(saved.providers && saved.providers.gemini && saved.providers.gemini.encryptedKey) { state.settings.providers.gemini.encryptedKey = saved.providers.gemini.encryptedKey; } UIManager.updateEphemeralBadge(); }
+    async function saveSettings() {
+        const apiKey = dom.geminiApiKeyInput.value;
+        const passphrase = dom.passphraseInput.value;
+        if (apiKey && !passphrase) { alert("A passphrase is required to save an API key."); return; }
+        
+        state.ephemeralMode = dom.ephemeralToggle.checked;
+        UIManager.updateEphemeralBadge();
+        const settingsToSave = { onboardingDismissed: true, ephemeralMode: state.ephemeralMode, providers: { gemini: { encryptedKey: null } } };
+
+        if (apiKey && passphrase) {
+            const encryptedKey = await encryptApiKey(apiKey, passphrase);
+            settingsToSave.providers.gemini.encryptedKey = encryptedKey;
+            state.settings.providers.gemini.encryptedKey = encryptedKey;
+            state.decryptedApiKey = apiKey;
+        }
+        if (!state.ephemeralMode) { localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(settingsToSave)); }
+        UIManager.closeModal(dom.settingsModal);
+        UIManager.updateUIState();
     }
-    
-    async function main() {
+    function renderSettings() { dom.geminiApiKeyInput.value = state.decryptedApiKey || ''; dom.ephemeralToggle.checked = state.ephemeralMode; dom.passphraseInput.value = ''; }
+    function isInsideSidebar() { return window.innerWidth <= CONFIG.SIDEBAR_MAX_WIDTH; }
+
+    async function initializeApp() {
         UIManager.init();
+        await UIManager.populatePeopleSelector(await storage.getAllProfiles());
+        const debouncedAnalysis = debounce(handleAnalysisRequest, CONFIG.DEBOUNCE_MS);
         
-        const savedSettings = JSON.parse(localStorage.getItem('sidebar_settings_v1') || '{}');
-        state.settings = { ...state.settings, ...savedSettings };
-        if (state.settings.apiKey) dom.apiKeyInput.value = state.settings.apiKey;
-
-        const profiles = await storage.getAllProfiles();
-        await UIManager.populatePeopleSelector(profiles);
-        
-        startClipboardMonitor();
-        
-        const debouncedAnalysis = debounce(handleAnalysisRequest, 1000);
-
-        dom.messageInput.addEventListener('input', () => {
-            state.detectedMessage = dom.messageInput.value;
-            debouncedAnalysis();
+        dom.messageInput.addEventListener('input', () => { state.detectedMessage = dom.messageInput.value; debouncedAnalysis(); });
+        dom.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); handleAnalysisRequest(); } else { debouncedAnalysis(); } });
+        dom.clipboardToggle.addEventListener('change', async (e) => {
+            state.isClipboardMonitoringActive = e.target.checked; 
+            if (state.isClipboardMonitoringActive) {
+                let permission;
+                try {
+                    permission = await navigator.permissions.query({ name: "clipboard-read" });
+                } catch {
+                    permission = { state: "granted" }; // Assume granted if API not supported
+                }
+                if (permission.state === 'denied') {
+                    state.isClipboardMonitoringActive = false;
+                    e.target.checked = false;
+                    UIManager.updateClipboardStatus(false, 'Permission Denied', 'danger');
+                    return;
+                }
+            }
+            UIManager.updateClipboardStatus(state.isClipboardMonitoringActive);
         });
-
-        dom.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); handleAnalysisRequest(); } });
-        dom.clipboardToggle.addEventListener('change', (e) => { state.isClipboardMonitoringActive = e.target.checked; UIManager.updateClipboardStatus(state.isClipboardMonitoringActive); });
+        dom.personaSelector.addEventListener('change', (e) => { state.selectedPersona = e.target.value; handleAnalysisRequest(); });
         
-        dom.relationshipTypeSelector.addEventListener('change', async (e) => {
-            state.selectedRelationshipType = e.target.value;
-            state.selectedPersonId = null;
-            const profiles = await storage.getAllProfiles();
-            await UIManager.populatePeopleSelector(profiles);
+        const handlePersonChange = async (oldPersonId) => {
+            try { 
+                if (oldPersonId) {
+                    UIManager.updateUIState(true); // Show loading state
+                    await agent.summarizeSession(oldPersonId); 
+                }
+            } catch (error) { 
+                console.warn('Failed to summarize session on person change:', error);
+                UIManager.displayError(new Error('Failed to save session summary'));
+            } finally {
+                UIManager.updateUIState(false); // Always restore UI state
+            }
+            state.selectedPersonId = dom.personSelector.value || null;
+            UIManager.updateUIState();
             handleAnalysisRequest();
+        };
+
+        dom.relationshipTypeSelector.addEventListener('change', async (e) => { await agent.summarizeSession(state.selectedPersonId); state.selectedRelationshipType = e.target.value; state.selectedPersonId = null; await UIManager.populatePeopleSelector(await storage.getAllProfiles()); UIManager.updateUIState(); handleAnalysisRequest(); });
+        
+        dom.personSelector.addEventListener('change', async () => {
+            if (dom.personSelector.value === 'add_new_person') {
+                await UIManager.renderPeopleList(await storage.getAllProfiles());
+                UIManager.openModal(dom.peopleModal);
+                dom.personSelector.value = state.selectedPersonId || "";
+            } else { handlePersonChange(state.selectedPersonId); }
         });
 
-        dom.personSelector.addEventListener('change', (e) => { 
-            state.selectedPersonId = e.target.value;
-            handleAnalysisRequest();
+        dom.clearInputsBtn.addEventListener('click', () => { 
+            state.detectedMessage = ''; 
+            dom.messageInput.value = ''; 
+            dom.userInput.value = ''; 
+            dom.translationResult.textContent = 'Ready for analysis. Paste a message above to begin.'; 
+            dom.optionsContainer.replaceChildren(); 
+            dom.analysisSection.classList.remove('hidden'); 
+            UIManager.clearError(); 
         });
+        dom.endConversationBtn.addEventListener('click', async () => { UIManager.updateUIState(true); await agent.summarizeSession(state.selectedPersonId); UIManager.updateUIState(false); });
 
-        dom.resetBtn.addEventListener('click', () => { 
-            state.sessionHistory = []; 
-            state.detectedMessage = '';
-            dom.messageInput.value = '';
-            dom.translationResult.innerHTML = 'Awaiting input...'; 
-            dom.optionsContainer.innerHTML = ''; 
+        dom.settingsBtn.addEventListener('click', () => { renderSettings(); UIManager.openModal(dom.settingsModal); });
+        dom.cancelSettingsBtn.addEventListener('click', () => UIManager.closeModal(dom.settingsModal));
+        dom.saveSettingsBtn.addEventListener('click', saveSettings);
+        dom.clearDataBtn.addEventListener('click', async () => {
+            if(await showConfirmationModal('Clear Data', 'Are you sure you want to delete ALL local data? This is irreversible.')) {
+                Object.values(CONFIG.STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+                window.location.reload();
+            }
         });
         
-        // Modals
-        dom.settingsBtn.addEventListener('click', () => dom.settingsModal.classList.remove('hidden'));
-        dom.cancelSettingsBtn.addEventListener('click', () => dom.settingsModal.classList.add('hidden'));
-        dom.saveSettingsBtn.addEventListener('click', () => { state.settings.apiKey = dom.apiKeyInput.value; localStorage.setItem('sidebar_settings_v1', JSON.stringify(state.settings)); dom.settingsModal.classList.add('hidden'); });
-        
-        dom.managePeopleBtn.addEventListener('click', async () => {
-            const profiles = await storage.getAllProfiles();
-            await UIManager.renderPeopleList(profiles);
-            dom.peopleModal.classList.remove('hidden');
-        });
-        dom.closePeopleBtn.addEventListener('click', () => dom.peopleModal.classList.add('hidden'));
+        dom.managePeopleBtn.addEventListener('click', async () => { await UIManager.renderPeopleList(await storage.getAllProfiles()); UIManager.openModal(dom.peopleModal); });
+        dom.closePeopleBtn.addEventListener('click', () => UIManager.closeModal(dom.peopleModal));
         dom.addPersonBtn.addEventListener('click', async () => {
+            const formGroup = dom.addPersonBtn.closest('.form-group');
+            const existingError = formGroup.querySelector('.error-message');
+            if (existingError) existingError.remove();
             const name = dom.newPersonName.value.trim();
-            if (!name || !state.selectedRelationshipType) { alert("Name and relationship type are required."); return; }
-            const id = `person_${Date.now()}`;
-            const newProfile = { id, name, type: state.selectedRelationshipType, profile: `Profile created for ${name}.`, interactionHistory: [] };
+            if (!name || !state.selectedRelationshipType) {
+                const errorSpan = document.createElement('div');
+                errorSpan.textContent = "A name must be entered and a role selected on the main screen.";
+                errorSpan.className = 'error-message';
+                formGroup.appendChild(errorSpan);
+                return;
+            }
+            const id = `person_${Date.now()}`; const newProfile = { id, name, type: state.selectedRelationshipType, summary: `Profile created for ${name}.` };
             await storage.savePersonProfile(id, newProfile);
             dom.newPersonName.value = '';
             const allProfiles = await storage.getAllProfiles();
@@ -589,32 +926,98 @@
             await UIManager.populatePeopleSelector(allProfiles);
         });
         dom.peopleList.addEventListener('click', async (e) => {
-            if (e.target.tagName === 'BUTTON' && e.target.dataset.id) {
-                if (window.confirm('Delete this person and all their data?')) {
-                    const profiles = await storage.getAllProfiles();
-                    const idToDelete = e.target.dataset.id;
-                    delete profiles[idToDelete];
-                    await storage.saveAllProfiles(profiles);
-                    if (state.selectedPersonId === idToDelete) state.selectedPersonId = null;
-                    await UIManager.renderPeopleList(profiles);
-                    await UIManager.populatePeopleSelector(profiles);
+            const button = e.target.closest('button'); if (!button) return;
+            const personId = button.dataset.id; const personItem = button.closest('.person-item');
+            if (button.classList.contains('view-profile-btn')) { const profile = await storage.getPersonProfile(personId); if(profile) UIManager.toggleProfileAccordion(personItem, profile); } 
+            else if (button.classList.contains('btn-danger')) { 
+                if (await showConfirmationModal("Delete Person", "Are you sure you want to delete this person and all their data? This cannot be undone.")) { 
+                    const profiles = await storage.getAllProfiles(); 
+                    delete profiles[personId]; 
+                    await storage.saveAllProfiles(profiles); 
+                    if (state.selectedPersonId === personId) state.selectedPersonId = null;
+                    await UIManager.renderPeopleList(profiles); 
+                    await UIManager.populatePeopleSelector(profiles); 
+                } 
+            }
+            else if (button.classList.contains('save-profile-btn')) {
+                const summaryTextarea = personItem.querySelector(`#summary-${personId}`);
+                const profile = await storage.getPersonProfile(personId); if (!profile) return;
+                profile.summary = summaryTextarea.value; 
+                await storage.savePersonProfile(personId, profile);
+                await UIManager.populatePeopleSelector(await storage.getAllProfiles());
+                button.textContent = 'Saved!'; 
+                setTimeout(() => { button.textContent = 'Save Profile'; }, 2000);
+            }
+        });
+
+        document.body.addEventListener('click', (e) => { const button = e.target.closest('.copy-btn'); if (button) { navigator.clipboard.writeText(button.dataset.text).then(() => { button.textContent = 'Copied!'; setTimeout(() => button.textContent = 'Copy', 2000); }).catch(err => { console.error("Failed to copy text:", err); }); } });
+        
+        setInterval(() => { if (state.isClipboardMonitoringActive && document.hasFocus()) { navigator.clipboard.readText().then(text => { if (text && text.trim() && text !== state.lastClipboardContent) { state.lastClipboardContent = text; state.detectedMessage = text; dom.messageInput.value = text; debouncedAnalysis(); } }).catch(err => { state.isClipboardMonitoringActive = false; dom.clipboardToggle.checked = false; UIManager.updateClipboardStatus(false, 'Permission Denied', 'danger'); console.warn("Clipboard read permission may have been denied."); }); } }, CONFIG.CLIPBOARD_POLL_MS);
+    
+        // Accessibility: Focus trapping for modals
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && activeModal) UIManager.closeModal(activeModal);
+            if (e.key === 'Tab' && activeModal) {
+                const focusableElements = activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === firstElement) { lastElement.focus(); e.preventDefault(); }
+                } else {
+                    if (document.activeElement === lastElement) { firstElement.focus(); e.preventDefault(); }
                 }
             }
         });
-        document.body.addEventListener('click', async (e) => {
-            const button = e.target.closest('.copy-btn');
-            if (button) {
-                navigator.clipboard.writeText(unescape(button.dataset.text)).then(() => {
-                    button.textContent = 'Copied!';
-                    setTimeout(() => button.textContent = 'Copy', 2000);
-                });
-            }
-        });
+        UIManager.updateUIState();
     }
     
-    main();
+    async function main() {
+        loadSettings();
+        if (state.settings.providers.gemini.encryptedKey) {
+            UIManager.openModal(dom.unlockModal);
+            dom.unlockModal.querySelector('input').focus();
+            dom.unlockBtn.onclick = async () => {
+                const passphrase = dom.unlockPassphraseInput.value;
+                if (!passphrase) return;
+                
+                try {
+                    dom.unlockBtn.disabled = true;
+                    dom.unlockBtn.textContent = 'Unlocking...';
+                    
+                    const decrypted = await decryptApiKey(state.settings.providers.gemini.encryptedKey, passphrase);
+                    if (decrypted) {
+                        state.decryptedApiKey = decrypted;
+                        UIManager.closeModal(dom.unlockModal);
+                        initializeApp().catch(console.error);
+                    } else {
+                        alert('Incorrect passphrase.');
+                        dom.unlockPassphraseInput.value = '';
+                    }
+                } catch (error) {
+                    console.error('Decryption error:', error);
+                    alert('Failed to decrypt API key. Please try again.');
+                } finally {
+                    dom.unlockBtn.disabled = false;
+                    dom.unlockBtn.textContent = 'Unlock';
+                }
+            };
+        } else if (!isInsideSidebar() && !state.settings.onboardingDismissed) {
+            dom.onboardingOverlay.classList.remove('hidden');
+            dom.dismissOnboardingBtn.addEventListener('click', () => {
+                state.settings.onboardingDismissed = true;
+                if(!state.ephemeralMode) localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify({onboardingDismissed: true}));
+                dom.onboardingOverlay.classList.add('hidden');
+                dom.app.classList.remove('hidden');
+                initializeApp().catch(console.error);
+            }, { once: true });
+        } else {
+            dom.app.classList.remove('hidden');
+            await initializeApp();
+        }
+    }
+    
+    main().catch(console.error);
     </script>
 </body>
 </html>
-
 
