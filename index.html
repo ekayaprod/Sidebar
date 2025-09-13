@@ -51,20 +51,20 @@
         .btn-primary:hover { filter: brightness(110%); }
         .btn-danger { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
         .btn-danger:hover { filter: brightness(110%); }
-        #clearInputsBtn, #settingsBtn { background: none; border: none; font-size: 0.75rem; color: var(--subtle-text); cursor: pointer; padding: 0.2rem; }
-        #settingsBtn { font-size: 1.1rem; }
-        #clearInputsBtn:hover, #settingsBtn:hover { color: var(--text-color); }
+        #clearInputsBtn, #settingsBtn, #globalManagePeopleBtn { background: none; border: none; font-size: 0.75rem; color: var(--subtle-text); cursor: pointer; padding: 0.2rem; }
+        #settingsBtn, #globalManagePeopleBtn { font-size: 1.1rem; }
+        #clearInputsBtn:hover, #settingsBtn:hover, #globalManagePeopleBtn:hover { color: var(--text-color); }
         
         #ephemeralBadge { font-size: 0.65rem; font-weight: 700; background-color: var(--warning-color); color: white; padding: 0.1rem 0.4rem; border-radius: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
 
         /* --- Specific UI Sections --- */
         .controls { display: flex; align-items: center; gap: 0.5rem; }
-        .section-header .controls { flex-grow: 1; justify-content: flex-end; flex-wrap: nowrap; } /* UX FIX: prevent wrapping */
+        .section-header .controls { flex-grow: 1; justify-content: flex-end; flex-wrap: nowrap; }
         textarea#messageInput { min-height: 60px; max-height: 120px; }
         #relationshipTypeSelector { flex-basis: 120px; flex-shrink: 1; }
         #personSelectorContainer { display: flex; flex-grow: 1; gap: 0.5rem; align-items: center; min-width: 100px; }
         #personSelector { flex-grow: 1; }
-        #personaSelector { max-width: 120px; } /* UX FIX */
+        #personaSelector { max-width: 120px; }
         .loader { display: none; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--subtle-text); }
         .loader-dot { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -76,6 +76,7 @@
         #apiKeyCta p { margin: 0 0 0.75rem 0; color: var(--text-color); }
         .prose-styles p { margin: 0 0 0.75rem; line-height: 1.5; color: var(--text-color); }
         .prose-styles strong { color: var(--subtle-text); font-weight: 600; }
+        .empty-state-text { color: var(--subtle-text); text-align: center; padding: 1rem; }
         #optionsContainer { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
         .response-card { padding: 0.75rem; border-radius: 0.375rem; background-color: var(--panel-bg); border: 1px solid var(--border-color); }
         .response-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
@@ -151,6 +152,7 @@
                         <span id="clipboardStatus"></span>
                         <label class="toggle-switch"><input type="checkbox" id="clipboardToggle"><span class="toggle-slider"></span></label>
                         <button id="clearInputsBtn" aria-label="Clear all inputs">Clear</button>
+                        <button id="globalManagePeopleBtn" title="Manage People" aria-label="Manage People">👥</button>
                         <button id="settingsBtn" title="Settings" aria-label="Open settings">⚙️</button>
                     </div>
                 </div>
@@ -159,10 +161,10 @@
             
             <section class="section">
                 <div class="section-header">
-                    <h2 class="section-title">Optional Context</h2>
+                    <h2 class="section-title">Your Goal or Message</h2>
                     <div id="contextControls" class="controls">
-                        <select id="relationshipTypeSelector">
-                            <option value="">Select Role...</option>
+                        <select id="relationshipTypeSelector" title="Telling the AI your relationship helps it tailor the tone.">
+                            <option value="">Select Relationship...</option>
                             <option value="Manager">Manager</option>
                             <option value="Teammate">Teammate</option>
                             <option value="Client">Client</option>
@@ -174,16 +176,15 @@
                         <div id="personSelectorContainer" class="hidden">
                             <select id="personSelector"></select>
                         </div>
-                         <button id="managePeopleBtn" class="btn hidden">Manage</button>
-                         <button id="endConversationBtn" class="btn hidden" title="Summarizes the current conversation into the person's long-term profile.">Save Session</button>
+                         <button id="endConversationBtn" class="btn hidden" title="Summarizes this conversation and adds it to the person's long-term profile.">Save Session</button>
                     </div>
                 </div>
-                <textarea id="userInput" class="input-field" rows="2" placeholder="Optional: Describe your goal..."></textarea>
+                <textarea id="userInput" class="input-field" rows="2" placeholder="Add context for a reply, or compose a new message..."></textarea>
             </section>
 
             <section id="analysisSection" class="section">
                 <div class="section-header">
-                    <h2 class="section-title">AI Analysis</h2>
+                    <h2 id="analysisTitle" class="section-title">AI Analysis</h2>
                     <div id="translationLoader" class="loader"><span class="loader-dot">●</span><span>Analyzing...</span></div>
                 </div>
                 <div id="translationResult" class="prose-styles"></div>
@@ -197,7 +198,7 @@
                 <div class="section-header">
                     <h2 class="section-title">Suggested Responses</h2>
                     <div class="controls">
-                        <select id="personaSelector">
+                        <select id="personaSelector" title="Choose a persona to change the communication style.">
                             <option value="gatekeeper" title="Protects your time and manages expectations.">Gatekeeper</option>
                             <option value="diplomat" selected title="Prioritizes harmony and de-escalates tension.">Diplomat</option>
                             <option value="challenger" title="Sets clear boundaries and respectfully pushes back.">Challenger</option>
@@ -219,19 +220,15 @@
             <div class="form-group">
                 <label for="geminiApiKeyInput">Google AI API Key</label>
                 <input type="password" id="geminiApiKeyInput" class="input-field" placeholder="Enter your API key">
+                <p>Your key is stored in this browser's local storage. Do not use this on a shared computer.</p>
                 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="help-link">How to get a Google AI API key?</a>
-            </div>
-             <div class="form-group">
-                <label for="passphraseInput">Encryption Passphrase</label>
-                <input type="password" id="passphraseInput" class="input-field" placeholder="Required to save/load key">
-                <p>A passphrase is used to encrypt your API key. It is never stored. You must re-enter it each session.</p>
             </div>
              <div class="form-group">
                 <label style="display: flex; align-items: center; gap: 0.5rem;">
                     <label class="toggle-switch"><input type="checkbox" id="ephemeralToggle"><span class="toggle-slider"></span></label>
                     <span>Ephemeral Mode</span>
                 </label>
-                 <p>When enabled, no profiles or session data will be saved to your device.</p>
+                 <p>When enabled, all profiles and session data are cleared when you close the app. Settings are still saved.</p>
              </div>
              <div class="form-group" style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
                 <label>Data Management</label>
@@ -251,26 +248,13 @@
                 <h3>Add New Person</h3>
                 <input type="text" id="newPersonName" class="input-field" placeholder="Person's Name" style="margin-bottom: 0.5rem;">
                 <div id="customRoleGroup" class="form-group hidden">
-                    <input type="text" id="newPersonRole" class="input-field" placeholder="Specify Role (e.g., Contractor)">
+                    <input type="text" id="newPersonRole" class="input-field" placeholder="Specify Relationship (e.g., Contractor)">
                 </div>
                 <button id="addPersonBtn" class="btn btn-primary">Add</button>
             </div>
             <div id="peopleList"></div>
             <div class="modal-actions">
                 <button id="closePeopleBtn" class="btn">Close</button>
-            </div>
-        </div>
-    </div>
-    <div id="unlockModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
-       <div class="modal-content">
-            <h2>Unlock API Key</h2>
-            <div class="form-group">
-                <label for="unlockPassphraseInput">Enter Passphrase</label>
-                <input type="password" id="unlockPassphraseInput" class="input-field">
-                <p>Your API key is encrypted. Enter your passphrase to unlock it for this session.</p>
-            </div>
-            <div class="modal-actions">
-                <button id="unlockBtn" class="btn btn-primary">Unlock</button>
             </div>
         </div>
     </div>
@@ -286,49 +270,27 @@
     </div>
     
     <script type="module">
-    /**************************************************************************************************
-     * LLM-EDITING-GUIDE (Updated Sept 2025)
-     *
-     * Welcome, AI assistant! This is a self-contained, single-file HTML application.
-     * Your goal is to modify this file safely and effectively. Please adhere to these rules:
-     *
-     * 1.  **SINGLE-FILE CONSTRAINT**: ALL HTML, CSS, and JavaScript logic MUST remain in this
-     * single `sidebar.html` file. Do not create or reference external files.
-     *
-     * 2.  **ARCHITECTURE**: The app uses a modular, class-based design.
-     * - `UIManager`: Handles ALL direct DOM manipulation.
-     * - `PersonalizedWorkplaceAgent`: The "brain" that builds prompts and processes AI responses.
-     * - `SessionManager` / `ProfileStorage`: Handle data persistence to localStorage.
-     * - `main()`: The entry point at the bottom of the script.
-     *
-     * 3.  **STATE MANAGEMENT**: A single global `state` object holds the application's live state.
-     * It is the single source of truth. Modify it directly as needed.
-     *
-     * 4.  **SECURITY IS PARAMOUNT**:
-     * - **NO `innerHTML`**: Avoid `element.innerHTML = ...` with user or AI-generated content.
-     * Use `element.textContent`, `element.append()`, and `document.createElement()` instead.
-     * The `sanitizeText()` function is a fallback for simple, controlled cases.
-     * - **CRITICAL FUNCTIONS**: `sanitizeText`, `encryptApiKey`, `validateAIResponse` are
-     * security-critical. Do not weaken or remove them.
-     *
-     * 5.  **PROMPT ENGINEERING**: The `_buildAnalysisPrompt` and its helper methods are sensitive.
-     * Changes here directly affect the AI's performance, cost, and response quality.
-     * Ensure prompts are clear, concise, and enforce the required JSON output format.
-     *
-     * 6.  **ENVIRONMENT**: This app is for the MS Edge sidebar ONLY. Modern JavaScript (ES2020+)
-     * and Web APIs are safe to use. No cross-browser compatibility code is needed.
-     **************************************************************************************************/
     'use strict';
 
     const CONFIG = {
         SESSION_TIME_WINDOW_MS: 10 * 60 * 1000,
-        STORAGE_KEYS: { PROFILES: 'sidebar_person_profiles_v9', SESSIONS: 'sidebar_conversation_sessions_v3', SETTINGS: 'sidebar_settings_v4' },
+        STORAGE_KEYS: { 
+            PROFILES: 'sidebar_person_profiles_v10', 
+            SESSIONS: 'sidebar_conversation_sessions_v4', 
+            SETTINGS: 'sidebar_settings_v5' 
+        },
+        OLD_STORAGE_KEYS: {
+            PROFILES: ['sidebar_person_profiles_v9', 'sidebar_person_profiles_v8'],
+            SESSIONS: ['sidebar_conversation_sessions_v3', 'sidebar_conversation_sessions_v2'],
+            SETTINGS: ['sidebar_settings_v4']
+        },
         API_RETRY_COUNT: 2, API_TIMEOUT_MS: 15000,
         SIDEBAR_MAX_WIDTH: 400,
         PROFILE_SUMMARY_WARNING_LENGTH: 1500,
         DEBOUNCE_MS: 500,
         CLIPBOARD_POLL_MS: 2000,
-        STANDARD_ROLES: ["Manager", "Teammate", "Client", "Direct Report", "Stakeholder", "Vendor"],
+        STANDARD_RELATIONSHIPS: ["Manager", "Teammate", "Client", "Direct Report", "Stakeholder", "Vendor"],
+        PROFILE_CACHE_MAX_SIZE: 50,
     };
 
     const dom = {
@@ -339,15 +301,16 @@
         personaSelector: document.getElementById('personaSelector'),
         personSelectorContainer: document.getElementById('personSelectorContainer'),
         clearInputsBtn: document.getElementById('clearInputsBtn'), settingsBtn: document.getElementById('settingsBtn'),
-        managePeopleBtn: document.getElementById('managePeopleBtn'), clipboardStatus: document.getElementById('clipboardStatus'),
+        globalManagePeopleBtn: document.getElementById('globalManagePeopleBtn'), clipboardStatus: document.getElementById('clipboardStatus'),
         ephemeralBadge: document.getElementById('ephemeralBadge'),
         translationLoader: document.getElementById('translationLoader'), translationResult: document.getElementById('translationResult'),
+        analysisTitle: document.getElementById('analysisTitle'),
         apiKeyCta: document.getElementById('apiKeyCta'), ctaSettingsBtn: document.getElementById('ctaSettingsBtn'),
         outputLoader: document.getElementById('outputLoader'), optionsContainer: document.getElementById('optionsContainer'),
         errorContainer: document.getElementById('errorContainer'), 
         contextControls: document.getElementById('contextControls'), endConversationBtn: document.getElementById('endConversationBtn'),
         settingsModal: document.getElementById('settingsModal'), geminiApiKeyInput: document.getElementById('geminiApiKeyInput'),
-        passphraseInput: document.getElementById('passphraseInput'), ephemeralToggle: document.getElementById('ephemeralToggle'),
+        ephemeralToggle: document.getElementById('ephemeralToggle'),
         clearDataBtn: document.getElementById('clearDataBtn'),
         saveSettingsBtn: document.getElementById('saveSettingsBtn'), cancelSettingsBtn: document.getElementById('cancelSettingsBtn'), 
         peopleModal: document.getElementById('peopleModal'), peopleList: document.getElementById('peopleList'), 
@@ -355,7 +318,6 @@
         customRoleGroup: document.getElementById('customRoleGroup'), newPersonRole: document.getElementById('newPersonRole'),
         closePeopleBtn: document.getElementById('closePeopleBtn'),
         analysisSection: document.getElementById('analysisSection'),
-        unlockModal: document.getElementById('unlockModal'), unlockPassphraseInput: document.getElementById('unlockPassphraseInput'), unlockBtn: document.getElementById('unlockBtn'),
         confirmModal: document.getElementById('confirmModal'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
         confirmCancelBtn: document.getElementById('confirmCancelBtn'), confirmOkBtn: document.getElementById('confirmOkBtn'),
     };
@@ -364,8 +326,7 @@
         detectedMessage: '', lastClipboardContent: '', isClipboardMonitoringActive: false,
         selectedPersonId: null, selectedRelationshipType: null, selectedPersona: 'diplomat',
         ephemeralMode: false,
-        settings: { selectedProvider: 'gemini', providers: { gemini: { encryptedKey: null } }, onboardingDismissed: false },
-        decryptedApiKey: null, // Held in memory only for the session
+        settings: { apiKey: null, onboardingDismissed: false },
     };
 
     let activeModal = null;
@@ -379,31 +340,6 @@
         };
     };
     function sanitizeText(str) { if (!str) return ''; return str.replace(/[&<>"']/g, (match) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' }[match])); }
-
-    async function encryptApiKey(apiKey, userPassphrase) {
-        const encoder = new TextEncoder();
-        const salt = crypto.getRandomValues(new Uint8Array(16));
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(userPassphrase), 'PBKDF2', false, ['deriveKey']);
-        const derivedKey = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
-        const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, derivedKey, encoder.encode(apiKey));
-        return { encryptedData: Array.from(new Uint8Array(encrypted)), salt: Array.from(salt), iv: Array.from(iv) };
-    }
-
-    async function decryptApiKey(encryptedData, userPassphrase) {
-        try {
-            const decoder = new TextDecoder();
-            const salt = new Uint8Array(encryptedData.salt);
-            const iv = new Uint8Array(encryptedData.iv);
-            const keyMaterial = await crypto.subtle.importKey('raw', (new TextEncoder()).encode(userPassphrase), 'PBKDF2', false, ['deriveKey']);
-            const derivedKey = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, derivedKey, new Uint8Array(encryptedData.encryptedData));
-            return decoder.decode(decrypted);
-        } catch (error) {
-            console.error("Decryption failed:", error);
-            return null;
-        }
-    }
 
     function showConfirmationModal(title, message) {
         return new Promise((resolve) => {
@@ -441,17 +377,22 @@
             if (!this._shouldPersist() || !personId) return null;
             const sessions = this._getSessions();
             const session = sessions[personId];
-            if (!session) return null;
-            const freshHistory = session.history.filter(h => Date.now() - h.timestamp < this.timeout);
-            if (freshHistory.length === 0) {
+            if (!session || (Date.now() - session.lastActivity > this.timeout)) {
                 this.clearSession(personId);
                 return null;
             }
-            sessions[personId].history = freshHistory;
-            this._saveSessions(sessions);
-            return sessions[personId];
+            return session;
         }
-        updateSession(personId, turnData) { if (!this._shouldPersist() || !personId) return; const sessions = this._getSessions(); let session = sessions[personId] || { history: [], insights: [] }; session.history.push({ ...turnData.history, timestamp: Date.now() }); session.insights.push(turnData.insight); sessions[personId] = session; this._saveSessions(sessions); }
+        updateSession(personId, turnData) { 
+            if (!this._shouldPersist() || !personId) return; 
+            const sessions = this._getSessions(); 
+            let session = sessions[personId] || { history: [], insights: [], lastActivity: 0 }; 
+            session.history.push({ ...turnData.history, timestamp: Date.now() }); 
+            session.insights.push(turnData.insight);
+            session.lastActivity = Date.now();
+            sessions[personId] = session; 
+            this._saveSessions(sessions); 
+        }
         clearSession(personId) { if (!this._shouldPersist() || !personId) return; const sessions = this._getSessions(); delete sessions[personId]; this._saveSessions(sessions); }
         _getSessions() { return JSON.parse(localStorage.getItem(this.storageKey) || '{}'); }
         _saveSessions(sessions) { localStorage.setItem(this.storageKey, JSON.stringify(sessions)); }
@@ -461,7 +402,20 @@
         constructor() { this.storageKey = CONFIG.STORAGE_KEYS.PROFILES; }
         _shouldPersist() { return !state.ephemeralMode; }
         async getPersonProfile(personId) { if (!this._shouldPersist()) return null; const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); return p[personId] || null; }
-        async savePersonProfile(personId, profile) { if (!this._shouldPersist()) return; const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); p[personId] = profile; localStorage.setItem(this.storageKey, JSON.stringify(p)); }
+        async savePersonProfile(personId, profile) { 
+            if (!this._shouldPersist()) return;
+            for (let i = 0; i < CONFIG.API_RETRY_COUNT; i++) {
+                try {
+                    const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); 
+                    p[personId] = profile; 
+                    localStorage.setItem(this.storageKey, JSON.stringify(p));
+                    return;
+                } catch (e) {
+                    if (i === CONFIG.API_RETRY_COUNT - 1) throw e;
+                    await new Promise(res => setTimeout(res, 100 * Math.pow(2, i)));
+                }
+            }
+        }
         async getAllProfiles() { if (!this._shouldPersist()) return {}; return JSON.parse(localStorage.getItem(this.storageKey) || '{}'); }
         async saveAllProfiles(profiles) { if (!this._shouldPersist()) return; localStorage.setItem(this.storageKey, JSON.stringify(profiles)); }
     }
@@ -472,18 +426,23 @@
             const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: options.temperature || 0.6, maxOutputTokens: 2048 } };
             if(options.responseSchema) { payload.generationConfig.responseMimeType = "application/json"; payload.generationConfig.responseSchema = options.responseSchema; }
             const responseText = await this._makeRequest(payload);
-            try { return options.responseSchema ? JSON.parse(responseText) : { summary: responseText }; } catch (e) { console.error("API JSON Parse Error:", responseText); throw new Error("The AI returned an invalid response."); }
+            try { return options.responseSchema ? JSON.parse(responseText) : { summary: responseText }; } catch (e) { console.error("API JSON Parse Error:", responseText); throw new Error("The AI returned an invalid response. Please try again."); }
         }
         async _makeRequest(payload) {
             if (!this.apiKey) throw new Error("API Key not set.");
             for (let attempt = 0; attempt < CONFIG.API_RETRY_COUNT; attempt++) {
                 const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT_MS);
                 try {
-                    const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal });
+                    const response = await fetch(this.baseUrl, { 
+                        method: 'POST', 
+                        headers: { 'X-Goog-Api-Key': this.apiKey, 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify(payload), 
+                        signal: controller.signal 
+                    });
                     clearTimeout(timeoutId);
                     if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(`API Error ${response.status}: ${errorData.error?.message || response.statusText}`); }
                     const result = await response.json();
-                    if (!result.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error('Invalid API response structure');
+                    if (!result.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error('Invalid API response structure received.');
                     return result.candidates[0].content.parts[0].text;
                 } catch (error) { clearTimeout(timeoutId); if (attempt === CONFIG.API_RETRY_COUNT - 1 || error.name === 'AbortError') throw error; await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt))); }
             }
@@ -493,7 +452,7 @@
 
     class ApiManager {
         constructor() {}
-        getClient() { if (!state.decryptedApiKey) throw new Error("API Key is not available. Please set it in Settings."); return new GeminiApiClient(state.decryptedApiKey); }
+        getClient() { if (!state.settings.apiKey) throw new Error("API Key is not available. Please set it in Settings."); return new GeminiApiClient(state.settings.apiKey); }
         async call(prompt, options = {}) { return this.getClient().call(prompt, options); }
     }
 
@@ -528,7 +487,7 @@
                     } 
                 } 
             });
-            if (!validateAIResponse(result)) { throw new Error("AI returned an invalid or incomplete response."); }
+            if (!validateAIResponse(result)) { throw new Error("AI returned an invalid response. Please try again."); }
             if (personId) {
                 const fullUserMessage = [message, userInput].filter(Boolean).join('\n');
                 const safeInsight = (result.analysis.insight || '').slice(0, 300);
@@ -557,9 +516,16 @@
                     this.personProfiles.set(personId, profile);
                 }
                 this.sessionManager.clearSession(personId);
-            } catch (error) { console.error('Session summarization failed:', error); }
+            } catch (error) { console.error('Session summarization failed:', error); throw new Error("Failed to save session summary."); }
         }
-        _sanitizePromptInput(content) { if (!content) return ''; return content.replace(/[<>]/g, match => ({ '<': '&lt;', '>': '&gt;' }[match])).replace(/```[\s\S]*?```/g, '[CODE_BLOCK_REMOVED]').replace(/{{.*?}}/g, '[TEMPLATE_REMOVED]').slice(0, 2000); }
+        _sanitizePromptInput(content) { 
+            if (!content) return ''; 
+            // Basic sanitization
+            let sanitized = content.replace(/[<>]/g, match => ({ '<': '&lt;', '>': '&gt;' }[match]));
+            // Attempt to remove common prompt injection prefixes
+            sanitized = sanitized.replace(/^(Ignore previous instructions|Disregard the above|Forget what you were told)[\s\S]*/i, '[POTENTIAL_INJECTION_REMOVED]');
+            return sanitized.slice(0, 2000);
+        }
         
         _promptHeader(mode, persona) {
             return `You are "The Strategic Gatekeeper," an elite AI specializing in workplace communication. Your current persona is "${persona}".
@@ -593,11 +559,28 @@
             return `${this._promptHeader(mode, persona)}${fullInput}`;
         }
         _buildSummarizationPrompt(existingSummary, newInsights) { return `You are a profile synthesizer. Your task is to integrate new information from a recent conversation into an existing personality summary. Maintain a concise, third-person, analytical tone. Combine the existing summary with the new insights into a single, coherent, updated summary paragraph. <existing_summary>${existingSummary || 'This is the first observation for this person.'}</existing_summary> <new_insights_from_conversation>${newInsights.join(' ')}</new_insights_from_conversation> Respond with only the updated summary paragraph.`; }
-        async getPersonProfile(personId) { if (!personId) return null; if (this.personProfiles.has(personId)) return this.personProfiles.get(personId); const stored = await this.storage.getPersonProfile(personId); if (stored) { this.personProfiles.set(personId, stored); return stored; } return null; }
+        async getPersonProfile(personId) { 
+            if (!personId) return null; 
+            if (this.personProfiles.has(personId)) {
+                const profile = this.personProfiles.get(personId);
+                this.personProfiles.delete(personId);
+                this.personProfiles.set(personId, profile);
+                return profile;
+            }
+            
+            if(this.personProfiles.size >= CONFIG.PROFILE_CACHE_MAX_SIZE) {
+                const oldestKey = this.personProfiles.keys().next().value;
+                this.personProfiles.delete(oldestKey);
+            }
+            
+            const stored = await this.storage.getPersonProfile(personId); 
+            if (stored) { this.personProfiles.set(personId, stored); return stored; } 
+            return null; 
+        }
     }
 
     const UIManager = {
-        init() { this.updateUIState(); this.updateClipboardStatus(state.isClipboardMonitoringActive); },
+        init() { this.updateUIState(); this.updateClipboardStatus(state.isClipboardMonitoringActive); this.setEmptyStateMessages(); },
         openModal(modalElement) {
             focusedElementBeforeModal = document.activeElement;
             modalElement.classList.remove('hidden');
@@ -615,13 +598,12 @@
             dom.translationLoader.style.display = loaderDisplay;
             dom.outputLoader.style.display = loaderDisplay;
 
-            const controlsToLock = [dom.messageInput, dom.userInput, dom.personaSelector, dom.clipboardToggle, dom.relationshipTypeSelector, dom.personSelector, dom.managePeopleBtn, dom.endConversationBtn, dom.clearInputsBtn];
+            const controlsToLock = [dom.messageInput, dom.userInput, dom.personaSelector, dom.clipboardToggle, dom.relationshipTypeSelector, dom.personSelector, dom.endConversationBtn, dom.clearInputsBtn];
             controlsToLock.forEach(c => c.disabled = isLoading);
             
             if (!isLoading) {
                  const isRoleSelected = !!state.selectedRelationshipType;
                 dom.personSelector.disabled = !isRoleSelected;
-                dom.managePeopleBtn.classList.toggle('hidden', !isRoleSelected);
                 const isPersonSelected = !!state.selectedPersonId;
                 dom.endConversationBtn.classList.toggle('hidden', !isPersonSelected);
             }
@@ -644,11 +626,17 @@
         showApiKeyCta() {
             dom.translationResult.classList.add('hidden');
             dom.apiKeyCta.classList.remove('hidden');
+            dom.optionsContainer.replaceChildren();
+            dom.analysisTitle.textContent = "AI Analysis";
         },
         hideApiKeyCta() {
             dom.translationResult.classList.remove('hidden');
             dom.apiKeyCta.classList.add('hidden');
-            dom.translationResult.textContent = 'Ready for analysis. Paste a message above to begin.';
+            this.setEmptyStateMessages();
+        },
+        setEmptyStateMessages() {
+            dom.translationResult.innerHTML = `<div class="empty-state-text">Analysis of your message will appear here.</div>`;
+            dom.optionsContainer.innerHTML = `<div class="empty-state-text">AI-generated responses tailored to your chosen persona will appear here.</div>`;
         },
         displayAnalysis(analysis) {
             dom.translationResult.replaceChildren(); 
@@ -699,7 +687,9 @@
                 dom.clipboardStatus.className = isActive ? 'text-success' : 'text-warning';
             }
         },
-        getRiskColor(risk) { const r = (risk || '').toLowerCase(); if (r.includes('high')) return 'text-danger'; if (r.includes('medium')) return 'text-warning'; return 'text-success'; },
+        updateAnalysisTitle(mode) {
+            dom.analysisTitle.textContent = mode === 'compose' ? "AI Suggestions for Your Message" : "AI Analysis";
+        },
         async populatePeopleSelector(profiles) {
             const type = state.selectedRelationshipType;
             if (!type) { dom.personSelectorContainer.classList.add('hidden'); return; }
@@ -708,7 +698,7 @@
             
             let peopleInType;
             if (type === 'Other') {
-                peopleInType = Object.values(profiles).filter(p => !CONFIG.STANDARD_ROLES.includes(p.type));
+                peopleInType = Object.values(profiles).filter(p => !CONFIG.STANDARD_RELATIONSHIPS.includes(p.type));
             } else {
                 peopleInType = Object.values(profiles).filter(p => p.type === type);
             }
@@ -806,38 +796,80 @@
     const agent = new PersonalizedWorkplaceAgent(apiManager, storage, sessionManager);
 
     async function handleAnalysisRequest() {
-        if (!state.decryptedApiKey) {
+        if (!state.settings.apiKey) {
             UIManager.showApiKeyCta();
             return;
         }
-        if (!state.detectedMessage.trim() && !dom.userInput.value.trim()) { dom.translationResult.textContent = 'Ready for analysis. Paste a message above to begin.'; dom.analysisSection.classList.remove('hidden'); return; }
+        
+        const mode = !state.detectedMessage.trim() ? 'compose' : 'analyze';
+        UIManager.updateAnalysisTitle(mode);
+
+        if (!state.detectedMessage.trim() && !dom.userInput.value.trim()) {
+            return; // Do nothing if no text is present
+        }
         UIManager.updateUIState(true); UIManager.clearError();
         dom.translationResult.textContent = 'Analyzing...'; dom.optionsContainer.replaceChildren();
-        try { const result = await agent.analyze(state.detectedMessage, dom.userInput.value, state.selectedPersonId, state.selectedRelationshipType, state.selectedPersona); UIManager.displayAnalysis(result.analysis); UIManager.displayResponses(result.responses); } catch (error) { UIManager.displayError(error); dom.translationResult.textContent = `An error occurred.`; dom.analysisSection.classList.remove('hidden'); } finally { UIManager.updateUIState(false); }
+        try { const result = await agent.analyze(state.detectedMessage, dom.userInput.value, state.selectedPersonId, state.selectedRelationshipType, state.selectedPersona); UIManager.displayAnalysis(result.analysis); UIManager.displayResponses(result.responses); } catch (error) { UIManager.displayError(error); dom.translationResult.textContent = `An error occurred.`; } finally { UIManager.updateUIState(false); }
     }
     
-    function loadSettings() { const saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SETTINGS) || '{}'); state.settings.onboardingDismissed = saved.onboardingDismissed || false; state.ephemeralMode = saved.ephemeralMode || false; if(saved.providers && saved.providers.gemini && saved.providers.gemini.encryptedKey) { state.settings.providers.gemini.encryptedKey = saved.providers.gemini.encryptedKey; } UIManager.updateEphemeralBadge(); }
+    function migrateStorage() {
+        for (const keyType in CONFIG.OLD_STORAGE_KEYS) {
+            const newKey = CONFIG.STORAGE_KEYS[keyType];
+            const oldKeys = CONFIG.OLD_STORAGE_KEYS[keyType];
+            
+            for (const oldKey of oldKeys) {
+                const oldData = localStorage.getItem(oldKey);
+                if (oldData) {
+                    if (!localStorage.getItem(newKey)) {
+                        localStorage.setItem(newKey, oldData);
+                    }
+                    localStorage.removeItem(oldKey);
+                }
+            }
+        }
+    }
+
+    function loadSettings() { 
+        migrateStorage();
+        const saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SETTINGS) || '{}');
+        state.settings.onboardingDismissed = saved.onboardingDismissed || false; 
+        state.ephemeralMode = saved.ephemeralMode || false; 
+        state.settings.apiKey = saved.apiKey || null;
+        UIManager.updateEphemeralBadge(); 
+    }
     async function saveSettings() {
         const apiKey = dom.geminiApiKeyInput.value;
-        const passphrase = dom.passphraseInput.value;
-        if (apiKey && !passphrase) { alert("A passphrase is required to save an API key."); return; }
-        
+        state.settings.apiKey = apiKey;
         state.ephemeralMode = dom.ephemeralToggle.checked;
         UIManager.updateEphemeralBadge();
-        const settingsToSave = { onboardingDismissed: true, ephemeralMode: state.ephemeralMode, providers: { gemini: { encryptedKey: null } } };
+        
+        const settingsToSave = { 
+            onboardingDismissed: true, 
+            ephemeralMode: state.ephemeralMode, 
+            apiKey: state.settings.apiKey 
+        };
 
-        if (apiKey && passphrase) {
-            const encryptedKey = await encryptApiKey(apiKey, passphrase);
-            settingsToSave.providers.gemini.encryptedKey = encryptedKey;
-            state.settings.providers.gemini.encryptedKey = encryptedKey;
-            state.decryptedApiKey = apiKey;
-            UIManager.hideApiKeyCta();
+        if (!state.ephemeralMode) { 
+            localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(settingsToSave)); 
         }
-        if (!state.ephemeralMode) { localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(settingsToSave)); }
         UIManager.closeModal(dom.settingsModal);
+        
+        const wasApiKeyMissing = !state.settings.apiKey;
+
+        if (state.settings.apiKey) {
+            UIManager.hideApiKeyCta();
+            if (wasApiKeyMissing) {
+                dom.translationResult.innerHTML = `<div class="empty-state-text"><strong>Welcome!</strong> Your API key is set. <br>1. Paste a message. <br>2. Set the context. <br>3. Get AI-powered responses.</div>`;
+            }
+        } else {
+            UIManager.showApiKeyCta();
+        }
         UIManager.updateUIState();
     }
-    function renderSettings() { dom.geminiApiKeyInput.value = state.decryptedApiKey || ''; dom.ephemeralToggle.checked = state.ephemeralMode; dom.passphraseInput.value = ''; }
+    function renderSettings() { 
+        dom.geminiApiKeyInput.value = state.settings.apiKey || ''; 
+        dom.ephemeralToggle.checked = state.ephemeralMode; 
+    }
     function isInsideSidebar() { return window.innerWidth <= CONFIG.SIDEBAR_MAX_WIDTH; }
 
     async function initializeApp() {
@@ -850,17 +882,16 @@
         dom.clipboardToggle.addEventListener('change', async (e) => {
             state.isClipboardMonitoringActive = e.target.checked; 
             if (state.isClipboardMonitoringActive) {
-                let permission;
                 try {
-                    permission = await navigator.permissions.query({ name: "clipboard-read" });
-                } catch {
-                    permission = { state: "granted" }; // Assume granted if API not supported
-                }
-                if (permission.state === 'denied') {
-                    state.isClipboardMonitoringActive = false;
-                    e.target.checked = false;
-                    UIManager.updateClipboardStatus(false, 'Permission Denied', 'danger');
-                    return;
+                    const permission = await navigator.permissions.query({ name: "clipboard-read" });
+                     if (permission.state === 'denied') {
+                        state.isClipboardMonitoringActive = false;
+                        e.target.checked = false;
+                        UIManager.updateClipboardStatus(false, 'Permission Denied', 'danger');
+                        return;
+                    }
+                } catch(err) {
+                   console.warn("Clipboard permissions query not supported; proceeding optimistically.");
                 }
             }
             UIManager.updateClipboardStatus(state.isClipboardMonitoringActive);
@@ -870,25 +901,37 @@
         const handlePersonChange = async (oldPersonId) => {
             try { 
                 if (oldPersonId) {
-                    UIManager.updateUIState(true); // Show loading state
+                    UIManager.updateUIState(true);
                     await agent.summarizeSession(oldPersonId); 
                 }
             } catch (error) { 
                 console.warn('Failed to summarize session on person change:', error);
-                UIManager.displayError(new Error('Failed to save session summary'));
+                UIManager.displayError(new Error('Failed to save session summary.'));
             } finally {
-                UIManager.updateUIState(false); // Always restore UI state
+                UIManager.updateUIState(false);
             }
             state.selectedPersonId = dom.personSelector.value || null;
             UIManager.updateUIState();
             handleAnalysisRequest();
         };
 
-        dom.relationshipTypeSelector.addEventListener('change', async (e) => { await agent.summarizeSession(state.selectedPersonId); state.selectedRelationshipType = e.target.value; state.selectedPersonId = null; await UIManager.populatePeopleSelector(await storage.getAllProfiles()); UIManager.updateUIState(); handleAnalysisRequest(); });
+        dom.relationshipTypeSelector.addEventListener('change', async (e) => { 
+            UIManager.updateUIState(true);
+            try {
+                await agent.summarizeSession(state.selectedPersonId); 
+            } catch(error) {
+                console.error("Summarization failed during relationship change:", error);
+                UIManager.displayError(new Error("Failed to save previous session."));
+            }
+            state.selectedRelationshipType = e.target.value; 
+            state.selectedPersonId = null; 
+            await UIManager.populatePeopleSelector(await storage.getAllProfiles()); 
+            UIManager.updateUIState(false); 
+        });
         
         dom.personSelector.addEventListener('change', async () => {
-            dom.customRoleGroup.classList.toggle('hidden', state.selectedRelationshipType !== 'Other');
             if (dom.personSelector.value === 'add_new_person') {
+                dom.customRoleGroup.classList.toggle('hidden', state.selectedRelationshipType !== 'Other');
                 await UIManager.renderPeopleList(await storage.getAllProfiles());
                 UIManager.openModal(dom.peopleModal);
                 dom.personSelector.value = state.selectedPersonId || "";
@@ -899,7 +942,7 @@
             state.detectedMessage = ''; 
             dom.messageInput.value = ''; 
             dom.userInput.value = ''; 
-            if(state.decryptedApiKey) UIManager.hideApiKeyCta();
+            if(state.settings.apiKey) UIManager.hideApiKeyCta();
             else UIManager.showApiKeyCta();
             dom.optionsContainer.replaceChildren(); 
             UIManager.clearError(); 
@@ -917,7 +960,7 @@
             }
         });
         
-        dom.managePeopleBtn.addEventListener('click', async () => {
+        dom.globalManagePeopleBtn.addEventListener('click', async () => {
             dom.customRoleGroup.classList.toggle('hidden', state.selectedRelationshipType !== 'Other');
             await UIManager.renderPeopleList(await storage.getAllProfiles()); 
             UIManager.openModal(dom.peopleModal); 
@@ -935,7 +978,7 @@
                 role = dom.newPersonRole.value.trim();
                 if (!role) {
                     const errorSpan = document.createElement('div');
-                    errorSpan.textContent = "Please specify a custom role.";
+                    errorSpan.textContent = "Please specify a custom relationship.";
                     errorSpan.className = 'error-message';
                     dom.customRoleGroup.appendChild(errorSpan);
                     return;
@@ -1008,50 +1051,21 @@
     
     async function main() {
         loadSettings();
-        if (state.settings.providers.gemini.encryptedKey) {
-            UIManager.openModal(dom.unlockModal);
-            dom.unlockModal.querySelector('input').focus();
-            dom.unlockBtn.onclick = async () => {
-                const passphrase = dom.unlockPassphraseInput.value;
-                if (!passphrase) return;
-                
-                try {
-                    dom.unlockBtn.disabled = true;
-                    dom.unlockBtn.textContent = 'Unlocking...';
-                    
-                    const decrypted = await decryptApiKey(state.settings.providers.gemini.encryptedKey, passphrase);
-                    if (decrypted) {
-                        state.decryptedApiKey = decrypted;
-                        UIManager.closeModal(dom.unlockModal);
-                        await initializeApp();
-                        UIManager.hideApiKeyCta();
-                    } else {
-                        alert('Incorrect passphrase.');
-                        dom.unlockPassphraseInput.value = '';
-                    }
-                } catch (error) {
-                    console.error('Decryption error:', error);
-                    alert('Failed to decrypt API key. Please try again.');
-                } finally {
-                    dom.unlockBtn.disabled = false;
-                    dom.unlockBtn.textContent = 'Unlock';
-                }
-            };
-        } else if (!isInsideSidebar() && !state.settings.onboardingDismissed) {
+        if (!isInsideSidebar() && !state.settings.onboardingDismissed) {
             dom.onboardingOverlay.classList.remove('hidden');
             dom.dismissOnboardingBtn.addEventListener('click', () => {
                 state.settings.onboardingDismissed = true;
-                if(!state.ephemeralMode) localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify({onboardingDismissed: true}));
+                if(!state.ephemeralMode) localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings));
                 dom.onboardingOverlay.classList.add('hidden');
                 dom.app.classList.remove('hidden');
                 initializeApp().then(() => {
-                    if (!state.decryptedApiKey) UIManager.showApiKeyCta();
+                    if (!state.settings.apiKey) UIManager.showApiKeyCta();
                 }).catch(console.error);
             }, { once: true });
         } else {
             dom.app.classList.remove('hidden');
             await initializeApp();
-            if (!state.decryptedApiKey) UIManager.showApiKeyCta();
+            if (!state.settings.apiKey) UIManager.showApiKeyCta();
         }
     }
     
