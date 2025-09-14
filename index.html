@@ -287,8 +287,9 @@
         SIDEBAR_MAX_WIDTH: 400,
         PROFILE_SUMMARY_WARNING_LENGTH: 1500,
         STANDARD_RELATIONSHIPS: ["Manager", "Teammate", "Client", "Direct Report", "Stakeholder", "Vendor"],
-        PROFILE_CACHE_MAX_SIZE: 50,
-        DEBOUNCE_MS_FAST: 400,
+        PROFILE_CACHE_MAX_SIZE: 20,
+        API_CACHE_MAX_SIZE: 20,
+        DEBOUNCE_MS_FAST: 800,
     };
     
     const PERSONA_CONFIGS = {
@@ -480,6 +481,11 @@
                 return cached.data;
             }
             const result = await this.getClient().call(prompt, options);
+
+            if (this.cache.size >= CONFIG.API_CACHE_MAX_SIZE) {
+                const oldestKey = this.cache.keys().next().value;
+                this.cache.delete(oldestKey);
+            }
             this.cache.set(key, { data: result, timestamp: Date.now() });
             return result;
         }
@@ -725,6 +731,15 @@ TONE: ${personaConfig.tone}
         dom.messageInput.addEventListener('input', () => { state.detectedMessage = dom.messageInput.value; updateUIMode(); });
         dom.userInput.addEventListener('input', () => { const hasMessage = dom.messageInput.value.trim().length > 0; if (hasMessage) { debouncedRefinement(); } else { updateUIMode(); } });
         dom.userInput.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); dom.analyzeBtn.click(); } });
+        
+        dom.userInput.addEventListener('blur', () => {
+            const hasContent = dom.messageInput.value.trim().length > 0 || dom.userInput.value.trim().length > 0;
+            // Avoid triggering if an analysis is already running or a modal is open.
+            if (hasContent && !operationInProgress && !activeModal) {
+                handleFullAnalysis();
+            }
+        });
+
         dom.analyzeBtn.addEventListener('click', () => handleFullAnalysis());
         dom.personaSelector.addEventListener('change', (e) => { state.selectedPersona = e.target.value; if (state.lastAnalysis) { handleResponseRefinement(); } });
         
@@ -748,7 +763,7 @@ TONE: ${personaConfig.tone}
             UIManager.updateUIState(true);
             try {
                 if (state.selectedPersonId) await agent.summarizeSession(state.selectedPersonId);
-                if (pendingPersonSwitch !== switchId) return; // Operation was superseded
+                if (pendingPersonSwitch !== switchId) return; // FIX: Second check after async operation to prevent race condition.
                 state.selectedPersonId = newPersonId === 'general' ? null : newPersonId;
             } catch (error) { console.warn('Failed to summarize session on person change:', error);
             } finally { operationInProgress = false; UIManager.updateUIState(false); }
@@ -802,7 +817,14 @@ TONE: ${personaConfig.tone}
         document.body.addEventListener('click', (e) => { const button = e.target.closest('.copy-btn'); if (button) { navigator.clipboard.writeText(button.dataset.text).then(() => { showToast("Copied to clipboard!", "success"); }).catch(err => { console.error("Failed to copy:", err); showToast("Could not copy text.", "error"); }); } });
         
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && activeModal) UIManager.closeModal(activeModal);
+            if (e.key === 'Escape' && activeModal) {
+                // FIX: Specifically handle the confirmation modal on Escape to ensure cleanup.
+                if (activeModal === dom.confirmModal) {
+                    dom.confirmCancelBtn.click();
+                } else {
+                    UIManager.closeModal(activeModal);
+                }
+            }
             if (e.key === 'Tab' && activeModal) {
                 const els = activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
                 const first = els[0], last = els[els.length - 1];
