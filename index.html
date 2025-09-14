@@ -30,11 +30,13 @@
             color: var(--text-color);
             font-size: 14px;
             display: flex;
+            overflow: hidden; /* Prevent body scroll with toasts */
         }
 
         /* --- Layout & Core Components --- */
         #app { width: 100%; height: 100vh; display: flex; flex-direction: column; padding: 0.75rem; box-sizing: border-box; gap: 0.5rem; }
         main { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 4px; }
+        footer { padding: 0.5rem 0; display: flex; justify-content: flex-end; gap: 0.5rem; flex-shrink: 0; }
         .section { background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.5rem; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
         .section-title { font-size: 0.9rem; font-weight: 600; margin: 0; white-space: nowrap; }
@@ -51,23 +53,20 @@
         .btn-primary:hover { filter: brightness(110%); }
         .btn-danger { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
         .btn-danger:hover { filter: brightness(110%); }
-        #clearInputsBtn, #settingsBtn, #globalManagePeopleBtn { background: none; border: none; font-size: 0.75rem; color: var(--subtle-text); cursor: pointer; padding: 0.2rem; }
-        #settingsBtn, #globalManagePeopleBtn { font-size: 1.1rem; }
-        #clearInputsBtn:hover, #settingsBtn:hover, #globalManagePeopleBtn:hover { color: var(--text-color); }
+        #clearInputsBtn, #settingsBtn { background: none; border: none; font-size: 1.1rem; color: var(--subtle-text); cursor: pointer; padding: 0.2rem; }
+        #clearInputsBtn:hover, #settingsBtn:hover { color: var(--text-color); }
         
-        #ephemeralBadge { font-size: 0.65rem; font-weight: 700; background-color: var(--warning-color); color: white; padding: 0.1rem 0.4rem; border-radius: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
-
         /* --- Specific UI Sections --- */
         .controls { display: flex; align-items: center; gap: 0.5rem; }
-        .section-header .controls { flex-grow: 1; justify-content: flex-end; flex-wrap: nowrap; }
+        .section-header .controls { flex-grow: 1; justify-content: flex-end; flex-wrap: nowrap; min-width: 0; }
         textarea#messageInput { min-height: 60px; max-height: 120px; }
-        #relationshipTypeSelector { flex-basis: 120px; flex-shrink: 1; }
-        #personSelectorContainer { display: flex; flex-grow: 1; gap: 0.5rem; align-items: center; min-width: 100px; }
-        #personSelector { flex-grow: 1; }
+        #recipientSelectorContainer { display: flex; flex-grow: 1; gap: 0.5rem; align-items: center; min-width: 100px; }
+        #recipientSelector { max-width: 120px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
         #personaSelector { max-width: 120px; }
         .loader { display: none; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--subtle-text); }
         .loader-dot { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .input-group { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
 
         /* --- Analysis & Response Display --- */
         #analysisSection { transition: all 0.3s ease-in-out; }
@@ -78,16 +77,15 @@
         .prose-styles strong { color: var(--subtle-text); font-weight: 600; }
         .empty-state-text { color: var(--subtle-text); text-align: center; padding: 1rem; }
         #optionsContainer { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
-        .response-card { padding: 0.75rem; border-radius: 0.375rem; background-color: var(--panel-bg); border: 1px solid var(--border-color); }
+        .response-card { padding: 0.75rem; border-radius: 0.375rem; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-left: 4px solid transparent; transition: border-color 0.2s; }
+        .response-card.primary { border-left: 4px solid var(--primary-color); background: linear-gradient(90deg, color-mix(in srgb, var(--primary-color) 5%, transparent) 0%, transparent 100%);}
         .response-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
         .response-card-header h4 { font-size: 0.8rem; font-weight: 700; color: var(--primary-color); }
-        .response-card p { font-size: 0.875rem; color: var(--text-color); margin: 0; white-space: pre-wrap; white-space: pre-line; }
-        #errorContainer { padding: 0.5rem; text-align: center; color: var(--danger-color); font-size: 0.875rem; }
-        #errorContainer button { font-size: inherit; text-decoration: underline; background: none; border: none; color: var(--primary-color); cursor: pointer; padding: 0; }
+        .response-card p { font-size: 0.875rem; color: var(--text-color); margin: 0; white-space: pre-wrap; white-space: pre-line; word-break: break-word; overflow-wrap: break-word; hyphens: auto; }
 
         /* --- Modals & Overlays --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(100,116,139,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--panel-bg); padding: 1.5rem; border-radius: 0.75rem; max-width: 95%; width: 420px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-content { background: var(--panel-bg); padding: 1.5rem; border-radius: 0.75rem; max-width: min(95vw, 420px); width: 420px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); display: flex; flex-direction: column; max-height: min(90vh, 600px); overflow-y: auto; }
         .modal-content h2 { margin: 0 0 1rem 0; font-size: 1.25rem; }
         .modal-content h3 { margin: 0 0 0.5rem 0; font-size: 0.9rem; font-weight: 600; }
         .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; flex-shrink: 0; }
@@ -105,6 +103,13 @@
         .summary-char-count { font-size: 0.75rem; color: var(--subtle-text); text-align: right; }
         .form-group .error-message { font-size: 0.75rem; color: var(--danger-color); margin-top: 0.25rem; }
         
+        /* --- Toast Notifications --- */
+        .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); padding: 0.75rem 1.25rem; border-radius: 0.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 0.875rem; z-index: 2000; transition: bottom 0.5s cubic-bezier(0.25, 1, 0.5, 1); color: white; }
+        .toast.show { bottom: 20px; }
+        .toast-error { background-color: var(--danger-color); }
+        .toast-success { background-color: var(--success-color); }
+        .toast-info { background-color: var(--primary-color); }
+
         #onboardingOverlay { position: fixed; inset: 0; background: var(--bg-color); z-index: 2000; padding: 2rem; color: var(--text-color); }
         #onboardingContent { max-width: 600px; margin: auto; }
         #onboardingContent h1 { font-size: 1.5rem; margin-bottom: 1rem; }
@@ -118,12 +123,22 @@
         .text-warning { color: var(--warning-color); }
         .text-danger { color: var(--danger-color); }
 
-        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; vertical-align: middle; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 24px; }
-        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .toggle-slider { background-color: var(--primary-color); }
-        input:checked + .toggle-slider:before { transform: translateX(20px); }
+        @media (max-width: 400px) {
+            .modal-content {
+                margin: 1rem;
+                padding: 1rem;
+            }
+        }
+        @media (max-width: 320px) {
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+            .controls {
+                justify-content: space-between;
+            }
+        }
     </style>
 </head>
 <body>
@@ -148,41 +163,26 @@
                 <div class="section-header">
                     <h2 class="section-title">Received Message</h2>
                      <div class="controls">
-                        <span id="ephemeralBadge" class="hidden">Ephemeral</span>
-                        <span id="clipboardStatus"></span>
-                        <label class="toggle-switch"><input type="checkbox" id="clipboardToggle"><span class="toggle-slider"></span></label>
-                        <button id="clearInputsBtn" aria-label="Clear all inputs">Clear</button>
-                        <button id="globalManagePeopleBtn" title="Manage People" aria-label="Manage People">👥</button>
-                        <button id="settingsBtn" title="Settings" aria-label="Open settings">⚙️</button>
+                        <div id="recipientSelectorContainer" class="hidden">
+                            <select id="recipientSelector"></select>
+                        </div>
                     </div>
                 </div>
                 <textarea id="messageInput" class="input-field" placeholder="Paste a message here to get started..."></textarea>
+                 <button id="analyzeBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" disabled>Analyze</button>
             </section>
             
             <section class="section">
                 <div class="section-header">
-                    <h2 class="section-title">Your Goal or Message</h2>
+                    <h2 id="userInputTitle" class="section-title">Add Context</h2>
                     <div id="contextControls" class="controls">
-                        <select id="relationshipTypeSelector" title="Telling the AI your relationship helps it tailor the tone.">
-                            <option value="">Select Relationship...</option>
-                            <option value="Manager">Manager</option>
-                            <option value="Teammate">Teammate</option>
-                            <option value="Client">Client</option>
-                            <option value="Direct Report">Direct Report</option>
-                            <option value="Stakeholder">Stakeholder</option>
-                            <option value="Vendor">Vendor</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        <div id="personSelectorContainer" class="hidden">
-                            <select id="personSelector"></select>
-                        </div>
                          <button id="endConversationBtn" class="btn hidden" title="Summarizes this conversation and adds it to the person's long-term profile.">Save Session</button>
                     </div>
                 </div>
-                <textarea id="userInput" class="input-field" rows="2" placeholder="Add context for a reply, or compose a new message..."></textarea>
+                <textarea id="userInput" class="input-field" rows="2" placeholder="What is your goal? (e.g., 'decline this politely')"></textarea>
             </section>
 
-            <section id="analysisSection" class="section">
+            <section id="analysisSection" class="section hidden">
                 <div class="section-header">
                     <h2 id="analysisTitle" class="section-title">AI Analysis</h2>
                     <div id="translationLoader" class="loader"><span class="loader-dot">●</span><span>Analyzing...</span></div>
@@ -194,23 +194,27 @@
                 </div>
             </section>
 
-            <section class="section">
+            <section id="responsesSection" class="section hidden">
                 <div class="section-header">
                     <h2 class="section-title">Suggested Responses</h2>
                     <div class="controls">
                         <select id="personaSelector" title="Choose a persona to change the communication style.">
-                            <option value="gatekeeper" title="Protects your time and manages expectations.">Gatekeeper</option>
                             <option value="diplomat" selected title="Prioritizes harmony and de-escalates tension.">Diplomat</option>
                             <option value="challenger" title="Sets clear boundaries and respectfully pushes back.">Challenger</option>
-                            <option value="strategist" title="Thinks two steps ahead to position you for success.">Strategist</option>
+                            <option value="coach" title="Empowers and guides through questioning and support.">Coach</option>
+                            <option value="visionary" title="Inspires action by focusing on long-term goals.">Visionary</option>
+                            <option value="pragmatist" title="Data-driven, direct, and focused on practical solutions.">Pragmatist</option>
                         </select>
                         <div id="outputLoader" class="loader"><span class="loader-dot">●</span><span>Generating...</span></div>
                     </div>
                 </div>
                 <div id="optionsContainer"></div>
-                <div id="errorContainer" class="hidden"></div>
             </section>
         </main>
+        <footer>
+            <button id="clearInputsBtn" title="Clear All Inputs" aria-label="Clear all inputs">🗑️</button>
+            <button id="settingsBtn" title="Settings" aria-label="Open settings">⚙️</button>
+        </footer>
     </div>
 
     <!-- Modals -->
@@ -223,15 +227,9 @@
                 <p>Your key is stored in this browser's local storage. Do not use this on a shared computer.</p>
                 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="help-link">How to get a Google AI API key?</a>
             </div>
-             <div class="form-group">
-                <label style="display: flex; align-items: center; gap: 0.5rem;">
-                    <label class="toggle-switch"><input type="checkbox" id="ephemeralToggle"><span class="toggle-slider"></span></label>
-                    <span>Ephemeral Mode</span>
-                </label>
-                 <p>When enabled, all profiles and session data are cleared when you close the app. Settings are still saved.</p>
-             </div>
              <div class="form-group" style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
                 <label>Data Management</label>
+                <button id="managePeopleSettingsBtn" class="btn">Manage People</button>
                 <button id="clearDataBtn" class="btn btn-danger">Clear All Local Data</button>
                 <p>This will permanently delete all saved profiles and session history from this browser.</p>
              </div>
@@ -247,6 +245,7 @@
             <div class="form-group">
                 <h3>Add New Person</h3>
                 <input type="text" id="newPersonName" class="input-field" placeholder="Person's Name" style="margin-bottom: 0.5rem;">
+                <select id="newPersonRelationshipType" class="input-field" style="margin-bottom: 0.5rem;"></select>
                 <div id="customRoleGroup" class="form-group hidden">
                     <input type="text" id="newPersonRole" class="input-field" placeholder="Specify Relationship (e.g., Contractor)">
                 </div>
@@ -275,87 +274,116 @@
     const CONFIG = {
         SESSION_TIME_WINDOW_MS: 10 * 60 * 1000,
         STORAGE_KEYS: { 
-            PROFILES: 'sidebar_person_profiles_v10', 
-            SESSIONS: 'sidebar_conversation_sessions_v4', 
-            SETTINGS: 'sidebar_settings_v5' 
+            PROFILES: 'sidebar_person_profiles_v11', 
+            SESSIONS: 'sidebar_conversation_sessions_v5', 
+            SETTINGS: 'sidebar_settings_v6' 
         },
         OLD_STORAGE_KEYS: {
-            PROFILES: ['sidebar_person_profiles_v9', 'sidebar_person_profiles_v8'],
-            SESSIONS: ['sidebar_conversation_sessions_v3', 'sidebar_conversation_sessions_v2'],
-            SETTINGS: ['sidebar_settings_v4']
+            PROFILES: ['sidebar_person_profiles_v10', 'sidebar_person_profiles_v9'],
+            SESSIONS: ['sidebar_conversation_sessions_v4', 'sidebar_conversation_sessions_v3'],
+            SETTINGS: ['sidebar_settings_v5']
         },
         API_RETRY_COUNT: 2, API_TIMEOUT_MS: 15000,
         SIDEBAR_MAX_WIDTH: 400,
         PROFILE_SUMMARY_WARNING_LENGTH: 1500,
-        DEBOUNCE_MS: 500,
-        CLIPBOARD_POLL_MS: 2000,
         STANDARD_RELATIONSHIPS: ["Manager", "Teammate", "Client", "Direct Report", "Stakeholder", "Vendor"],
         PROFILE_CACHE_MAX_SIZE: 50,
+        DEBOUNCE_MS_FAST: 400,
+    };
+    
+    const PERSONA_CONFIGS = {
+        diplomat: { traits: "prioritizes harmony, uses collaborative language, seeks win-win solutions", tone: "warm, inclusive, diplomatic" },
+        challenger: { traits: "sets clear boundaries, asks direct questions, pushes back respectfully", tone: "direct, confident, assertive" },
+        coach: { traits: "empowers and guides through questioning and support", tone: "supportive, inquisitive, guiding" },
+        visionary: { traits: "inspires action by focusing on long-term goals and possibilities", tone: "inspirational, forward-looking, passionate" },
+        pragmatist: { traits: "is data-driven, direct, and focused on practical, efficient solutions", tone: "analytical, straightforward, objective" }
     };
 
     const dom = {
         app: document.getElementById('app'), onboardingOverlay: document.getElementById('onboardingOverlay'), dismissOnboardingBtn: document.getElementById('dismissOnboardingBtn'),
         messageInput: document.getElementById('messageInput'), userInput: document.getElementById('userInput'),
-        clipboardToggle: document.getElementById('clipboardToggle'), personSelector: document.getElementById('personSelector'),
-        relationshipTypeSelector: document.getElementById('relationshipTypeSelector'),
+        userInputTitle: document.getElementById('userInputTitle'),
+        recipientSelector: document.getElementById('recipientSelector'),
         personaSelector: document.getElementById('personaSelector'),
-        personSelectorContainer: document.getElementById('personSelectorContainer'),
+        recipientSelectorContainer: document.getElementById('recipientSelectorContainer'),
         clearInputsBtn: document.getElementById('clearInputsBtn'), settingsBtn: document.getElementById('settingsBtn'),
-        globalManagePeopleBtn: document.getElementById('globalManagePeopleBtn'), clipboardStatus: document.getElementById('clipboardStatus'),
-        ephemeralBadge: document.getElementById('ephemeralBadge'),
         translationLoader: document.getElementById('translationLoader'), translationResult: document.getElementById('translationResult'),
         analysisTitle: document.getElementById('analysisTitle'),
+        analyzeBtn: document.getElementById('analyzeBtn'),
         apiKeyCta: document.getElementById('apiKeyCta'), ctaSettingsBtn: document.getElementById('ctaSettingsBtn'),
         outputLoader: document.getElementById('outputLoader'), optionsContainer: document.getElementById('optionsContainer'),
-        errorContainer: document.getElementById('errorContainer'), 
         contextControls: document.getElementById('contextControls'), endConversationBtn: document.getElementById('endConversationBtn'),
         settingsModal: document.getElementById('settingsModal'), geminiApiKeyInput: document.getElementById('geminiApiKeyInput'),
-        ephemeralToggle: document.getElementById('ephemeralToggle'),
         clearDataBtn: document.getElementById('clearDataBtn'),
+        managePeopleSettingsBtn: document.getElementById('managePeopleSettingsBtn'),
         saveSettingsBtn: document.getElementById('saveSettingsBtn'), cancelSettingsBtn: document.getElementById('cancelSettingsBtn'), 
         peopleModal: document.getElementById('peopleModal'), peopleList: document.getElementById('peopleList'), 
         newPersonName: document.getElementById('newPersonName'), addPersonBtn: document.getElementById('addPersonBtn'), 
+        newPersonRelationshipType: document.getElementById('newPersonRelationshipType'),
         customRoleGroup: document.getElementById('customRoleGroup'), newPersonRole: document.getElementById('newPersonRole'),
         closePeopleBtn: document.getElementById('closePeopleBtn'),
         analysisSection: document.getElementById('analysisSection'),
+        responsesSection: document.getElementById('responsesSection'),
         confirmModal: document.getElementById('confirmModal'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
         confirmCancelBtn: document.getElementById('confirmCancelBtn'), confirmOkBtn: document.getElementById('confirmOkBtn'),
     };
 
     let state = {
-        detectedMessage: '', lastClipboardContent: '', isClipboardMonitoringActive: false,
-        selectedPersonId: null, selectedRelationshipType: null, selectedPersona: 'diplomat',
-        ephemeralMode: false,
+        detectedMessage: '', lastClipboardContent: '',
+        selectedPersonId: null, selectedPersona: 'diplomat',
         settings: { apiKey: null, onboardingDismissed: false },
+        lastAnalysis: null,
     };
 
     let activeModal = null;
     let focusedElementBeforeModal = null;
-
+    let operationInProgress = false;
+    let renderQueued = false;
+    let pendingPersonSwitch = null;
+    
     const debounce = (fn, delay) => {
         let t;
-        return (...args) => {
+        const debounced = (...args) => {
             clearTimeout(t);
             t = setTimeout(() => fn(...args), delay);
         };
+        debounced.cancel = () => {
+            clearTimeout(t);
+        };
+        return debounced;
     };
-    function sanitizeText(str) { if (!str) return ''; return str.replace(/[&<>"']/g, (match) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' }[match])); }
+
+    function decodeHtmlEntities(text) {
+        if (!text) return '';
+        const ta = document.createElement('textarea');
+        ta.innerHTML = text;
+        return ta.value;
+    }
+
+    function showToast(message, type = 'info', duration = 4000) {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => document.body.removeChild(toast), 500);
+        }, duration);
+    }
 
     function showConfirmationModal(title, message) {
         return new Promise((resolve) => {
             dom.confirmTitle.textContent = title;
             dom.confirmMessage.textContent = message;
             UIManager.openModal(dom.confirmModal);
-
             const handleConfirm = () => { cleanup(); resolve(true); };
             const handleCancel = () => { cleanup(); resolve(false); };
-
             const cleanup = () => {
                 dom.confirmOkBtn.removeEventListener('click', handleConfirm);
                 dom.confirmCancelBtn.removeEventListener('click', handleCancel);
                 UIManager.closeModal(dom.confirmModal);
             };
-
             dom.confirmOkBtn.addEventListener('click', handleConfirm, { once: true });
             dom.confirmCancelBtn.addEventListener('click', handleCancel, { once: true });
         });
@@ -365,59 +393,47 @@
       if (!response || typeof response !== 'object') return false;
       if (!response.analysis || typeof response.analysis !== 'object') return false;
       if (!Array.isArray(response.responses)) return false;
-      const requiredAnalysisFields = ['insight', 'strategy'];
+      const requiredAnalysisFields = ['insight', 'strategy', 'risk'];
       if (!requiredAnalysisFields.every(field => typeof response.analysis[field] === 'string')) return false;
       return response.responses.every(r => r && typeof r.title === 'string' && typeof r.text === 'string' && r.title.length > 0 && r.text.length > 0);
+    }
+    
+    class LRUCache {
+        constructor(maxSize = 50) { this.maxSize = maxSize; this.cache = new Map(); }
+        get(key) { if (this.cache.has(key)) { const value = this.cache.get(key); this.cache.delete(key); this.cache.set(key, value); return value; } return null; }
+        set(key, value) { if (this.cache.has(key)) { this.cache.delete(key); } else if (this.cache.size >= this.maxSize) { const firstKey = this.cache.keys().next().value; this.cache.delete(firstKey); } this.cache.set(key, value); }
     }
 
     class SessionManager {
         constructor() { this.storageKey = CONFIG.STORAGE_KEYS.SESSIONS; this.timeout = CONFIG.SESSION_TIME_WINDOW_MS; }
-        _shouldPersist() { return !state.ephemeralMode; }
-        getSession(personId) {
-            if (!this._shouldPersist() || !personId) return null;
-            const sessions = this._getSessions();
-            const session = sessions[personId];
-            if (!session || (Date.now() - session.lastActivity > this.timeout)) {
-                this.clearSession(personId);
-                return null;
-            }
-            return session;
-        }
-        updateSession(personId, turnData) { 
-            if (!this._shouldPersist() || !personId) return; 
-            const sessions = this._getSessions(); 
-            let session = sessions[personId] || { history: [], insights: [], lastActivity: 0 }; 
-            session.history.push({ ...turnData.history, timestamp: Date.now() }); 
-            session.insights.push(turnData.insight);
-            session.lastActivity = Date.now();
-            sessions[personId] = session; 
-            this._saveSessions(sessions); 
-        }
-        clearSession(personId) { if (!this._shouldPersist() || !personId) return; const sessions = this._getSessions(); delete sessions[personId]; this._saveSessions(sessions); }
+        getSession(personId) { if (!personId) return null; const sessions = this._getSessions(); const session = sessions[personId]; if (!session || (Date.now() - session.lastActivity > this.timeout)) { this.clearSession(personId); return null; } return session; }
+        updateSession(personId, turnData) { if (!personId) return; const sessions = this._getSessions(); let session = sessions[personId] || { history: [], insights: [], lastActivity: 0 }; session.history.push({ ...turnData.history, timestamp: Date.now() }); session.insights.push(turnData.insight); session.lastActivity = Date.now(); sessions[personId] = session; this._saveSessions(sessions); }
+        clearSession(personId) { if (!personId) return; const sessions = this._getSessions(); delete sessions[personId]; this._saveSessions(sessions); }
         _getSessions() { return JSON.parse(localStorage.getItem(this.storageKey) || '{}'); }
         _saveSessions(sessions) { localStorage.setItem(this.storageKey, JSON.stringify(sessions)); }
     }
 
     class ProfileStorage {
-        constructor() { this.storageKey = CONFIG.STORAGE_KEYS.PROFILES; }
-        _shouldPersist() { return !state.ephemeralMode; }
-        async getPersonProfile(personId) { if (!this._shouldPersist()) return null; const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); return p[personId] || null; }
+        constructor() { this.storageKey = CONFIG.STORAGE_KEYS.PROFILES; this.writeQueue = []; this.writeTimer = null; }
+        async getPersonProfile(personId) { if (!personId) return null; const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); return p[personId] || null; }
         async savePersonProfile(personId, profile) { 
-            if (!this._shouldPersist()) return;
-            for (let i = 0; i < CONFIG.API_RETRY_COUNT; i++) {
-                try {
-                    const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); 
-                    p[personId] = profile; 
-                    localStorage.setItem(this.storageKey, JSON.stringify(p));
-                    return;
-                } catch (e) {
-                    if (i === CONFIG.API_RETRY_COUNT - 1) throw e;
-                    await new Promise(res => setTimeout(res, 100 * Math.pow(2, i)));
-                }
-            }
+            this.writeQueue.push({ personId, profile });
+            if (this.writeTimer) clearTimeout(this.writeTimer);
+            this.writeTimer = setTimeout(() => this._flushWrites(), 500);
         }
-        async getAllProfiles() { if (!this._shouldPersist()) return {}; return JSON.parse(localStorage.getItem(this.storageKey) || '{}'); }
-        async saveAllProfiles(profiles) { if (!this._shouldPersist()) return; localStorage.setItem(this.storageKey, JSON.stringify(profiles)); }
+        async _flushWrites() {
+            if (this.writeQueue.length === 0) return;
+            const profiles = await this.getAllProfiles();
+            this.writeQueue.forEach(({ personId, profile }) => {
+                profiles[personId] = this._compressProfile(profile);
+            });
+            await this.saveAllProfiles(profiles);
+            this.writeQueue = [];
+            showToast("Profiles saved.", "success", 2000);
+        }
+        async getAllProfiles() { return JSON.parse(localStorage.getItem(this.storageKey) || '{}'); }
+        async saveAllProfiles(profiles) { localStorage.setItem(this.storageKey, JSON.stringify(profiles)); }
+        _compressProfile(profile) { return { ...profile, summary: profile.summary?.slice(0, 2000), lastAccessed: Date.now() }; }
     }
     
     class GeminiApiClient {
@@ -426,19 +442,14 @@
             const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: options.temperature || 0.6, maxOutputTokens: 2048 } };
             if(options.responseSchema) { payload.generationConfig.responseMimeType = "application/json"; payload.generationConfig.responseSchema = options.responseSchema; }
             const responseText = await this._makeRequest(payload);
-            try { return options.responseSchema ? JSON.parse(responseText) : { summary: responseText }; } catch (e) { console.error("API JSON Parse Error:", responseText); throw new Error("The AI returned an invalid response. Please try again."); }
+            try { return JSON.parse(decodeHtmlEntities(responseText)); } catch (e) { console.error("API JSON Parse Error:", responseText); throw new Error("The AI returned an invalid response. Please try again."); }
         }
         async _makeRequest(payload) {
             if (!this.apiKey) throw new Error("API Key not set.");
             for (let attempt = 0; attempt < CONFIG.API_RETRY_COUNT; attempt++) {
                 const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT_MS);
                 try {
-                    const response = await fetch(this.baseUrl, { 
-                        method: 'POST', 
-                        headers: { 'X-Goog-Api-Key': this.apiKey, 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify(payload), 
-                        signal: controller.signal 
-                    });
+                    const response = await fetch(this.baseUrl, { method: 'POST', headers: { 'X-Goog-Api-Key': this.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal });
                     clearTimeout(timeoutId);
                     if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(`API Error ${response.status}: ${errorData.error?.message || response.statusText}`); }
                     const result = await response.json();
@@ -451,50 +462,44 @@
     }
 
     class ApiManager {
-        constructor() {}
+        constructor() { this.cache = new Map(); this.cacheTimeout = 5 * 60 * 1000; }
+        _hashPrompt(prompt, options) {
+            const str = JSON.stringify({ prompt, options });
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = (hash << 5) - hash + char;
+                hash |= 0; 
+            }
+            return hash;
+        }
+        async call(prompt, options = {}) {
+            const key = this._hashPrompt(prompt, options);
+            const cached = this.cache.get(key);
+            if (cached && (Date.now() - cached.timestamp < this.cacheTimeout)) {
+                return cached.data;
+            }
+            const result = await this.getClient().call(prompt, options);
+            this.cache.set(key, { data: result, timestamp: Date.now() });
+            return result;
+        }
         getClient() { if (!state.settings.apiKey) throw new Error("API Key is not available. Please set it in Settings."); return new GeminiApiClient(state.settings.apiKey); }
-        async call(prompt, options = {}) { return this.getClient().call(prompt, options); }
     }
 
     class PersonalizedWorkplaceAgent {
-        constructor(apiManager, storage, sessionManager) { this.apiManager = apiManager; this.storage = storage; this.sessionManager = sessionManager; this.personProfiles = new Map(); }
-        async analyze(message, userInput, personId, type, persona) {
+        constructor(apiManager, storage, sessionManager) { this.apiManager = apiManager; this.storage = storage; this.sessionManager = sessionManager; this.personProfiles = new LRUCache(CONFIG.PROFILE_CACHE_MAX_SIZE); }
+        async analyze(message, userInput, personId, persona) {
             const personProfile = await this.getPersonProfile(personId);
             const session = this.sessionManager.getSession(personId);
-            const prompt = this._buildAnalysisPrompt(message, userInput, personProfile, type, persona, session?.history);
+            const prompt = this._buildAnalysisPrompt(message, userInput, personProfile, persona, session?.history);
             const result = await this.apiManager.call(prompt, { 
-                responseSchema: { 
-                    type: "OBJECT", 
-                    properties: { 
-                        "analysis": { 
-                            type: "OBJECT", 
-                            properties: { 
-                                "insight": { "type": "STRING" }, 
-                                "strategy": { "type": "STRING" }
-                            } 
-                        }, 
-                        "responses": { 
-                            type: "ARRAY", 
-                            items: { 
-                                type: "OBJECT", 
-                                properties: { 
-                                    "title": { "type": "STRING" }, 
-                                    "text": { "type": "STRING" } 
-                                }, 
-                                required: ["title", "text"] 
-                            } 
-                        } 
-                    } 
-                } 
+                responseSchema: { type: "OBJECT", properties: { "analysis": { type: "OBJECT", properties: { "insight": { "type": "STRING" }, "strategy": { "type": "STRING" }, "risk": { "type": "STRING", "enum": ["Low", "Medium", "High", "None"] } } }, "responses": { type: "ARRAY", items: { type: "OBJECT", properties: { "title": { "type": "STRING" }, "text": { "type": "STRING" } }, required: ["title", "text"] } } } } 
             });
             if (!validateAIResponse(result)) { throw new Error("AI returned an invalid response. Please try again."); }
             if (personId) {
                 const fullUserMessage = [message, userInput].filter(Boolean).join('\n');
                 const safeInsight = (result.analysis.insight || '').slice(0, 300);
-                this.sessionManager.updateSession(personId, { 
-                  history: { role: 'user', content: fullUserMessage }, 
-                  insight: safeInsight
-                });
+                this.sessionManager.updateSession(personId, { history: { role: 'user', content: fullUserMessage }, insight: safeInsight });
             }
             return result;
         }
@@ -504,290 +509,158 @@
                 const session = this.sessionManager.getSession(personId);
                 const profile = await this.getPersonProfile(personId);
                 if (!session || !profile || session.insights.length === 0) { this.sessionManager.clearSession(personId); return; }
-                const prompt = this._buildSummarizationPrompt(profile.summary, session.insights);
-                const result = await this.apiManager.call(prompt, { temperature: 0.2 });
-                if (result?.summary?.trim()) {
-                    if (/confidential|private|salary|personal/i.test(result.summary)) {
-                        const confirmed = await showConfirmationModal("Sensitive Data Detected", "The generated summary appears to contain sensitive information. Do you still want to save it to this person's local profile?");
-                        if (!confirmed) return;
-                    }
-                    profile.summary = result.summary.trim();
+                
+                const prompt = `Update the existing profile with new insights. 
+MERGE STRATEGY: Preserve existing insights, add new distinctive patterns only.
+EXISTING: ${profile.summary}
+NEW INSIGHTS: ${session.insights.join(' ')}
+TASK: Return updated summary that preserves existing knowledge while adding new patterns. Respond ONLY with a JSON object with a "summary" key.`;
+
+                const result = await this.apiManager.call(prompt, { temperature: 0.1, responseSchema: { type: "OBJECT", properties: { "summary": { "type": "STRING" } } } });
+
+                const newSummary = result?.summary?.trim();
+                if (newSummary && !newSummary.toLowerCase().includes("no significant")) {
+                    profile.summary = newSummary;
                     await this.storage.savePersonProfile(personId, profile);
                     this.personProfiles.set(personId, profile);
                 }
                 this.sessionManager.clearSession(personId);
-            } catch (error) { console.error('Session summarization failed:', error); throw new Error("Failed to save session summary."); }
+            } catch (error) { console.error('Session summarization failed:', error); showToast("Failed to save session summary.", "error"); }
         }
-        _sanitizePromptInput(content) { 
-            if (!content) return ''; 
-            // Basic sanitization
-            let sanitized = content.replace(/[<>]/g, match => ({ '<': '&lt;', '>': '&gt;' }[match]));
-            // Attempt to remove common prompt injection prefixes
-            sanitized = sanitized.replace(/^(Ignore previous instructions|Disregard the above|Forget what you were told)[\s\S]*/i, '[POTENTIAL_INJECTION_REMOVED]');
-            return sanitized.slice(0, 2000);
+        _sanitizePromptInput(content) {
+            if (!content) return '';
+            return content
+                .replace(/[<>]/g, match => ({ '<': '&lt;', '>': '&gt;' }[match]))
+                .replace(/\{\{|\}\}/g, '')
+                .replace(/```[\s\S]*?```/g, '[CODE_BLOCK_REMOVED]')
+                .replace(/(system|assistant|user):/gi, '[ROLE_REMOVED]:')
+                .replace(/^\s*(ignore|disregard|forget|override|system|you are|act as|pretend).*$/gmi, '[INSTRUCTION_REMOVED]')
+                .slice(0, 1500)
+                .replace(/[\x00-\x1f\x7f-\x9f]/g, '');
         }
-        
         _promptHeader(mode, persona) {
+            const personaConfig = PERSONA_CONFIGS[persona] || PERSONA_CONFIGS.diplomat;
             return `You are "The Strategic Gatekeeper," an elite AI specializing in workplace communication. Your current persona is "${persona}".
+PERSONA TRAITS: ${personaConfig.traits}
+TONE: ${personaConfig.tone}
 <task>
-1.  **Analyze**: Create a concise analysis with two fields: "insight" (the core intent/unspoken ask) and "strategy" (the recommended action, risk, and reputation impact combined).
-2.  **Respond**: Generate 3 distinct response options. Each response must have a short "title" (1-3 words) and "text".
+1.  **Analyze**: Create a concise, single-sentence analysis for "insight" and "strategy". Also provide a "risk" level ("Low", "Medium", "High", or "None").
+2.  **Respond**: Generate 3 distinct response options. Each must have a short "title" (1-3 words) and "text".
 3.  **Format**: Respond ONLY with valid JSON matching the schema. No extra text or markdown.
 </task>`;
         }
-        _buildHistoryBlock(sessionHistory) {
-            if (!sessionHistory || sessionHistory.length === 0) return '';
-            return `<short_term_memory_conversation_history>${sessionHistory.map(h => `${h.role}: ${h.content}`).join('\n')}</short_term_memory_conversation_history>`;
-        }
-        _buildContext(type, personProfile) {
-            return `<context><type>${type || 'Not specified'}</type><person_name>${personProfile?.name || 'General'}</person_name><long_term_memory_summary>${personProfile?.summary || 'No summary yet.'}</long_term_memory_summary></context>`;
-        }
+        _buildHistoryBlock(sessionHistory) { if (!sessionHistory || sessionHistory.length === 0) return ''; return `<short_term_memory_conversation_history>${sessionHistory.map(h => `${h.role}: ${h.content}`).join('\n')}</short_term_memory_conversation_history>`; }
+        _buildContext(personProfile) { return `<context><person_name>${personProfile?.name || 'General'}</person_name><relationship>${personProfile?.type || 'Not specified'}</relationship><long_term_memory_summary>${personProfile?.summary || 'No summary yet.'}</long_term_memory_summary></context>`; }
         _buildUserInput(message, userInput, mode) {
             const sanitizedMessage = this._sanitizePromptInput(message);
             const sanitizedUserInput = this._sanitizePromptInput(userInput);
-            if (mode === 'Compose') {
-                return `<user_prompt>${sanitizedUserInput}</user_prompt>`;
-            }
+            if (mode === 'Compose') return `<user_prompt>${sanitizedUserInput}</user_prompt>`;
             return `<message_to_analyze>${sanitizedMessage}</message_to_analyze><user_guidance>${sanitizedUserInput || 'Initial analysis.'}</user_guidance>`;
         }
-        _buildAnalysisPrompt(message, userInput, personProfile, type, persona, sessionHistory) {
+        _buildAnalysisPrompt(message, userInput, personProfile, persona, sessionHistory) {
             const mode = !message ? 'Compose' : 'Response';
-            const historyBlock = this._buildHistoryBlock(sessionHistory);
-            const contextBlock = this._buildContext(type, personProfile);
-            const inputBlock = this._buildUserInput(message, userInput, mode);
-            const fullInput = `<input><mode>${mode}</mode><persona>${persona}</persona>${historyBlock}${contextBlock}${inputBlock}</input>`;
+            const maxHistoryItems = 5;
+            const recentHistory = sessionHistory ? sessionHistory.slice(-maxHistoryItems) : [];
+            const contextPriority = [
+                this._buildUserInput(message, userInput, mode),
+                this._buildContext(personProfile),
+                this._buildHistoryBlock(recentHistory)
+            ];
+            const fullInput = `<input><mode>${mode}</mode><persona>${persona}</persona>${contextPriority.join('')}</input>`;
             return `${this._promptHeader(mode, persona)}${fullInput}`;
         }
-        _buildSummarizationPrompt(existingSummary, newInsights) { return `You are a profile synthesizer. Your task is to integrate new information from a recent conversation into an existing personality summary. Maintain a concise, third-person, analytical tone. Combine the existing summary with the new insights into a single, coherent, updated summary paragraph. <existing_summary>${existingSummary || 'This is the first observation for this person.'}</existing_summary> <new_insights_from_conversation>${newInsights.join(' ')}</new_insights_from_conversation> Respond with only the updated summary paragraph.`; }
         async getPersonProfile(personId) { 
             if (!personId) return null; 
-            if (this.personProfiles.has(personId)) {
-                const profile = this.personProfiles.get(personId);
-                this.personProfiles.delete(personId);
-                this.personProfiles.set(personId, profile);
-                return profile;
-            }
-            
-            if(this.personProfiles.size >= CONFIG.PROFILE_CACHE_MAX_SIZE) {
-                const oldestKey = this.personProfiles.keys().next().value;
-                this.personProfiles.delete(oldestKey);
-            }
-            
-            const stored = await this.storage.getPersonProfile(personId); 
-            if (stored) { this.personProfiles.set(personId, stored); return stored; } 
+            const cached = this.personProfiles.get(personId); if (cached) return cached;
+            const stored = await this.storage.getPersonProfile(personId); if (stored) { this.personProfiles.set(personId, stored); return stored; } 
             return null; 
         }
     }
 
     const UIManager = {
-        init() { this.updateUIState(); this.updateClipboardStatus(state.isClipboardMonitoringActive); this.setEmptyStateMessages(); },
-        openModal(modalElement) {
-            focusedElementBeforeModal = document.activeElement;
-            modalElement.classList.remove('hidden');
-            activeModal = modalElement;
-            const firstFocusable = modalElement.querySelector('input, button, select, textarea');
-            if (firstFocusable) firstFocusable.focus();
-        },
-        closeModal(modalElement) {
-            modalElement.classList.add('hidden');
-            if (activeModal === modalElement) activeModal = null;
-            if (focusedElementBeforeModal) focusedElementBeforeModal.focus();
-        },
+        init() { this.setEmptyStateMessages(); },
+        openModal(modalElement) { focusedElementBeforeModal = document.activeElement; modalElement.classList.remove('hidden'); activeModal = modalElement; const firstFocusable = modalElement.querySelector('input, button, select, textarea'); if (firstFocusable) firstFocusable.focus(); },
+        closeModal(modalElement) { modalElement.classList.add('hidden'); if (activeModal === modalElement) activeModal = null; if (focusedElementBeforeModal) focusedElementBeforeModal.focus(); },
         updateUIState(isLoading = false) {
             const loaderDisplay = isLoading ? 'flex' : 'none';
             dom.translationLoader.style.display = loaderDisplay;
             dom.outputLoader.style.display = loaderDisplay;
-
-            const controlsToLock = [dom.messageInput, dom.userInput, dom.personaSelector, dom.clipboardToggle, dom.relationshipTypeSelector, dom.personSelector, dom.endConversationBtn, dom.clearInputsBtn];
+            const controlsToLock = [dom.messageInput, dom.userInput, dom.personaSelector, dom.recipientSelector, dom.endConversationBtn, dom.clearInputsBtn];
             controlsToLock.forEach(c => c.disabled = isLoading);
-            
-            if (!isLoading) {
-                 const isRoleSelected = !!state.selectedRelationshipType;
-                dom.personSelector.disabled = !isRoleSelected;
-                const isPersonSelected = !!state.selectedPersonId;
-                dom.endConversationBtn.classList.toggle('hidden', !isPersonSelected);
-            }
+            if (!isLoading) { dom.endConversationBtn.classList.toggle('hidden', !state.selectedPersonId); }
         },
-        displayError(error) {
-            const messageSpan = document.createElement('span');
-            messageSpan.textContent = sanitizeText(error.message);
-            dom.errorContainer.replaceChildren(messageSpan);
-            if (error.message.includes('API Key')) {
-                 const settingsBtn = document.createElement('button');
-                 settingsBtn.textContent = 'Open Settings';
-                 settingsBtn.onclick = () => dom.settingsBtn.click();
-                 dom.errorContainer.appendChild(document.createTextNode(' → '));
-                 dom.errorContainer.appendChild(settingsBtn);
-            }
-            dom.errorContainer.classList.remove('hidden');
-            console.error(error);
+        showProgress(stage) {
+            const stages = ['Analyzing input...', 'Generating responses...', 'Finalizing analysis...'];
+            const loaderText = dom.translationLoader.querySelector('span:last-child');
+            if (loaderText) loaderText.textContent = stages[stage] || 'Processing...';
         },
-        clearError() { dom.errorContainer.classList.add('hidden'); },
-        showApiKeyCta() {
-            dom.translationResult.classList.add('hidden');
-            dom.apiKeyCta.classList.remove('hidden');
-            dom.optionsContainer.replaceChildren();
-            dom.analysisTitle.textContent = "AI Analysis";
-        },
-        hideApiKeyCta() {
-            dom.translationResult.classList.remove('hidden');
-            dom.apiKeyCta.classList.add('hidden');
-            this.setEmptyStateMessages();
-        },
-        setEmptyStateMessages() {
-            dom.translationResult.innerHTML = `<div class="empty-state-text">Analysis of your message will appear here.</div>`;
-            dom.optionsContainer.innerHTML = `<div class="empty-state-text">AI-generated responses tailored to your chosen persona will appear here.</div>`;
-        },
+        showApiKeyCta() { dom.analysisSection.classList.remove('hidden'); dom.responsesSection.classList.add('hidden'); dom.translationResult.classList.add('hidden'); dom.apiKeyCta.classList.remove('hidden'); dom.optionsContainer.replaceChildren(); dom.analysisTitle.textContent = "AI Analysis"; },
+        hideApiKeyCta() { dom.translationResult.classList.remove('hidden'); dom.apiKeyCta.classList.add('hidden'); this.setEmptyStateMessages(); },
+        setEmptyStateMessages() { dom.translationResult.innerHTML = `<div class="empty-state-text">Analysis will appear here.</div>`; dom.optionsContainer.innerHTML = `<div class="empty-state-text">Responses will appear here.</div>`; },
         displayAnalysis(analysis) {
             dom.translationResult.replaceChildren(); 
-            if (!analysis) { 
-                dom.translationResult.textContent = 'No analysis available.';
-                return;
-            }
-            
-            const insightP = document.createElement('p');
-            const insightStrong = document.createElement('strong');
-            insightStrong.textContent = "Insight: ";
-            insightP.append(insightStrong, analysis.insight || 'N/A');
-
-            const strategyP = document.createElement('p');
-            const strategyStrong = document.createElement('strong');
-            strategyStrong.textContent = "Strategy: ";
-            strategyP.append(strategyStrong, analysis.strategy || 'N/A');
-
-            dom.translationResult.append(insightP, strategyP);
+            if (!analysis) { dom.translationResult.textContent = 'No analysis available.'; return; }
+            const p = (strongText, value, colorClass = '') => {
+                const pEl = document.createElement('p');
+                const strongEl = document.createElement('strong'); strongEl.textContent = strongText;
+                const spanEl = document.createElement('span'); spanEl.textContent = value || 'N/A';
+                if (colorClass) spanEl.className = colorClass;
+                pEl.append(strongEl, spanEl); return pEl;
+            };
+            dom.translationResult.append(p('Insight: ', analysis.insight), p('Strategy: ', analysis.strategy), p('Risk: ', analysis.risk, this.getRiskColor(analysis.risk)));
         },
         displayResponses(responses) {
             dom.optionsContainer.replaceChildren();
             if (!Array.isArray(responses)) return;
-            responses.forEach(response => {
+            responses.forEach((response, index) => {
                 const card = document.createElement('div');
                 card.className = 'response-card';
-                const header = document.createElement('div');
-                header.className = 'response-card-header';
-                const title = document.createElement('h4');
-                title.textContent = response.title;
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'copy-btn btn';
-                copyBtn.textContent = 'Copy';
-                copyBtn.dataset.text = response.text;
+                if (index === 0) card.classList.add('primary'); // Make the first one primary by default
+                const header = document.createElement('div'); header.className = 'response-card-header';
+                const title = document.createElement('h4'); title.textContent = response.title;
+                const copyBtn = document.createElement('button'); copyBtn.className = 'copy-btn btn'; copyBtn.textContent = 'Copy'; copyBtn.dataset.text = response.text;
                 header.append(title, copyBtn);
-                const p = document.createElement('p');
-                p.textContent = response.text;
-                card.append(header, p);
-                dom.optionsContainer.appendChild(card);
+                const p = document.createElement('p'); p.textContent = response.text;
+                card.append(header, p); dom.optionsContainer.appendChild(card);
             });
         },
-        updateClipboardStatus(isActive, message = null, type = null) {
-            if (message) {
-                dom.clipboardStatus.textContent = message;
-                dom.clipboardStatus.className = type === 'danger' ? 'text-danger' : 'text-warning';
-            } else {
-                dom.clipboardStatus.textContent = isActive ? 'Monitoring' : 'Paused';
-                dom.clipboardStatus.className = isActive ? 'text-success' : 'text-warning';
-            }
-        },
-        updateAnalysisTitle(mode) {
-            dom.analysisTitle.textContent = mode === 'compose' ? "AI Suggestions for Your Message" : "AI Analysis";
-        },
-        async populatePeopleSelector(profiles) {
-            const type = state.selectedRelationshipType;
-            if (!type) { dom.personSelectorContainer.classList.add('hidden'); return; }
-            
-            dom.personSelectorContainer.classList.remove('hidden');
-            
-            let peopleInType;
-            if (type === 'Other') {
-                peopleInType = Object.values(profiles).filter(p => !CONFIG.STANDARD_RELATIONSHIPS.includes(p.type));
-            } else {
-                peopleInType = Object.values(profiles).filter(p => p.type === type);
-            }
-
-            dom.personSelector.innerHTML = `<option value="">-- General ${type} --</option>`;
-            peopleInType.forEach(p => dom.personSelector.add(new Option(p.name, p.id)));
-            dom.personSelector.add(new Option('-- Add New Person --', 'add_new_person'));
-            dom.personSelector.value = state.selectedPersonId || "";
+        getRiskColor(risk) { const r = (risk || '').toLowerCase(); if (r.includes('high')) return 'text-danger'; if (r.includes('medium')) return 'text-warning'; return 'text-success'; },
+        updateAnalysisTitle(mode) { dom.analysisSection.classList.toggle('hidden', mode === 'compose' || !state.settings.apiKey); },
+        async populateRecipientSelector(profiles) {
+            dom.recipientSelectorContainer.classList.remove('hidden');
+            dom.recipientSelector.innerHTML = `<option value="general">-- General Communication --</option>`;
+            const grouped = Object.values(profiles).reduce((acc, p) => { (acc[p.type] = acc[p.type] || []).push(p); return acc; }, {});
+            CONFIG.STANDARD_RELATIONSHIPS.forEach(type => { if (grouped[type]) { const optgroup = document.createElement('optgroup'); optgroup.label = type; grouped[type].forEach(p => optgroup.appendChild(new Option(p.name, p.id))); dom.recipientSelector.appendChild(optgroup); delete grouped[type]; } });
+            const otherTypes = Object.keys(grouped);
+            if(otherTypes.length > 0) { const otherGroup = document.createElement('optgroup'); otherGroup.label = 'Other'; otherTypes.forEach(type => { grouped[type].forEach(p => otherGroup.appendChild(new Option(`${p.name} (${p.type})`, p.id))); }); dom.recipientSelector.appendChild(otherGroup); }
+            dom.recipientSelector.add(new Option('+ Add New Person', 'add_new_person'));
+            dom.recipientSelector.value = state.selectedPersonId || "general";
         },
         async renderPeopleList(profiles) {
             dom.peopleList.replaceChildren();
             Object.values(profiles).forEach(p => { 
-                const div = document.createElement('div');
-                div.className = 'person-item';
-                
-                const header = document.createElement('div');
-                header.className = "person-item-header";
-
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = `${p.name} (${p.type})`;
-                
-                const controlsDiv = document.createElement('div');
-                controlsDiv.className = "person-controls";
-
-                const profileBtn = document.createElement('button');
-                profileBtn.className = "btn view-profile-btn";
-                profileBtn.dataset.id = p.id;
-                profileBtn.textContent = "Profile";
-
-                const delBtn = document.createElement('button');
-                delBtn.className = "btn btn-danger";
-                delBtn.dataset.id = p.id;
-                delBtn.textContent = "Delete";
-
-                controlsDiv.append(profileBtn, delBtn);
-                header.append(nameSpan, controlsDiv);
-                div.append(header);
-                dom.peopleList.appendChild(div); 
+                const div = document.createElement('div'); div.className = 'person-item';
+                const header = document.createElement('div'); header.className = "person-item-header";
+                const nameSpan = document.createElement('span'); nameSpan.textContent = `${p.name} (${p.type})`;
+                const controlsDiv = document.createElement('div'); controlsDiv.className = "person-controls";
+                const profileBtn = document.createElement('button'); profileBtn.className = "btn view-profile-btn"; profileBtn.dataset.id = p.id; profileBtn.textContent = "Profile";
+                const delBtn = document.createElement('button'); delBtn.className = "btn btn-danger"; delBtn.dataset.id = p.id; delBtn.textContent = "Delete";
+                controlsDiv.append(profileBtn, delBtn); header.append(nameSpan, controlsDiv); div.append(header); dom.peopleList.appendChild(div); 
             });
         },
         toggleProfileAccordion(personItem, personProfile) {
             const existingDetails = personItem.querySelector('.profile-details');
             if (existingDetails) { existingDetails.remove(); return; }
-            
-            const detailsDiv = document.createElement('div');
-            detailsDiv.className = 'profile-details';
-
-            const h4 = document.createElement('h4');
-            h4.textContent = "AI Summary";
-            detailsDiv.appendChild(h4);
-
-            if (personProfile.summary && personProfile.summary.length > CONFIG.PROFILE_SUMMARY_WARNING_LENGTH) {
-                const warnP = document.createElement('p');
-                warnP.className = "summary-warning";
-                warnP.textContent = "Note: This summary is becoming long. Consider editing for clarity and efficiency.";
-                detailsDiv.appendChild(warnP);
-            }
-
+            const detailsDiv = document.createElement('div'); detailsDiv.className = 'profile-details';
+            detailsDiv.innerHTML = `<h4>AI Summary</h4>`;
             const summaryText = personProfile.summary || '';
-            const textarea = document.createElement('textarea');
-            textarea.id = `summary-${personProfile.id}`;
-            textarea.className = 'input-field';
-            textarea.rows = 6;
-            textarea.value = summaryText;
-
-            const charCountP = document.createElement('p');
-            charCountP.className = 'summary-char-count';
-            charCountP.id = `count-${personProfile.id}`;
-            charCountP.textContent = `${summaryText.length} / ${CONFIG.PROFILE_SUMMARY_WARNING_LENGTH}`;
-
-            textarea.addEventListener('input', () => { 
-                charCountP.textContent = `${textarea.value.length} / ${CONFIG.PROFILE_SUMMARY_WARNING_LENGTH}`; 
-            });
-
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'modal-actions';
-            actionsDiv.style.marginTop = '0.5rem';
-
-            const saveBtn = document.createElement('button');
-            saveBtn.className = "btn btn-primary save-profile-btn";
-            saveBtn.dataset.id = personProfile.id;
-            saveBtn.textContent = "Save Profile";
-
-            actionsDiv.appendChild(saveBtn);
-            detailsDiv.append(textarea, charCountP, actionsDiv);
-            personItem.appendChild(detailsDiv);
+            const textarea = document.createElement('textarea'); textarea.id = `summary-${personProfile.id}`; textarea.className = 'input-field'; textarea.rows = 6; textarea.value = summaryText;
+            const charCountP = document.createElement('p'); charCountP.className = 'summary-char-count'; charCountP.id = `count-${personProfile.id}`; charCountP.textContent = `${summaryText.length} chars`;
+            textarea.addEventListener('input', () => { charCountP.textContent = `${textarea.value.length} chars`; });
+            const actionsDiv = document.createElement('div'); actionsDiv.className = 'modal-actions'; actionsDiv.style.marginTop = '0.5rem';
+            const saveBtn = document.createElement('button'); saveBtn.className = "btn btn-primary save-profile-btn"; saveBtn.dataset.id = personProfile.id; saveBtn.textContent = "Save Profile";
+            actionsDiv.appendChild(saveBtn); detailsDiv.append(textarea, charCountP, actionsDiv); personItem.appendChild(detailsDiv);
         },
-        updateContextualControls(personId) { dom.endConversationBtn.classList.toggle('hidden', !personId); },
-        updateEphemeralBadge() { dom.ephemeralBadge.classList.toggle('hidden', !state.ephemeralMode); }
     };
     
     const storage = new ProfileStorage();
@@ -795,258 +668,150 @@
     const apiManager = new ApiManager();
     const agent = new PersonalizedWorkplaceAgent(apiManager, storage, sessionManager);
 
-    async function handleAnalysisRequest() {
-        if (!state.settings.apiKey) {
-            UIManager.showApiKeyCta();
-            return;
-        }
-        
-        const mode = !state.detectedMessage.trim() ? 'compose' : 'analyze';
-        UIManager.updateAnalysisTitle(mode);
+    function queueRender() { if (!renderQueued) { renderQueued = true; requestAnimationFrame(() => { renderQueued = false; UIManager.updateUIState(); }); } }
 
-        if (!state.detectedMessage.trim() && !dom.userInput.value.trim()) {
-            return; // Do nothing if no text is present
-        }
-        UIManager.updateUIState(true); UIManager.clearError();
-        dom.translationResult.textContent = 'Analyzing...'; dom.optionsContainer.replaceChildren();
-        try { const result = await agent.analyze(state.detectedMessage, dom.userInput.value, state.selectedPersonId, state.selectedRelationshipType, state.selectedPersona); UIManager.displayAnalysis(result.analysis); UIManager.displayResponses(result.responses); } catch (error) { UIManager.displayError(error); dom.translationResult.textContent = `An error occurred.`; } finally { UIManager.updateUIState(false); }
-    }
-    
-    function migrateStorage() {
-        for (const keyType in CONFIG.OLD_STORAGE_KEYS) {
-            const newKey = CONFIG.STORAGE_KEYS[keyType];
-            const oldKeys = CONFIG.OLD_STORAGE_KEYS[keyType];
-            
-            for (const oldKey of oldKeys) {
-                const oldData = localStorage.getItem(oldKey);
-                if (oldData) {
-                    if (!localStorage.getItem(newKey)) {
-                        localStorage.setItem(newKey, oldData);
-                    }
-                    localStorage.removeItem(oldKey);
-                }
-            }
-        }
+    async function handleResponseRefinement() {
+        if (!state.lastAnalysis) return;
+        UIManager.updateUIState(true); dom.outputLoader.style.display = 'flex'; dom.optionsContainer.replaceChildren();
+        try { const result = await agent.analyze(state.detectedMessage, dom.userInput.value, state.selectedPersonId, state.selectedPersona); UIManager.displayResponses(result.responses);
+        } catch (error) { showToast(error.message, 'error');
+        } finally { UIManager.updateUIState(false); dom.outputLoader.style.display = 'none'; }
     }
 
-    function loadSettings() { 
-        migrateStorage();
-        const saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SETTINGS) || '{}');
-        state.settings.onboardingDismissed = saved.onboardingDismissed || false; 
-        state.ephemeralMode = saved.ephemeralMode || false; 
-        state.settings.apiKey = saved.apiKey || null;
-        UIManager.updateEphemeralBadge(); 
+    async function handleFullAnalysis() {
+        if (!state.settings.apiKey) { UIManager.showApiKeyCta(); return; }
+        const hasText = state.detectedMessage.trim().length > 0 || dom.userInput.value.trim().length > 0; if (!hasText) return;
+        UIManager.updateUIState(true); UIManager.showProgress(0); dom.analysisSection.classList.remove('hidden'); dom.responsesSection.classList.remove('hidden'); dom.translationResult.textContent = ''; dom.optionsContainer.replaceChildren(); state.lastAnalysis = null;
+        try { 
+            const resultPromise = agent.analyze(state.detectedMessage, dom.userInput.value, state.selectedPersonId, state.selectedPersona);
+            UIManager.showProgress(1);
+            const result = await resultPromise;
+            UIManager.showProgress(2);
+            state.lastAnalysis = result.analysis; UIManager.displayAnalysis(result.analysis); UIManager.displayResponses(result.responses);
+        } catch(error) { showToast(error.message, 'error'); dom.translationResult.textContent = 'An error occurred during analysis.';
+        } finally { UIManager.updateUIState(false); }
     }
+
+    function migrateStorage() { for (const keyType in CONFIG.OLD_STORAGE_KEYS) { const newKey = CONFIG.STORAGE_KEYS[keyType]; for (const oldKey of CONFIG.OLD_STORAGE_KEYS[keyType]) { const oldData = localStorage.getItem(oldKey); if (oldData) { if (!localStorage.getItem(newKey)) { localStorage.setItem(newKey, oldData); } localStorage.removeItem(oldKey); } } } }
+    function loadSettings() { migrateStorage(); const saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SETTINGS) || '{}'); state.settings.onboardingDismissed = saved.onboardingDismissed || false; state.settings.apiKey = saved.apiKey || null; }
     async function saveSettings() {
-        const apiKey = dom.geminiApiKeyInput.value;
-        state.settings.apiKey = apiKey;
-        state.ephemeralMode = dom.ephemeralToggle.checked;
-        UIManager.updateEphemeralBadge();
-        
-        const settingsToSave = { 
-            onboardingDismissed: true, 
-            ephemeralMode: state.ephemeralMode, 
-            apiKey: state.settings.apiKey 
-        };
-
-        if (!state.ephemeralMode) { 
-            localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(settingsToSave)); 
-        }
-        UIManager.closeModal(dom.settingsModal);
-        
+        state.settings.apiKey = dom.geminiApiKeyInput.value;
         const wasApiKeyMissing = !state.settings.apiKey;
-
-        if (state.settings.apiKey) {
-            UIManager.hideApiKeyCta();
-            if (wasApiKeyMissing) {
-                dom.translationResult.innerHTML = `<div class="empty-state-text"><strong>Welcome!</strong> Your API key is set. <br>1. Paste a message. <br>2. Set the context. <br>3. Get AI-powered responses.</div>`;
-            }
-        } else {
-            UIManager.showApiKeyCta();
-        }
-        UIManager.updateUIState();
+        localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify({ onboardingDismissed: true, apiKey: state.settings.apiKey }));
+        UIManager.closeModal(dom.settingsModal);
+        if (state.settings.apiKey) { UIManager.hideApiKeyCta(); if (wasApiKeyMissing) { dom.translationResult.innerHTML = `<div class="empty-state-text"><strong>API key set!</strong> Paste a message to get started.</div>`; }
+        } else { UIManager.showApiKeyCta(); }
+        queueRender();
     }
-    function renderSettings() { 
-        dom.geminiApiKeyInput.value = state.settings.apiKey || ''; 
-        dom.ephemeralToggle.checked = state.ephemeralMode; 
-    }
+    function renderSettings() { dom.geminiApiKeyInput.value = state.settings.apiKey || ''; }
     function isInsideSidebar() { return window.innerWidth <= CONFIG.SIDEBAR_MAX_WIDTH; }
 
     async function initializeApp() {
+        let debouncedRefinement;
         UIManager.init();
-        await UIManager.populatePeopleSelector(await storage.getAllProfiles());
-        const debouncedAnalysis = debounce(handleAnalysisRequest, CONFIG.DEBOUNCE_MS);
+        await UIManager.populateRecipientSelector(await storage.getAllProfiles());
         
-        dom.messageInput.addEventListener('input', () => { state.detectedMessage = dom.messageInput.value; debouncedAnalysis(); });
-        dom.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); handleAnalysisRequest(); } else { debouncedAnalysis(); } });
-        dom.clipboardToggle.addEventListener('change', async (e) => {
-            state.isClipboardMonitoringActive = e.target.checked; 
-            if (state.isClipboardMonitoringActive) {
-                try {
-                    const permission = await navigator.permissions.query({ name: "clipboard-read" });
-                     if (permission.state === 'denied') {
-                        state.isClipboardMonitoringActive = false;
-                        e.target.checked = false;
-                        UIManager.updateClipboardStatus(false, 'Permission Denied', 'danger');
-                        return;
-                    }
-                } catch(err) {
-                   console.warn("Clipboard permissions query not supported; proceeding optimistically.");
-                }
-            }
-            UIManager.updateClipboardStatus(state.isClipboardMonitoringActive);
-        });
-        dom.personaSelector.addEventListener('change', (e) => { state.selectedPersona = e.target.value; handleAnalysisRequest(); });
-        
-        const handlePersonChange = async (oldPersonId) => {
-            try { 
-                if (oldPersonId) {
-                    UIManager.updateUIState(true);
-                    await agent.summarizeSession(oldPersonId); 
-                }
-            } catch (error) { 
-                console.warn('Failed to summarize session on person change:', error);
-                UIManager.displayError(new Error('Failed to save session summary.'));
-            } finally {
-                UIManager.updateUIState(false);
-            }
-            state.selectedPersonId = dom.personSelector.value || null;
-            UIManager.updateUIState();
-            handleAnalysisRequest();
+        if (debouncedRefinement) debouncedRefinement.cancel?.();
+        debouncedRefinement = debounce(handleResponseRefinement, CONFIG.DEBOUNCE_MS_FAST);
+
+        const updateUIMode = () => {
+            const hasMessage = dom.messageInput.value.trim().length > 0;
+            dom.userInputTitle.textContent = hasMessage ? "Add Context to Refine Responses" : "Compose Your Message";
+            dom.userInput.placeholder = hasMessage ? "e.g., 'make it more formal'" : "e.g., 'email my team about the deadline'";
+            dom.analyzeBtn.disabled = !hasMessage && !dom.userInput.value.trim().length > 0;
+            UIManager.updateAnalysisTitle(hasMessage ? 'analyze' : 'compose');
         };
 
-        dom.relationshipTypeSelector.addEventListener('change', async (e) => { 
-            UIManager.updateUIState(true);
-            try {
-                await agent.summarizeSession(state.selectedPersonId); 
-            } catch(error) {
-                console.error("Summarization failed during relationship change:", error);
-                UIManager.displayError(new Error("Failed to save previous session."));
-            }
-            state.selectedRelationshipType = e.target.value; 
-            state.selectedPersonId = null; 
-            await UIManager.populatePeopleSelector(await storage.getAllProfiles()); 
-            UIManager.updateUIState(false); 
-        });
+        dom.messageInput.addEventListener('input', () => { state.detectedMessage = dom.messageInput.value; updateUIMode(); });
+        dom.userInput.addEventListener('input', () => { const hasMessage = dom.messageInput.value.trim().length > 0; if (hasMessage) { debouncedRefinement(); } else { updateUIMode(); } });
+        dom.userInput.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); dom.analyzeBtn.click(); } });
+        dom.analyzeBtn.addEventListener('click', () => handleFullAnalysis());
+        dom.personaSelector.addEventListener('change', (e) => { state.selectedPersona = e.target.value; if (state.lastAnalysis) { handleResponseRefinement(); } });
         
-        dom.personSelector.addEventListener('change', async () => {
-            if (dom.personSelector.value === 'add_new_person') {
-                dom.customRoleGroup.classList.toggle('hidden', state.selectedRelationshipType !== 'Other');
+        dom.recipientSelector.addEventListener('change', async (e) => {
+            if (operationInProgress) return;
+            const switchId = Symbol();
+            pendingPersonSwitch = switchId;
+
+            const newPersonId = e.target.value;
+            if (newPersonId === 'add_new_person') {
+                dom.newPersonRelationshipType.innerHTML = '';
+                [...CONFIG.STANDARD_RELATIONSHIPS, "Other"].forEach(r => dom.newPersonRelationshipType.add(new Option(r,r)));
+                dom.customRoleGroup.classList.add('hidden');
                 await UIManager.renderPeopleList(await storage.getAllProfiles());
                 UIManager.openModal(dom.peopleModal);
-                dom.personSelector.value = state.selectedPersonId || "";
-            } else { handlePersonChange(state.selectedPersonId); }
+                dom.recipientSelector.value = state.selectedPersonId || "general";
+                return;
+            }
+            
+            operationInProgress = true;
+            UIManager.updateUIState(true);
+            try {
+                if (state.selectedPersonId) await agent.summarizeSession(state.selectedPersonId);
+                if (pendingPersonSwitch !== switchId) return; // Operation was superseded
+                state.selectedPersonId = newPersonId === 'general' ? null : newPersonId;
+            } catch (error) { console.warn('Failed to summarize session on person change:', error);
+            } finally { operationInProgress = false; UIManager.updateUIState(false); }
         });
 
-        dom.clearInputsBtn.addEventListener('click', () => { 
-            state.detectedMessage = ''; 
-            dom.messageInput.value = ''; 
-            dom.userInput.value = ''; 
-            if(state.settings.apiKey) UIManager.hideApiKeyCta();
-            else UIManager.showApiKeyCta();
-            dom.optionsContainer.replaceChildren(); 
-            UIManager.clearError(); 
-        });
+        dom.clearInputsBtn.addEventListener('click', () => { state.detectedMessage = ''; dom.messageInput.value = ''; dom.userInput.value = ''; state.lastAnalysis = null; if(state.settings.apiKey) UIManager.hideApiKeyCta(); else UIManager.showApiKeyCta(); dom.optionsContainer.replaceChildren(); dom.analysisSection.classList.add('hidden'); dom.responsesSection.classList.add('hidden'); updateUIMode(); });
         dom.endConversationBtn.addEventListener('click', async () => { UIManager.updateUIState(true); await agent.summarizeSession(state.selectedPersonId); UIManager.updateUIState(false); });
 
         dom.settingsBtn.addEventListener('click', () => { renderSettings(); UIManager.openModal(dom.settingsModal); });
         dom.ctaSettingsBtn.addEventListener('click', () => dom.settingsBtn.click());
         dom.cancelSettingsBtn.addEventListener('click', () => UIManager.closeModal(dom.settingsModal));
         dom.saveSettingsBtn.addEventListener('click', saveSettings);
-        dom.clearDataBtn.addEventListener('click', async () => {
-            if(await showConfirmationModal('Clear Data', 'Are you sure you want to delete ALL local data? This is irreversible.')) {
-                Object.values(CONFIG.STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
-                window.location.reload();
-            }
+        dom.managePeopleSettingsBtn.addEventListener('click', () => {
+            UIManager.closeModal(dom.settingsModal);
+            dom.newPersonRelationshipType.innerHTML = '';
+            [...CONFIG.STANDARD_RELATIONSHIPS, "Other"].forEach(r => dom.newPersonRelationshipType.add(new Option(r,r)));
+            dom.customRoleGroup.classList.add('hidden');
+            UIManager.renderPeopleList(storage.getAllProfiles()).then(() => UIManager.openModal(dom.peopleModal));
         });
+        dom.clearDataBtn.addEventListener('click', async () => { if(await showConfirmationModal('Clear Data', 'Are you sure you want to delete ALL local data? This is irreversible.')) { Object.values(CONFIG.STORAGE_KEYS).forEach(key => localStorage.removeItem(key)); window.location.reload(); } });
         
-        dom.globalManagePeopleBtn.addEventListener('click', async () => {
-            dom.customRoleGroup.classList.toggle('hidden', state.selectedRelationshipType !== 'Other');
-            await UIManager.renderPeopleList(await storage.getAllProfiles()); 
-            UIManager.openModal(dom.peopleModal); 
-        });
         dom.closePeopleBtn.addEventListener('click', () => UIManager.closeModal(dom.peopleModal));
+        dom.newPersonRelationshipType.addEventListener('change', e => dom.customRoleGroup.classList.toggle('hidden', e.target.value !== 'Other'));
         dom.addPersonBtn.addEventListener('click', async () => {
-            const formGroup = dom.addPersonBtn.closest('.form-group');
-            const existingError = formGroup.querySelector('.error-message');
-            if (existingError) existingError.remove();
-            
             const name = dom.newPersonName.value.trim();
-            let role = state.selectedRelationshipType;
-
-            if (role === 'Other') {
-                role = dom.newPersonRole.value.trim();
-                if (!role) {
-                    const errorSpan = document.createElement('div');
-                    errorSpan.textContent = "Please specify a custom relationship.";
-                    errorSpan.className = 'error-message';
-                    dom.customRoleGroup.appendChild(errorSpan);
-                    return;
-                }
-            }
-
-            if (!name) {
-                const errorSpan = document.createElement('div');
-                errorSpan.textContent = "A name must be entered.";
-                errorSpan.className = 'error-message';
-                dom.newPersonName.insertAdjacentElement('afterend', errorSpan);
-                return;
-            }
-
+            let role = dom.newPersonRelationshipType.value;
+            if (role === 'Other') role = dom.newPersonRole.value.trim();
+            if (!name || !role) { showToast("Name and Relationship are required.", "error"); return; }
             const id = `person_${Date.now()}`; 
-            const newProfile = { id, name, type: role, summary: `Profile created for ${name}.` };
-            
-            await storage.savePersonProfile(id, newProfile);
-            dom.newPersonName.value = '';
-            dom.newPersonRole.value = '';
-            
+            await storage.savePersonProfile(id, { id, name, type: role, summary: `Profile for ${name}.` });
+            dom.newPersonName.value = ''; dom.newPersonRole.value = '';
             const allProfiles = await storage.getAllProfiles();
             await UIManager.renderPeopleList(allProfiles);
-            await UIManager.populatePeopleSelector(allProfiles);
+            await UIManager.populateRecipientSelector(allProfiles);
         });
+
         dom.peopleList.addEventListener('click', async (e) => {
             const button = e.target.closest('button'); if (!button) return;
             const personId = button.dataset.id; const personItem = button.closest('.person-item');
             if (button.classList.contains('view-profile-btn')) { const profile = await storage.getPersonProfile(personId); if(profile) UIManager.toggleProfileAccordion(personItem, profile); } 
-            else if (button.classList.contains('btn-danger')) { 
-                if (await showConfirmationModal("Delete Person", "Are you sure you want to delete this person and all their data? This cannot be undone.")) { 
-                    const profiles = await storage.getAllProfiles(); 
-                    delete profiles[personId]; 
-                    await storage.saveAllProfiles(profiles); 
-                    if (state.selectedPersonId === personId) state.selectedPersonId = null;
-                    await UIManager.renderPeopleList(profiles); 
-                    await UIManager.populatePeopleSelector(profiles); 
-                } 
-            }
+            else if (button.classList.contains('btn-danger')) { if (await showConfirmationModal("Delete Person", "Are you sure? This cannot be undone.")) { const profiles = await storage.getAllProfiles(); delete profiles[personId]; await storage.saveAllProfiles(profiles); if (state.selectedPersonId === personId) state.selectedPersonId = null; await UIManager.renderPeopleList(profiles); await UIManager.populateRecipientSelector(profiles); } }
             else if (button.classList.contains('save-profile-btn')) {
                 const summaryTextarea = personItem.querySelector(`#summary-${personId}`);
                 const profile = await storage.getPersonProfile(personId); if (!profile) return;
-                profile.summary = summaryTextarea.value; 
-                await storage.savePersonProfile(personId, profile);
-                await UIManager.populatePeopleSelector(await storage.getAllProfiles());
-                button.textContent = 'Saved!'; 
-                setTimeout(() => { button.textContent = 'Save Profile'; }, 2000);
+                profile.summary = summaryTextarea.value; await storage.savePersonProfile(personId, profile);
+                await UIManager.populateRecipientSelector(await storage.getAllProfiles());
+                button.textContent = 'Saved!'; setTimeout(() => { button.textContent = 'Save Profile'; }, 2000);
             }
         });
 
-        document.body.addEventListener('click', (e) => { const button = e.target.closest('.copy-btn'); if (button) { navigator.clipboard.writeText(button.dataset.text).then(() => { button.textContent = 'Copied!'; setTimeout(() => button.textContent = 'Copy', 2000); }).catch(err => { console.error("Failed to copy text:", err); }); } });
+        document.body.addEventListener('click', (e) => { const button = e.target.closest('.copy-btn'); if (button) { navigator.clipboard.writeText(button.dataset.text).then(() => { showToast("Copied to clipboard!", "success"); }).catch(err => { console.error("Failed to copy:", err); showToast("Could not copy text.", "error"); }); } });
         
-        setInterval(() => { if (state.isClipboardMonitoringActive && document.hasFocus()) { navigator.clipboard.readText().then(text => { if (text && text.trim() && text !== state.lastClipboardContent) { state.lastClipboardContent = text; state.detectedMessage = text; dom.messageInput.value = text; debouncedAnalysis(); } }).catch(err => { state.isClipboardMonitoringActive = false; dom.clipboardToggle.checked = false; UIManager.updateClipboardStatus(false, 'Permission Denied', 'danger'); console.warn("Clipboard read permission may have been denied."); }); } }, CONFIG.CLIPBOARD_POLL_MS);
-    
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && activeModal) UIManager.closeModal(activeModal);
             if (e.key === 'Tab' && activeModal) {
-                const focusableElements = activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-                const firstElement = focusableElements[0];
-                const lastElement = focusableElements[focusableElements.length - 1];
-                if (e.shiftKey) {
-                    if (document.activeElement === firstElement) { lastElement.focus(); e.preventDefault(); }
-                } else {
-                    if (document.activeElement === lastElement) { firstElement.focus(); e.preventDefault(); }
-                }
+                const els = activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                const first = els[0], last = els[els.length - 1];
+                if (e.shiftKey) { if (document.activeElement === first) { last.focus(); e.preventDefault(); } } 
+                else { if (document.activeElement === last) { first.focus(); e.preventDefault(); } }
             }
         });
-        UIManager.updateUIState();
+        updateUIMode();
+        queueRender();
     }
     
     async function main() {
@@ -1055,12 +820,10 @@
             dom.onboardingOverlay.classList.remove('hidden');
             dom.dismissOnboardingBtn.addEventListener('click', () => {
                 state.settings.onboardingDismissed = true;
-                if(!state.ephemeralMode) localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings));
+                localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings));
                 dom.onboardingOverlay.classList.add('hidden');
                 dom.app.classList.remove('hidden');
-                initializeApp().then(() => {
-                    if (!state.settings.apiKey) UIManager.showApiKeyCta();
-                }).catch(console.error);
+                initializeApp().then(() => { if (!state.settings.apiKey) UIManager.showApiKeyCta(); }).catch(console.error);
             }, { once: true });
         } else {
             dom.app.classList.remove('hidden');
