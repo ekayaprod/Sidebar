@@ -36,7 +36,7 @@
         /* --- Layout & Core Components --- */
         #app { width: 100%; height: 100vh; display: flex; flex-direction: column; padding: 0.75rem; box-sizing: border-box; gap: 0.5rem; }
         main { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 4px; }
-        footer { padding: 0.5rem 0; display: flex; justify-content: flex-end; gap: 0.5rem; flex-shrink: 0; }
+        footer { padding: 0.5rem 0; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-shrink: 0; }
         .section { background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.5rem; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
         .section-title { font-size: 0.9rem; font-weight: 600; margin: 0; white-space: nowrap; }
@@ -58,30 +58,51 @@
         
         /* --- Specific UI Sections --- */
         .controls { display: flex; align-items: center; gap: 0.5rem; }
+        .footer-controls { display: flex; align-items: center; gap: 0.5rem; }
         .section-header .controls { flex-grow: 1; justify-content: flex-end; flex-wrap: nowrap; min-width: 0; }
-        textarea#messageInput { min-height: 60px; max-height: 120px; }
-        #recipientSelectorContainer { display: flex; flex-grow: 1; gap: 0.5rem; align-items: center; min-width: 100px; }
-        #recipientSelector { max-width: 120px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+        textarea#messageInput { min-height: 80px; max-height: 150px; }
+        #recipientSelectorContainer { position: relative; display: flex; flex-grow: 1; gap: 0.5rem; align-items: center; min-width: 100px; }
+        #recipientSelector { max-width: 160px; text-overflow: ellipsis; }
+        #recipientSelector.prompt { border-color: var(--warning-color); box-shadow: 0 0 5px color-mix(in srgb, var(--warning-color) 30%, transparent); }
+        #recipientPrompt { position: absolute; top: -10px; right: 0; font-size: 0.7rem; background-color: var(--warning-color); color: white; padding: 1px 5px; border-radius: 10px; }
         #personaSelector { max-width: 120px; }
         .loader { display: none; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--subtle-text); }
         .loader-dot { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .input-group { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-
+        .toggle-switch { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-switch .slider { width: 34px; height: 20px; background-color: var(--border-color); border-radius: 17px; transition: 0.3s; position: relative; }
+        .toggle-switch .slider::before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch input:checked + .slider { background-color: var(--primary-color); }
+        .toggle-switch input:checked + .slider::before { transform: translateX(14px); }
+        .toggle-switch span { font-size: 0.8rem; color: var(--subtle-text); }
+        
         /* --- Analysis & Response Display --- */
-        #analysisSection { transition: all 0.3s ease-in-out; }
+        #aiInteractionContainer { display: flex; flex-direction: row; gap: 0.75rem; }
+        #analysisWrapper { flex: 2; min-width: 0; }
+        #responsesWrapper { flex: 3; min-width: 0; display: flex; flex-direction: column; gap: 0.5rem; }
         #translationResult { font-size: 0.875rem; color: var(--text-color); padding: 0.75rem; border-radius: 0.375rem; background-color: var(--info-bg); }
         #apiKeyCta { text-align: center; padding: 1rem; background-color: var(--info-bg); border-radius: .5rem; }
         #apiKeyCta p { margin: 0 0 0.75rem 0; color: var(--text-color); }
         .prose-styles p { margin: 0 0 0.75rem; line-height: 1.5; color: var(--text-color); }
         .prose-styles strong { color: var(--subtle-text); font-weight: 600; }
         .empty-state-text { color: var(--subtle-text); text-align: center; padding: 1rem; }
-        #optionsContainer { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
-        .response-card { padding: 0.75rem; border-radius: 0.375rem; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-left: 4px solid transparent; transition: border-color 0.2s; }
-        .response-card.primary { border-left: 4px solid var(--primary-color); background: linear-gradient(90deg, color-mix(in srgb, var(--primary-color) 5%, transparent) 0%, transparent 100%);}
-        .response-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-        .response-card-header h4 { font-size: 0.8rem; font-weight: 700; color: var(--primary-color); }
-        .response-card p { font-size: 0.875rem; color: var(--text-color); margin: 0; white-space: pre-wrap; white-space: pre-line; word-break: break-word; overflow-wrap: break-word; hyphens: auto; }
+        .response-tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border-color); }
+        .response-tab { background: none; border: none; padding: 0.4rem 0.6rem; font-size: 0.8rem; cursor: pointer; border-bottom: 2px solid transparent; color: var(--subtle-text); font-weight: 500; }
+        .response-tab.active { border-bottom-color: var(--primary-color); color: var(--primary-color); font-weight: 600; }
+        .response-content { padding: 0.75rem; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 0.5rem 0.5rem; }
+        .response-text { font-size: 0.875rem; white-space: pre-wrap; margin-bottom: 1rem; }
+        .refinement-controls { margin-top: 0.5rem; }
+        .refinement-chips { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.5rem; }
+        .chip { background-color: var(--info-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 1rem; cursor: pointer; }
+        .chip:hover { background-color: color-mix(in srgb, var(--primary-color) 10%, var(--info-bg)); }
+        #refinementInput { font-size: 0.8rem; }
+        #refineBtn { font-size: 0.8rem; }
+        .copy-btn-container { text-align: right; }
+        .response-skeleton { padding: 0.75rem; }
+        .skeleton-line { height: 1em; background-color: var(--info-bg); border-radius: 0.25rem; margin-bottom: 0.5rem; animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .skeleton-line.short { width: 60%; }
 
         /* --- Modals & Overlays --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(100,116,139,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
@@ -97,7 +118,7 @@
         .form-group label, .form-group p, .help-link { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; }
         .form-group p { font-size: 0.75rem; color: var(--subtle-text); margin-top: 0.25rem; }
         .help-link { color: var(--primary-color); text-decoration: none; margin-top: 0.5rem; }
-        .profile-details { margin-top: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem; }
+        .profile-details { margin-top: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem; max-height: 250px; overflow-y: auto; }
         .profile-details h4 { font-size: 0.8rem; font-weight: 600; margin: 0 0 0.5rem 0; }
         .summary-warning { font-size: 0.75rem; color: var(--warning-color); margin-bottom: 0.5rem; }
         .summary-char-count { font-size: 0.75rem; color: var(--subtle-text); text-align: right; }
@@ -113,8 +134,10 @@
         #onboardingOverlay { position: fixed; inset: 0; background: var(--bg-color); z-index: 2000; padding: 2rem; color: var(--text-color); }
         #onboardingContent { max-width: 600px; margin: auto; }
         #onboardingContent h1 { font-size: 1.5rem; margin-bottom: 1rem; }
-        #onboardingContent p, #onboardingContent li { line-height: 1.6; margin-bottom: 1rem; }
-        #onboardingContent ol { padding-left: 1.5rem; }
+        #onboardingContent p, .onboarding-step { line-height: 1.6; margin-bottom: 1rem; }
+        .onboarding-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+        .onboarding-step { display: flex; align-items: flex-start; gap: 0.75rem;}
+        .onboarding-step-icon { font-size: 1.2rem; margin-top: 0.1rem; }
         #onboardingContent kbd { background: var(--border-color); padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-family: monospace; }
         
         .hidden { display: none !important; }
@@ -123,21 +146,23 @@
         .text-warning { color: var(--warning-color); }
         .text-danger { color: var(--danger-color); }
 
-        @media (max-width: 400px) {
-            .modal-content {
-                margin: 1rem;
-                padding: 1rem;
-            }
+        @media (max-width: 400px) { .modal-content { margin: 1rem; padding: 1rem; } }
+        @media (max-width: 360px) {
+             #aiInteractionContainer { flex-direction: column; }
+            .section-header { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+            .controls { justify-content: space-between; }
         }
         @media (max-width: 320px) {
-            .section-header {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.5rem;
-            }
-            .controls {
-                justify-content: space-between;
-            }
+            #aiInteractionContainer { flex-direction: column !important; }
+            .section-header { flex-wrap: wrap; gap: 0.25rem; }
+            .controls { width: 100%; justify-content: space-between; }
+            #recipientSelector, #personaSelector { max-width: none; min-width: 0; flex: 1; }
+            .input-group { flex-direction: column; }
+            .modal-content { margin: 0.5rem; padding: 0.75rem; width: calc(100vw - 1rem); }
+        }
+        @media (max-width: 280px) {
+            .response-tabs { flex-wrap: wrap; }
+            .response-tab { flex: 1 1 auto; min-width: 60px; }
         }
     </style>
 </head>
@@ -147,12 +172,12 @@
             <h1>Welcome to Sidebar</h1>
             <p>This application is designed to run in the Microsoft Edge sidebar for the best experience.</p>
             <h3>Recommended Setup:</h3>
-            <ol>
-                <li><strong>Enable the Sidebar:</strong> In Edge, go to Settings (`...`) > `Sidebar`, or press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>/</kbd>.</li>
-                <li><strong>Add This App:</strong> In the sidebar, click the `+` icon, find this app under "Open tabs," and pin it.</li>
-                <li><strong>Set Your API Key:</strong> To activate the AI, you need a Google AI API key. You can add this in the app's settings (⚙️). <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="help-link">Get your key here.</a></li>
-                <li><strong>Keyboard Shortcut:</strong> Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> in the context box to trigger analysis.</li>
-            </ol>
+            <div class="onboarding-grid">
+                <div class="onboarding-step"><span class="onboarding-step-icon">1.</span> <div><strong>Enable the Sidebar:</strong> In Edge, go to Settings (`...`) > `Sidebar`, or press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>/</kbd>.</div></div>
+                <div class="onboarding-step"><span class="onboarding-step-icon">2.</span> <div><strong>Add This App:</strong> In the sidebar, click the `+` icon, find this app under "Open tabs," and pin it.</div></div>
+                <div class="onboarding-step"><span class="onboarding-step-icon">3.</span> <div><strong>Set Your API Key:</strong> To activate the AI, you need a Google AI API key. You can add this in the app's settings (⚙️). <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="help-link">Get your key here.</a></div></div>
+                <div class="onboarding-step"><span class="onboarding-step-icon">4.</span> <div><strong>Keyboard Shortcut:</strong> Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> in the context box to trigger analysis.</div></div>
+            </div>
             <button id="dismissOnboardingBtn" class="btn btn-primary" style="margin-top: 1rem;">Continue to App</button>
         </div>
     </div>
@@ -161,59 +186,73 @@
         <main>
             <section class="section">
                 <div class="section-header">
-                    <h2 class="section-title">Received Message</h2>
+                    <h2 id="messageSectionTitle" class="section-title">Compose or Analyze</h2>
                      <div class="controls">
-                        <div id="recipientSelectorContainer" class="hidden">
-                            <select id="recipientSelector"></select>
+                        <div id="recipientSelectorContainer">
+                            <span id="recipientPrompt" class="hidden">Who to/from?</span>
+                            <select id="recipientSelector" title="Select the person you are communicating with."></select>
                         </div>
                     </div>
                 </div>
-                <textarea id="messageInput" class="input-field" placeholder="Paste a message here to get started..."></textarea>
-                 <button id="analyzeBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" disabled>Analyze</button>
+                <textarea id="messageInput" class="input-field" placeholder="Paste a received message to analyze, or start typing to compose a new one."></textarea>
             </section>
             
-            <section class="section">
+            <section id="contextSection" class="section hidden">
                 <div class="section-header">
-                    <h2 id="userInputTitle" class="section-title">Add Context</h2>
+                    <h2 class="section-title">Add Context</h2>
                     <div id="contextControls" class="controls">
-                         <button id="endConversationBtn" class="btn hidden" title="Summarizes this conversation and adds it to the person's long-term profile.">Save Session</button>
+                         <button id="endConversationBtn" class="btn hidden" data-action="summarize-session" title="Summarizes this conversation and adds it to the person's long-term profile.">Save Session</button>
                     </div>
                 </div>
-                <textarea id="userInput" class="input-field" rows="2" placeholder="What is your goal? (e.g., 'decline this politely')"></textarea>
+                <div class="input-group">
+                    <textarea id="userInput" class="input-field" rows="1" placeholder="Add details..."></textarea>
+                    <button id="sendContextBtn" class="btn btn-primary" data-action="send-context">Send</button>
+                </div>
             </section>
 
-            <section id="analysisSection" class="section hidden">
-                <div class="section-header">
-                    <h2 id="analysisTitle" class="section-title">AI Analysis</h2>
-                    <div id="translationLoader" class="loader"><span class="loader-dot">●</span><span>Analyzing...</span></div>
+             <button id="analyzeBtn" class="btn btn-primary" style="width: 100%;" data-action="run-analysis" disabled>Get Suggestions</button>
+
+            <section id="aiInteractionSection" class="section hidden">
+                <div id="aiInteractionContainer">
+                    <div id="analysisWrapper">
+                        <div class="section-header">
+                            <h2 id="analysisTitle" class="section-title">AI Analysis</h2>
+                            <div id="translationLoader" class="loader"><span class="loader-dot">●</span><span>Analyzing...</span></div>
+                        </div>
+                        <div id="translationResult" class="prose-styles"></div>
+                    </div>
+                    <div id="responsesWrapper">
+                        <div class="section-header">
+                            <h2 id="responsesTitle" class="section-title">Suggested Responses</h2>
+                             <div class="controls">
+                                <select id="personaSelector" title="Choose a persona to change the communication style.">
+                                    <option value="diplomat" selected>Diplomat</option>
+                                    <option value="challenger">Challenger</option>
+                                    <option value="coach">Coach</option>
+                                    <option value="visionary">Visionary</option>
+                                    <option value="pragmatist">Pragmatist</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="optionsContainer"></div>
+                    </div>
                 </div>
-                <div id="translationResult" class="prose-styles"></div>
-                <div id="apiKeyCta" class="hidden">
+                 <div id="apiKeyCta" class="hidden">
                     <p>Please set your API key to enable AI features.</p>
-                    <button id="ctaSettingsBtn" class="btn btn-primary">Open Settings</button>
+                    <button id="ctaSettingsBtn" class="btn btn-primary" data-action="open-settings">Open Settings</button>
                 </div>
-            </section>
-
-            <section id="responsesSection" class="section hidden">
-                <div class="section-header">
-                    <h2 class="section-title">Suggested Responses</h2>
-                    <div class="controls">
-                        <select id="personaSelector" title="Choose a persona to change the communication style.">
-                            <option value="diplomat" selected title="Prioritizes harmony and de-escalates tension.">Diplomat</option>
-                            <option value="challenger" title="Sets clear boundaries and respectfully pushes back.">Challenger</option>
-                            <option value="coach" title="Empowers and guides through questioning and support.">Coach</option>
-                            <option value="visionary" title="Inspires action by focusing on long-term goals.">Visionary</option>
-                            <option value="pragmatist" title="Data-driven, direct, and focused on practical solutions.">Pragmatist</option>
-                        </select>
-                        <div id="outputLoader" class="loader"><span class="loader-dot">●</span><span>Generating...</span></div>
-                    </div>
-                </div>
-                <div id="optionsContainer"></div>
             </section>
         </main>
         <footer>
-            <button id="clearInputsBtn" title="Clear All Inputs" aria-label="Clear all inputs">🗑️</button>
-            <button id="settingsBtn" title="Settings" aria-label="Open settings">⚙️</button>
+            <label class="toggle-switch" title="Toggle automatic analysis on/off">
+                <input type="checkbox" id="autoAnalyzeToggle">
+                <span class="slider"></span>
+                <span>Auto-Analyze</span>
+            </label>
+            <div class="footer-controls">
+                <button id="clearInputsBtn" title="Clear All Inputs" data-action="clear-inputs" aria-label="Clear all inputs">🗑️</button>
+                <button id="settingsBtn" title="Settings" data-action="open-settings" aria-label="Open settings">⚙️</button>
+            </div>
         </footer>
     </div>
 
@@ -229,13 +268,13 @@
             </div>
              <div class="form-group" style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
                 <label>Data Management</label>
-                <button id="managePeopleSettingsBtn" class="btn">Manage People</button>
-                <button id="clearDataBtn" class="btn btn-danger">Clear All Local Data</button>
+                <button id="managePeopleSettingsBtn" class="btn" data-action="open-people-manager">Manage People</button>
+                <button id="clearDataBtn" class="btn btn-danger" data-action="clear-all-data">Clear All Local Data</button>
                 <p>This will permanently delete all saved profiles and session history from this browser.</p>
              </div>
             <div class="modal-actions">
-                <button id="cancelSettingsBtn" class="btn">Cancel</button>
-                <button id="saveSettingsBtn" class="btn btn-primary">Save</button>
+                <button class="btn" data-action="close-modal" data-modal-id="settingsModal">Cancel</button>
+                <button class="btn btn-primary" data-action="save-settings">Save</button>
             </div>
         </div>
     </div>
@@ -249,11 +288,11 @@
                 <div id="customRoleGroup" class="form-group hidden">
                     <input type="text" id="newPersonRole" class="input-field" placeholder="Specify Relationship (e.g., Contractor)">
                 </div>
-                <button id="addPersonBtn" class="btn btn-primary">Add</button>
+                <button class="btn btn-primary" data-action="add-person">Add</button>
             </div>
             <div id="peopleList"></div>
             <div class="modal-actions">
-                <button id="closePeopleBtn" class="btn">Close</button>
+                <button class="btn" data-action="close-modal" data-modal-id="peopleModal">Close</button>
             </div>
         </div>
     </div>
@@ -272,170 +311,90 @@
     'use strict';
 
     const CONFIG = {
-        SESSION_TIME_WINDOW_MS: 10 * 60 * 1000,
-        STORAGE_KEYS: { 
-            PROFILES: 'sidebar_person_profiles_v11', 
-            SESSIONS: 'sidebar_conversation_sessions_v5', 
-            SETTINGS: 'sidebar_settings_v6' 
-        },
-        OLD_STORAGE_KEYS: {
-            PROFILES: ['sidebar_person_profiles_v10', 'sidebar_person_profiles_v9'],
-            SESSIONS: ['sidebar_conversation_sessions_v4', 'sidebar_conversation_sessions_v3'],
-            SETTINGS: ['sidebar_settings_v5']
-        },
         API_RETRY_COUNT: 2, API_TIMEOUT_MS: 15000,
-        SIDEBAR_MAX_WIDTH: 400,
-        PROFILE_SUMMARY_WARNING_LENGTH: 1500,
         STANDARD_RELATIONSHIPS: ["Manager", "Teammate", "Client", "Direct Report", "Stakeholder", "Vendor"],
-        PROFILE_CACHE_MAX_SIZE: 20,
-        API_CACHE_MAX_SIZE: 20,
-        DEBOUNCE_MS_FAST: 800,
+        API_CACHE_MAX_SIZE: 10, DEBOUNCE_MS_AUTO: 1200,
+        REFINEMENT_CHIPS: ["Shorter", "Longer", "More Formal", "More Casual", "Add a question"]
     };
     
-    const PERSONA_CONFIGS = {
-        diplomat: { traits: "prioritizes harmony, uses collaborative language, seeks win-win solutions", tone: "warm, inclusive, diplomatic" },
-        challenger: { traits: "sets clear boundaries, asks direct questions, pushes back respectfully", tone: "direct, confident, assertive" },
-        coach: { traits: "empowers and guides through questioning and support", tone: "supportive, inquisitive, guiding" },
-        visionary: { traits: "inspires action by focusing on long-term goals and possibilities", tone: "inspirational, forward-looking, passionate" },
-        pragmatist: { traits: "is data-driven, direct, and focused on practical, efficient solutions", tone: "analytical, straightforward, objective" }
+    const PERSONAS = {
+        diplomat: { traits: "prioritizes harmony, uses collaborative language", tone: "warm, inclusive, diplomatic" },
+        challenger: { traits: "sets clear boundaries, asks direct questions", tone: "direct, confident, assertive" },
+        coach: { traits: "empowers and guides through questioning", tone: "supportive, inquisitive" },
+        visionary: { traits: "inspires action, focuses on long-term goals", tone: "inspirational, forward-looking" },
+        pragmatist: { traits: "is data-driven, direct, and efficient", tone: "analytical, straightforward" }
+    };
+
+    const UI_CONFIGS = {
+        compose: { title: "Compose Message", contextHidden: true, buttonText: "Get Suggestions", analysisHidden: true },
+        analyze: { title: "Analyze Received Message", contextHidden: false, buttonText: "Analyze", analysisHidden: false }
     };
 
     const dom = {
-        app: document.getElementById('app'), onboardingOverlay: document.getElementById('onboardingOverlay'), dismissOnboardingBtn: document.getElementById('dismissOnboardingBtn'),
-        messageInput: document.getElementById('messageInput'), userInput: document.getElementById('userInput'),
-        userInputTitle: document.getElementById('userInputTitle'),
-        recipientSelector: document.getElementById('recipientSelector'),
+        app: document.getElementById('app'), 
+        onboardingOverlay: document.getElementById('onboardingOverlay'),
+        dismissOnboardingBtn: document.getElementById('dismissOnboardingBtn'), // FIX: Added missing DOM reference
+        messageInput: document.getElementById('messageInput'),
+        messageSectionTitle: document.getElementById('messageSectionTitle'),
+        contextSection: document.getElementById('contextSection'),
+        userInput: document.getElementById('userInput'),
+        recipientSelector: document.getElementById('recipientSelector'), recipientPrompt: document.getElementById('recipientPrompt'),
         personaSelector: document.getElementById('personaSelector'),
-        recipientSelectorContainer: document.getElementById('recipientSelectorContainer'),
-        clearInputsBtn: document.getElementById('clearInputsBtn'), settingsBtn: document.getElementById('settingsBtn'),
-        translationLoader: document.getElementById('translationLoader'), translationResult: document.getElementById('translationResult'),
-        analysisTitle: document.getElementById('analysisTitle'),
+        autoAnalyzeToggle: document.getElementById('autoAnalyzeToggle'),
+        translationResult: document.getElementById('translationResult'),
         analyzeBtn: document.getElementById('analyzeBtn'),
-        apiKeyCta: document.getElementById('apiKeyCta'), ctaSettingsBtn: document.getElementById('ctaSettingsBtn'),
-        outputLoader: document.getElementById('outputLoader'), optionsContainer: document.getElementById('optionsContainer'),
-        contextControls: document.getElementById('contextControls'), endConversationBtn: document.getElementById('endConversationBtn'),
-        settingsModal: document.getElementById('settingsModal'), geminiApiKeyInput: document.getElementById('geminiApiKeyInput'),
-        clearDataBtn: document.getElementById('clearDataBtn'),
-        managePeopleSettingsBtn: document.getElementById('managePeopleSettingsBtn'),
-        saveSettingsBtn: document.getElementById('saveSettingsBtn'), cancelSettingsBtn: document.getElementById('cancelSettingsBtn'), 
-        peopleModal: document.getElementById('peopleModal'), peopleList: document.getElementById('peopleList'), 
-        newPersonName: document.getElementById('newPersonName'), addPersonBtn: document.getElementById('addPersonBtn'), 
+        apiKeyCta: document.getElementById('apiKeyCta'),
+        optionsContainer: document.getElementById('optionsContainer'),
+        responsesTitle: document.getElementById('responsesTitle'),
+        geminiApiKeyInput: document.getElementById('geminiApiKeyInput'),
+        peopleList: document.getElementById('peopleList'), 
+        newPersonName: document.getElementById('newPersonName'), 
         newPersonRelationshipType: document.getElementById('newPersonRelationshipType'),
         customRoleGroup: document.getElementById('customRoleGroup'), newPersonRole: document.getElementById('newPersonRole'),
-        closePeopleBtn: document.getElementById('closePeopleBtn'),
-        analysisSection: document.getElementById('analysisSection'),
-        responsesSection: document.getElementById('responsesSection'),
+        aiInteractionSection: document.getElementById('aiInteractionSection'),
+        analysisWrapper: document.getElementById('analysisWrapper'),
         confirmModal: document.getElementById('confirmModal'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
         confirmCancelBtn: document.getElementById('confirmCancelBtn'), confirmOkBtn: document.getElementById('confirmOkBtn'),
     };
 
     let state = {
-        detectedMessage: '', lastClipboardContent: '',
         selectedPersonId: null, selectedPersona: 'diplomat',
-        settings: { apiKey: null, onboardingDismissed: false },
-        lastAnalysis: null,
+        settings: { apiKey: null, onboardingDismissed: false, autoAnalyzeEnabled: true },
+        lastAnalysis: null, sessionContext: [], responses: [], activeResponseIndex: 0
     };
 
-    let activeModal = null;
-    let focusedElementBeforeModal = null;
-    let operationInProgress = false;
-    let renderQueued = false;
-    let pendingPersonSwitch = null;
+    let activeModal = null; let focusedElementBeforeModal = null;
+    let operationInProgress = false; let latestAnalysisRequest = null;
     
-    const debounce = (fn, delay) => {
-        let t;
-        const debounced = (...args) => {
-            clearTimeout(t);
-            t = setTimeout(() => fn(...args), delay);
-        };
-        debounced.cancel = () => {
-            clearTimeout(t);
-        };
-        return debounced;
-    };
-
-    function decodeHtmlEntities(text) {
-        if (!text) return '';
-        const ta = document.createElement('textarea');
-        ta.innerHTML = text;
-        return ta.value;
-    }
-
+    // --- UTILITIES ---
+    const debounce = (fn, delay) => { let t; const d = (...a) => { clearTimeout(t); t = setTimeout(()=>fn(...a), delay); }; d.cancel = () => clearTimeout(t); return d; };
+    function decodeHtmlEntities(text) { if (!text) return ''; const ta = document.createElement('textarea'); ta.innerHTML = text; return ta.value; }
     function showToast(message, type = 'info', duration = 4000) {
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.textContent = message;
         document.body.appendChild(toast);
         setTimeout(() => toast.classList.add('show'), 100);
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => document.body.removeChild(toast), 500);
-        }, duration);
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => document.body.removeChild(toast), 500); }, duration);
     }
-
+    function showModal(modalId) { activeModal = document.getElementById(modalId); if(!activeModal) return; focusedElementBeforeModal = document.activeElement; activeModal.classList.remove('hidden'); activeModal.querySelector('input, button, select, textarea')?.focus(); }
+    function hideModal(modalId) { const modal = document.getElementById(modalId); if(modal) modal.classList.add('hidden'); if(activeModal === modal) activeModal = null; if(focusedElementBeforeModal) focusedElementBeforeModal.focus(); }
     function showConfirmationModal(title, message) {
         return new Promise((resolve) => {
-            dom.confirmTitle.textContent = title;
-            dom.confirmMessage.textContent = message;
-            UIManager.openModal(dom.confirmModal);
-            const handleConfirm = () => { cleanup(); resolve(true); };
-            const handleCancel = () => { cleanup(); resolve(false); };
-            const cleanup = () => {
-                dom.confirmOkBtn.removeEventListener('click', handleConfirm);
-                dom.confirmCancelBtn.removeEventListener('click', handleCancel);
-                UIManager.closeModal(dom.confirmModal);
-            };
-            dom.confirmOkBtn.addEventListener('click', handleConfirm, { once: true });
-            dom.confirmCancelBtn.addEventListener('click', handleCancel, { once: true });
+            dom.confirmTitle.textContent = title; dom.confirmMessage.textContent = message; showModal('confirmModal');
+            const onConfirm = () => { cleanup(); resolve(true); }; const onCancel = () => { cleanup(); resolve(false); };
+            const cleanup = () => { dom.confirmOkBtn.removeEventListener('click', onConfirm); dom.confirmCancelBtn.removeEventListener('click', onCancel); hideModal('confirmModal'); };
+            dom.confirmOkBtn.addEventListener('click', onConfirm, { once: true }); dom.confirmCancelBtn.addEventListener('click', onCancel, { once: true });
         });
     }
 
-    function validateAIResponse(response) {
-      if (!response || typeof response !== 'object') return false;
-      if (!response.analysis || typeof response.analysis !== 'object') return false;
-      if (!Array.isArray(response.responses)) return false;
-      const requiredAnalysisFields = ['insight', 'strategy', 'risk'];
-      if (!requiredAnalysisFields.every(field => typeof response.analysis[field] === 'string')) return false;
-      return response.responses.every(r => r && typeof r.title === 'string' && typeof r.text === 'string' && r.title.length > 0 && r.text.length > 0);
+    // --- CONSOLIDATED STORAGE ---
+    class UnifiedStorage {
+        constructor() { this.keys = { profiles: 'sidebar_profiles_v12', sessions: 'sidebar_sessions_v6', settings: 'sidebar_settings_v9', draft: 'sidebar_draft_v2', stats: 'sidebar_response_stats_v1' }; }
+        async get(type, id = null) { const data = JSON.parse(localStorage.getItem(this.keys[type]) || (type === 'draft' ? '""' : '{}')); return id ? data[id] : data; }
+        async set(type, data, id = null) { if (id) { const existing = await this.get(type); existing[id] = data; localStorage.setItem(this.keys[type], JSON.stringify(existing)); } else { localStorage.setItem(this.keys[type], JSON.stringify(data)); } }
     }
-    
-    class LRUCache {
-        constructor(maxSize = 50) { this.maxSize = maxSize; this.cache = new Map(); }
-        get(key) { if (this.cache.has(key)) { const value = this.cache.get(key); this.cache.delete(key); this.cache.set(key, value); return value; } return null; }
-        set(key, value) { if (this.cache.has(key)) { this.cache.delete(key); } else if (this.cache.size >= this.maxSize) { const firstKey = this.cache.keys().next().value; this.cache.delete(firstKey); } this.cache.set(key, value); }
-    }
-
-    class SessionManager {
-        constructor() { this.storageKey = CONFIG.STORAGE_KEYS.SESSIONS; this.timeout = CONFIG.SESSION_TIME_WINDOW_MS; }
-        getSession(personId) { if (!personId) return null; const sessions = this._getSessions(); const session = sessions[personId]; if (!session || (Date.now() - session.lastActivity > this.timeout)) { this.clearSession(personId); return null; } return session; }
-        updateSession(personId, turnData) { if (!personId) return; const sessions = this._getSessions(); let session = sessions[personId] || { history: [], insights: [], lastActivity: 0 }; session.history.push({ ...turnData.history, timestamp: Date.now() }); session.insights.push(turnData.insight); session.lastActivity = Date.now(); sessions[personId] = session; this._saveSessions(sessions); }
-        clearSession(personId) { if (!personId) return; const sessions = this._getSessions(); delete sessions[personId]; this._saveSessions(sessions); }
-        _getSessions() { return JSON.parse(localStorage.getItem(this.storageKey) || '{}'); }
-        _saveSessions(sessions) { localStorage.setItem(this.storageKey, JSON.stringify(sessions)); }
-    }
-
-    class ProfileStorage {
-        constructor() { this.storageKey = CONFIG.STORAGE_KEYS.PROFILES; this.writeQueue = []; this.writeTimer = null; }
-        async getPersonProfile(personId) { if (!personId) return null; const p = JSON.parse(localStorage.getItem(this.storageKey) || '{}'); return p[personId] || null; }
-        async savePersonProfile(personId, profile) { 
-            this.writeQueue.push({ personId, profile });
-            if (this.writeTimer) clearTimeout(this.writeTimer);
-            this.writeTimer = setTimeout(() => this._flushWrites(), 500);
-        }
-        async _flushWrites() {
-            if (this.writeQueue.length === 0) return;
-            const profiles = await this.getAllProfiles();
-            this.writeQueue.forEach(({ personId, profile }) => {
-                profiles[personId] = this._compressProfile(profile);
-            });
-            await this.saveAllProfiles(profiles);
-            this.writeQueue = [];
-            showToast("Profiles saved.", "success", 2000);
-        }
-        async getAllProfiles() { return JSON.parse(localStorage.getItem(this.storageKey) || '{}'); }
-        async saveAllProfiles(profiles) { localStorage.setItem(this.storageKey, JSON.stringify(profiles)); }
-        _compressProfile(profile) { return { ...profile, summary: profile.summary?.slice(0, 2000), lastAccessed: Date.now() }; }
-    }
+    const storage = new UnifiedStorage();
     
     class GeminiApiClient {
         constructor(apiKey) { this.apiKey = apiKey; this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent'; }
@@ -443,7 +402,7 @@
             const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: options.temperature || 0.6, maxOutputTokens: 2048 } };
             if(options.responseSchema) { payload.generationConfig.responseMimeType = "application/json"; payload.generationConfig.responseSchema = options.responseSchema; }
             const responseText = await this._makeRequest(payload);
-            try { return JSON.parse(decodeHtmlEntities(responseText)); } catch (e) { console.error("API JSON Parse Error:", responseText); throw new Error("The AI returned an invalid response. Please try again."); }
+            try { return JSON.parse(decodeHtmlEntities(responseText)); } catch (e) { console.error("API JSON Parse Error:", responseText); throw new Error("The AI returned an invalid response."); }
         }
         async _makeRequest(payload) {
             if (!this.apiKey) throw new Error("API Key not set.");
@@ -464,394 +423,280 @@
 
     class ApiManager {
         constructor() { this.cache = new Map(); this.cacheTimeout = 5 * 60 * 1000; }
-        _hashPrompt(prompt, options) {
-            const str = JSON.stringify({ prompt, options });
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = (hash << 5) - hash + char;
-                hash |= 0; 
-            }
-            return hash;
-        }
+        _hashPrompt(prompt, options) { const str = JSON.stringify({ prompt, options }); let h = 0; for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); h = (h << 5) - h + c; h |= 0; } return h; }
         async call(prompt, options = {}) {
-            const key = this._hashPrompt(prompt, options);
-            const cached = this.cache.get(key);
-            if (cached && (Date.now() - cached.timestamp < this.cacheTimeout)) {
-                return cached.data;
-            }
+            const key = this._hashPrompt(prompt, options); const cached = this.cache.get(key);
+            if (cached && (Date.now() - cached.timestamp < this.cacheTimeout)) return cached.data;
             const result = await this.getClient().call(prompt, options);
-
-            if (this.cache.size >= CONFIG.API_CACHE_MAX_SIZE) {
-                const oldestKey = this.cache.keys().next().value;
-                this.cache.delete(oldestKey);
-            }
+            if (this.cache.size >= CONFIG.API_CACHE_MAX_SIZE) this.cache.delete(this.cache.keys().next().value);
             this.cache.set(key, { data: result, timestamp: Date.now() });
             return result;
         }
-        getClient() { if (!state.settings.apiKey) throw new Error("API Key is not available. Please set it in Settings."); return new GeminiApiClient(state.settings.apiKey); }
+        getClient() { if (!state.settings.apiKey) throw new Error("API Key is not available."); return new GeminiApiClient(state.settings.apiKey); }
     }
 
     class PersonalizedWorkplaceAgent {
-        constructor(apiManager, storage, sessionManager) { this.apiManager = apiManager; this.storage = storage; this.sessionManager = sessionManager; this.personProfiles = new LRUCache(CONFIG.PROFILE_CACHE_MAX_SIZE); }
-        async analyze(message, userInput, personId, persona) {
-            const personProfile = await this.getPersonProfile(personId);
-            const session = this.sessionManager.getSession(personId);
-            const prompt = this._buildAnalysisPrompt(message, userInput, personProfile, persona, session?.history);
-            const result = await this.apiManager.call(prompt, { 
-                responseSchema: { type: "OBJECT", properties: { "analysis": { type: "OBJECT", properties: { "insight": { "type": "STRING" }, "strategy": { "type": "STRING" }, "risk": { "type": "STRING", "enum": ["Low", "Medium", "High", "None"] } } }, "responses": { type: "ARRAY", items: { type: "OBJECT", properties: { "title": { "type": "STRING" }, "text": { "type": "STRING" } }, required: ["title", "text"] } } } } 
-            });
-            if (!validateAIResponse(result)) { throw new Error("AI returned an invalid response. Please try again."); }
-            if (personId) {
-                const fullUserMessage = [message, userInput].filter(Boolean).join('\n');
-                const safeInsight = (result.analysis.insight || '').slice(0, 300);
-                this.sessionManager.updateSession(personId, { history: { role: 'user', content: fullUserMessage }, insight: safeInsight });
-            }
+        constructor(apiManager, storage) { this.api = apiManager; this.storage = storage; this._initLearning(); }
+        _initLearning() { this.responseStats = JSON.parse(localStorage.getItem(this.storage.keys.stats) || '{}'); }
+        _recordResponseSelection(responseIndex, messageContext, persona) {
+            const key = `${messageContext.length}-${messageContext.complexity}-${persona}`;
+            const stats = (this.responseStats[key] = this.responseStats[key] || { total: 0, selections: {} });
+            stats.total++;
+            stats.selections[responseIndex] = (stats.selections[responseIndex] || 0) + 1;
+            localStorage.setItem(this.storage.keys.stats, JSON.stringify(this.responseStats));
+        }
+        async analyze(message, context, personId, persona) {
+            const [profile, session] = await Promise.all([this.storage.get('profiles', personId), this.storage.get('sessions', personId)]);
+            const messageContext = this._assessMessageContext(message);
+            
+            const templateResponses = this._getTemplateResponse(messageContext, profile?.type, persona);
+            if (templateResponses) return { responses: templateResponses };
+
+            const prompt = this._buildAnalysisPrompt(message, context, profile, persona, session, messageContext);
+            const result = await this.api.call(prompt, { responseSchema: this._getSchema(messageContext) });
+            
+            if (personId && result.analysis) this._updateSession(personId, session, message, context, result.analysis);
+            result.responses = this._optimizeResponseOrder(result.responses, messageContext, persona);
             return result;
         }
-        async summarizeSession(personId) {
-            if (!personId) return;
-            try {
-                const session = this.sessionManager.getSession(personId);
-                const profile = await this.getPersonProfile(personId);
-                if (!session || !profile || session.insights.length === 0) { this.sessionManager.clearSession(personId); return; }
-                
-                const prompt = `Update the existing profile with new insights. 
-MERGE STRATEGY: Preserve existing insights, add new distinctive patterns only.
-EXISTING: ${profile.summary}
-NEW INSIGHTS: ${session.insights.join(' ')}
-TASK: Return updated summary that preserves existing knowledge while adding new patterns. Respond ONLY with a JSON object with a "summary" key.`;
+        _getSchema(messageContext) {
+            const responseSchema = { type: "ARRAY", items: { type: "OBJECT", properties: { "title": { "type": "STRING" }, "text": { "type": "STRING" } } } };
+            const isCompose = UI_CONFIGS[getCurrentUIMode()].analysisHidden;
+            if(isCompose) return { type: "OBJECT", properties: { "responses": responseSchema } };
+            return { type: "OBJECT", properties: { "analysis": { type: "OBJECT", properties: { "insight": { "type": "STRING" }, "strategy": { "type": "STRING" }, "risk": { "type": "STRING" } } }, "responses": responseSchema } };
+        }
+        _updateSession(personId, session, message, context, analysis) {
+            const newSession = session || { history: [], insights: [] };
+            newSession.history.push({ role: 'user', content: [message, context].filter(Boolean).join('\n') });
+            newSession.insights.push((analysis.insight || '').slice(0, 300));
+            newSession.lastActivity = Date.now();
+            this.storage.set('sessions', newSession, personId);
+        }
+        _optimizeResponseOrder(responses, messageContext, persona) {
+            const key = `${messageContext.length}-${messageContext.complexity}-${persona}`;
+            const stats = this.responseStats[key];
+            if (stats && stats.total > 5) {
+                return responses.sort((a, b) => {
+                    const aIndex = responses.indexOf(a), bIndex = responses.indexOf(b);
+                    return (stats.selections[bIndex] || 0) - (stats.selections[aIndex] || 0);
+                });
+            }
+            return responses;
+        }
+        _getTemplateResponse(messageContext, relationship, persona) {
+            const templates = { 'acknowledgment-short': { diplomat: ["Got it, thanks!", "Understood!", "Perfect, thank you"], challenger: ["Noted.", "Confirmed."] }, 'question-simple': { coach: ["What's your take?", "How do you see it?"], pragmatist: ["Need more details?", "Next step?"] } };
+            const key = (messageContext.complexity === 'simple' && messageContext.length === 'short' && messageContext.questions === 0) ? 'acknowledgment-short' : (messageContext.questions > 0 && messageContext.complexity === 'simple') ? 'question-simple' : null;
+            const pTemplates = templates[key]?.[persona];
+            if (pTemplates && Math.random() < 0.3) return pTemplates.map((text, i) => ({ title: `Option ${i+1}`, text, isTemplate: true }));
+            return null;
+        }
+        _assessMessageContext(message) {
+            const words = message.trim().split(/\s+/).length;
+            const sentences = (message.match(/[.!?]/g) || []).length || 1;
+            const questions = (message.match(/\?/g) || []).length;
+            const urgent = /\b(urgent|asap|immediately|deadline)\b/i.test(message);
+            const emotional = /\b(frustrated|excited|concerned|worried)\b/i.test(message);
+            return { length: words < 15 ? 'short' : words < 50 ? 'medium' : 'long', complexity: sentences > 2 || questions > 1 ? 'complex' : 'simple', urgency: urgent, emotional: emotional, questions: questions };
+        }
+        _adaptPersonaToContext(basePersona, relationship, messageContext) {
+            const adaptations = { 'Manager': { urgent: 'Be direct and solution-focused.', emotional: 'Acknowledge concerns professionally.' }, 'Client': { urgent: 'Prioritize reassurance and clear timelines.', emotional: 'Use empathetic language.' } };
+            const baseConfig = PERSONAS[basePersona];
+            const rAdapt = adaptations[relationship] || {};
+            let dynamicTraits = baseConfig.traits;
+            if (messageContext.urgency && rAdapt.urgent) dynamicTraits += `. ${rAdapt.urgent}`;
+            if (messageContext.emotional && rAdapt.emotional) dynamicTraits += `. ${rAdapt.emotional}`;
+            return { ...baseConfig, traits: dynamicTraits };
+        }
+        _buildAnalysisPrompt(message, context, profile, persona, session, messageContext) {
+            const mode = getCurrentUIMode();
+            const dynamicPersona = this._adaptPersonaToContext(persona, profile?.type, messageContext);
+            const state = this._analyzeConversationState(session?.history);
 
-                const result = await this.apiManager.call(prompt, { temperature: 0.1, responseSchema: { type: "OBJECT", properties: { "summary": { "type": "STRING" } } } });
-
-                const newSummary = result?.summary?.trim();
-                if (newSummary && !newSummary.toLowerCase().includes("no significant")) {
-                    profile.summary = newSummary;
-                    await this.storage.savePersonProfile(personId, profile);
-                    this.personProfiles.set(personId, profile);
-                }
-                this.sessionManager.clearSession(personId);
-            } catch (error) { console.error('Session summarization failed:', error); showToast("Failed to save session summary.", "error"); }
+            const prompt = `
+            <persona_config>
+              Your persona is "${persona}". Use a ${dynamicPersona.tone} tone.
+              TRAITS: ${dynamicPersona.traits}.
+            </persona_config>
+            <conversation_state>
+              Current state: ${state}. ${this._adjustForConversationState(state)}.
+            </conversation_state>
+            <context>
+              <relationship>${profile?.type || 'Not specified'}</relationship>
+              <long_term_memory>${(profile?.summary || 'No summary').slice(0, 500)}</long_term_memory>
+              <short_term_memory>${(session?.history || []).slice(-3).map(h => `${h.role}: ${h.content}`).join('\n')}</short_term_memory>
+            </context>
+            <input>
+              <mode>${mode}</mode>
+              <message_to_process>${this._sanitize(message)}</message_to_process>
+              <user_guidance>${this._sanitize(context) || 'Initial analysis.'}</user_guidance>
+            </input>`;
+            return prompt;
         }
-        _sanitizePromptInput(content) {
-            if (!content) return '';
-            return content
-                .replace(/[<>]/g, match => ({ '<': '&lt;', '>': '&gt;' }[match]))
-                .replace(/\{\{|\}\}/g, '')
-                .replace(/```[\s\S]*?```/g, '[CODE_BLOCK_REMOVED]')
-                .replace(/(system|assistant|user):/gi, '[ROLE_REMOVED]:')
-                .replace(/^\s*(ignore|disregard|forget|override|system|you are|act as|pretend).*$/gmi, '[INSTRUCTION_REMOVED]')
-                .slice(0, 1500)
-                .replace(/[\x00-\x1f\x7f-\x9f]/g, '');
-        }
-        _promptHeader(mode, persona) {
-            const personaConfig = PERSONA_CONFIGS[persona] || PERSONA_CONFIGS.diplomat;
-            return `You are "The Strategic Gatekeeper," an elite AI specializing in workplace communication. Your current persona is "${persona}".
-PERSONA TRAITS: ${personaConfig.traits}
-TONE: ${personaConfig.tone}
-<task>
-1.  **Analyze**: Create a concise, single-sentence analysis for "insight" and "strategy". Also provide a "risk" level ("Low", "Medium", "High", or "None").
-2.  **Respond**: Generate 3 distinct response options. Each must have a short "title" (1-3 words) and "text".
-3.  **Format**: Respond ONLY with valid JSON matching the schema. No extra text or markdown.
-</task>`;
-        }
-        _buildHistoryBlock(sessionHistory) { if (!sessionHistory || sessionHistory.length === 0) return ''; return `<short_term_memory_conversation_history>${sessionHistory.map(h => `${h.role}: ${h.content}`).join('\n')}</short_term_memory_conversation_history>`; }
-        _buildContext(personProfile) { return `<context><person_name>${personProfile?.name || 'General'}</person_name><relationship>${personProfile?.type || 'Not specified'}</relationship><long_term_memory_summary>${personProfile?.summary || 'No summary yet.'}</long_term_memory_summary></context>`; }
-        _buildUserInput(message, userInput, mode) {
-            const sanitizedMessage = this._sanitizePromptInput(message);
-            const sanitizedUserInput = this._sanitizePromptInput(userInput);
-            if (mode === 'Compose') return `<user_prompt>${sanitizedUserInput}</user_prompt>`;
-            return `<message_to_analyze>${sanitizedMessage}</message_to_analyze><user_guidance>${sanitizedUserInput || 'Initial analysis.'}</user_guidance>`;
-        }
-        _buildAnalysisPrompt(message, userInput, personProfile, persona, sessionHistory) {
-            const mode = !message ? 'Compose' : 'Response';
-            const maxHistoryItems = 5;
-            const recentHistory = sessionHistory ? sessionHistory.slice(-maxHistoryItems) : [];
-            const contextPriority = [
-                this._buildUserInput(message, userInput, mode),
-                this._buildContext(personProfile),
-                this._buildHistoryBlock(recentHistory)
-            ];
-            const fullInput = `<input><mode>${mode}</mode><persona>${persona}</persona>${contextPriority.join('')}</input>`;
-            return `${this._promptHeader(mode, persona)}${fullInput}`;
-        }
-        async getPersonProfile(personId) { 
-            if (!personId) return null; 
-            const cached = this.personProfiles.get(personId); if (cached) return cached;
-            const stored = await this.storage.getPersonProfile(personId); if (stored) { this.personProfiles.set(personId, stored); return stored; } 
-            return null; 
-        }
+        _analyzeConversationState(history) { if (!history || history.length === 0) return 'initial'; const recent = history.slice(-2); if (recent.some(h => h.content.includes('?'))) return 'awaiting_response'; if (recent.some(h => /\b(please|could you)\b/i.test(h.content))) return 'action_requested'; if (recent.some(h => /\b(decided|chosen)\b/i.test(h.content))) return 'resolution'; return 'continuing'; }
+        _adjustForConversationState(state) { const adj = { 'awaiting_response': 'Provide requested info directly.', 'action_requested': 'Confirm understanding and next steps.', 'resolution': 'Acknowledge the decision.', 'continuing': 'Keep the conversation moving.' }; return adj[state] || 'Respond appropriately.'; }
+        _sanitize(c) { return c ? c.replace(/[<>]/g, '').slice(0,1500) : ''; }
     }
+    const agent = new PersonalizedWorkplaceAgent(new ApiManager(), storage);
 
+    // --- UI MANAGEMENT ---
     const UIManager = {
         init() { this.setEmptyStateMessages(); },
-        openModal(modalElement) { focusedElementBeforeModal = document.activeElement; modalElement.classList.remove('hidden'); activeModal = modalElement; const firstFocusable = modalElement.querySelector('input, button, select, textarea'); if (firstFocusable) firstFocusable.focus(); },
-        closeModal(modalElement) { modalElement.classList.add('hidden'); if (activeModal === modalElement) activeModal = null; if (focusedElementBeforeModal) focusedElementBeforeModal.focus(); },
-        updateUIState(isLoading = false) {
-            const loaderDisplay = isLoading ? 'flex' : 'none';
-            dom.translationLoader.style.display = loaderDisplay;
-            dom.outputLoader.style.display = loaderDisplay;
-            const controlsToLock = [dom.messageInput, dom.userInput, dom.personaSelector, dom.recipientSelector, dom.endConversationBtn, dom.clearInputsBtn];
-            controlsToLock.forEach(c => c.disabled = isLoading);
-            if (!isLoading) { dom.endConversationBtn.classList.toggle('hidden', !state.selectedPersonId); }
-        },
-        showProgress(stage) {
-            const stages = ['Analyzing input...', 'Generating responses...', 'Finalizing analysis...'];
-            const loaderText = dom.translationLoader.querySelector('span:last-child');
-            if (loaderText) loaderText.textContent = stages[stage] || 'Processing...';
-        },
-        showApiKeyCta() { dom.analysisSection.classList.remove('hidden'); dom.responsesSection.classList.add('hidden'); dom.translationResult.classList.add('hidden'); dom.apiKeyCta.classList.remove('hidden'); dom.optionsContainer.replaceChildren(); dom.analysisTitle.textContent = "AI Analysis"; },
-        hideApiKeyCta() { dom.translationResult.classList.remove('hidden'); dom.apiKeyCta.classList.add('hidden'); this.setEmptyStateMessages(); },
-        setEmptyStateMessages() { dom.translationResult.innerHTML = `<div class="empty-state-text">Analysis will appear here.</div>`; dom.optionsContainer.innerHTML = `<div class="empty-state-text">Responses will appear here.</div>`; },
+        setEmptyStateMessages() { dom.translationResult.innerHTML = `<div class="empty-state-text">Analysis will appear here.</div>`; dom.optionsContainer.innerHTML = `<div class="empty-state-text">Suggestions will appear here.</div>`; },
+        showOptimisticResponse() { const s = `<div class="response-skeleton"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>`; dom.translationResult.innerHTML = s; dom.optionsContainer.innerHTML = s.repeat(3); },
         displayAnalysis(analysis) {
-            dom.translationResult.replaceChildren(); 
-            if (!analysis) { dom.translationResult.textContent = 'No analysis available.'; return; }
-            const p = (strongText, value, colorClass = '') => {
-                const pEl = document.createElement('p');
-                const strongEl = document.createElement('strong'); strongEl.textContent = strongText;
-                const spanEl = document.createElement('span'); spanEl.textContent = value || 'N/A';
-                if (colorClass) spanEl.className = colorClass;
-                pEl.append(strongEl, spanEl); return pEl;
-            };
-            dom.translationResult.append(p('Insight: ', analysis.insight), p('Strategy: ', analysis.strategy), p('Risk: ', analysis.risk, this.getRiskColor(analysis.risk)));
+            dom.translationResult.innerHTML = ''; 
+            if (!analysis) { this.setEmptyStateMessages(); return; }
+            const p = (strong, val) => `<p><strong>${strong}: </strong><span>${val || 'N/A'}</span></p>`;
+            dom.translationResult.innerHTML = p('Insight', analysis.insight) + p('Strategy', analysis.strategy) + p('Risk', analysis.risk);
         },
         displayResponses(responses) {
-            dom.optionsContainer.replaceChildren();
-            if (!Array.isArray(responses)) return;
-            responses.forEach((response, index) => {
-                const card = document.createElement('div');
-                card.className = 'response-card';
-                if (index === 0) card.classList.add('primary'); // Make the first one primary by default
-                const header = document.createElement('div'); header.className = 'response-card-header';
-                const title = document.createElement('h4'); title.textContent = response.title;
-                const copyBtn = document.createElement('button'); copyBtn.className = 'copy-btn btn'; copyBtn.textContent = 'Copy'; copyBtn.dataset.text = response.text;
-                header.append(title, copyBtn);
-                const p = document.createElement('p'); p.textContent = response.text;
-                card.append(header, p); dom.optionsContainer.appendChild(card);
-            });
+            dom.optionsContainer.innerHTML = '';
+            if (!Array.isArray(responses) || responses.length === 0) return;
+            const tabs = responses.map((r, i) => `<button class="response-tab ${i === state.activeResponseIndex ? 'active' : ''}" data-action="select-response-tab" data-index="${i}">${r.title}</button>`).join('');
+            const contents = responses.map((r, i) => `
+                <div class="response-content ${i !== state.activeResponseIndex ? 'hidden' : ''}" data-response-content-index="${i}">
+                    <div class="response-text">${r.text}</div>
+                    ${this.createRefinementControls()}
+                    <div class="copy-btn-container"><button class="btn" data-action="copy-response" data-index="${i}" data-text="${encodeURIComponent(r.text)}">Copy</button></div>
+                </div>`).join('');
+            dom.optionsContainer.innerHTML = `<div class="response-tabs">${tabs}</div><div>${contents}</div>`;
         },
-        getRiskColor(risk) { const r = (risk || '').toLowerCase(); if (r.includes('high')) return 'text-danger'; if (r.includes('medium')) return 'text-warning'; return 'text-success'; },
-        updateAnalysisTitle(mode) { dom.analysisSection.classList.toggle('hidden', mode === 'compose' || !state.settings.apiKey); },
-        async populateRecipientSelector(profiles) {
-            dom.recipientSelectorContainer.classList.remove('hidden');
-            dom.recipientSelector.innerHTML = `<option value="general">-- General Communication --</option>`;
-            const grouped = Object.values(profiles).reduce((acc, p) => { (acc[p.type] = acc[p.type] || []).push(p); return acc; }, {});
-            CONFIG.STANDARD_RELATIONSHIPS.forEach(type => { if (grouped[type]) { const optgroup = document.createElement('optgroup'); optgroup.label = type; grouped[type].forEach(p => optgroup.appendChild(new Option(p.name, p.id))); dom.recipientSelector.appendChild(optgroup); delete grouped[type]; } });
-            const otherTypes = Object.keys(grouped);
-            if(otherTypes.length > 0) { const otherGroup = document.createElement('optgroup'); otherGroup.label = 'Other'; otherTypes.forEach(type => { grouped[type].forEach(p => otherGroup.appendChild(new Option(`${p.name} (${p.type})`, p.id))); }); dom.recipientSelector.appendChild(otherGroup); }
+        createRefinementControls() {
+            const chips = CONFIG.REFINEMENT_CHIPS.map(c => `<button class="chip" data-action="refine-response" data-instruction="${c}">${c}</button>`).join('');
+            return `<div class="refinement-controls"><div class="refinement-chips">${chips}</div><div class="input-group"><input type="text" class="input-field refinement-input" placeholder="Custom refinement..."><button class="btn btn-primary" data-action="refine-response-custom">Refine</button></div></div>`;
+        },
+        updateActiveResponse(newText) {
+            const content = dom.optionsContainer.querySelector(`[data-response-content-index="${state.activeResponseIndex}"]`);
+            if(!content) return;
+            content.querySelector('.response-text').textContent = newText;
+            content.querySelector('[data-action="copy-response"]').dataset.text = encodeURIComponent(newText);
+            state.responses[state.activeResponseIndex].text = newText;
+        },
+        async populateRecipientSelector() {
+            const profiles = await storage.get('profiles');
+            dom.recipientSelector.innerHTML = `<option value="">-- Select Recipient --</option>`;
+            const profileList = Object.values(profiles);
+            if(profileList.length === 0) { dom.recipientSelector.add(new Option('+ Add New Person', 'add_new_person')); return; }
+            
+            const grouped = profileList.reduce((acc, p) => { (acc[p.type] = acc[p.type] || []).push(p); return acc; }, {});
+            Object.keys(grouped).sort().forEach(type => { const optgroup = document.createElement('optgroup'); optgroup.label = type; grouped[type].forEach(p => optgroup.appendChild(new Option(p.name, p.id))); dom.recipientSelector.appendChild(optgroup); });
             dom.recipientSelector.add(new Option('+ Add New Person', 'add_new_person'));
-            dom.recipientSelector.value = state.selectedPersonId || "general";
+            
+            dom.recipientSelector.value = state.selectedPersonId || "";
+            if (profileList.length === 1 && !state.selectedPersonId) { state.selectedPersonId = profileList[0].id; dom.recipientSelector.value = state.selectedPersonId; showToast(`Selected ${profileList[0].name}.`, 'info'); }
         },
-        async renderPeopleList(profiles) {
-            dom.peopleList.replaceChildren();
-            Object.values(profiles).forEach(p => { 
-                const div = document.createElement('div'); div.className = 'person-item';
-                const header = document.createElement('div'); header.className = "person-item-header";
-                const nameSpan = document.createElement('span'); nameSpan.textContent = `${p.name} (${p.type})`;
-                const controlsDiv = document.createElement('div'); controlsDiv.className = "person-controls";
-                const profileBtn = document.createElement('button'); profileBtn.className = "btn view-profile-btn"; profileBtn.dataset.id = p.id; profileBtn.textContent = "Profile";
-                const delBtn = document.createElement('button'); delBtn.className = "btn btn-danger"; delBtn.dataset.id = p.id; delBtn.textContent = "Delete";
-                controlsDiv.append(profileBtn, delBtn); header.append(nameSpan, controlsDiv); div.append(header); dom.peopleList.appendChild(div); 
-            });
-        },
-        toggleProfileAccordion(personItem, personProfile) {
-            const existingDetails = personItem.querySelector('.profile-details');
-            if (existingDetails) { existingDetails.remove(); return; }
-            const detailsDiv = document.createElement('div'); detailsDiv.className = 'profile-details';
-            detailsDiv.innerHTML = `<h4>AI Summary</h4>`;
-            const summaryText = personProfile.summary || '';
-            const textarea = document.createElement('textarea'); textarea.id = `summary-${personProfile.id}`; textarea.className = 'input-field'; textarea.rows = 6; textarea.value = summaryText;
-            const charCountP = document.createElement('p'); charCountP.className = 'summary-char-count'; charCountP.id = `count-${personProfile.id}`; charCountP.textContent = `${summaryText.length} chars`;
-            textarea.addEventListener('input', () => { charCountP.textContent = `${textarea.value.length} chars`; });
-            const actionsDiv = document.createElement('div'); actionsDiv.className = 'modal-actions'; actionsDiv.style.marginTop = '0.5rem';
-            const saveBtn = document.createElement('button'); saveBtn.className = "btn btn-primary save-profile-btn"; saveBtn.dataset.id = personProfile.id; saveBtn.textContent = "Save Profile";
-            actionsDiv.appendChild(saveBtn); detailsDiv.append(textarea, charCountP, actionsDiv); personItem.appendChild(detailsDiv);
+        async renderPeopleList() {
+            const profiles = await storage.get('profiles');
+            dom.peopleList.innerHTML = Object.values(profiles).map(p => `
+                <div class="person-item" data-person-id="${p.id}">
+                    <div class="person-item-header">
+                        <span>${p.name} (${p.type})</span>
+                        <div class="person-controls">
+                            <button class="btn" data-action="view-profile" data-id="${p.id}">Profile</button>
+                            <button class="btn btn-danger" data-action="delete-person" data-id="${p.id}">Delete</button>
+                        </div>
+                    </div>
+                </div>`).join('');
         },
     };
+
+    // --- APPLICATION LOGIC ---
+    function getCurrentUIMode() { return dom.messageInput.value.trim().length === 0 ? 'compose' : 'analyze'; }
+    function updateUI() {
+        const mode = getCurrentUIMode();
+        const config = UI_CONFIGS[mode];
+        dom.messageSectionTitle.textContent = config.title;
+        dom.contextSection.classList.toggle('hidden', config.contextHidden);
+        dom.analyzeBtn.textContent = config.buttonText;
+        dom.analysisWrapper?.classList.toggle('hidden', config.analysisHidden);
+        dom.analyzeBtn.disabled = mode === 'compose';
+        const needsRecipient = mode === 'analyze' && !state.selectedPersonId;
+        dom.recipientSelector.classList.toggle('prompt', needsRecipient);
+        dom.recipientPrompt.classList.toggle('hidden', !needsRecipient);
+    }
+    const debouncedAutoAnalysis = debounce(() => runAnalysis({ isAuto: true }), CONFIG.DEBOUNCE_MS_AUTO);
     
-    const storage = new ProfileStorage();
-    const sessionManager = new SessionManager();
-    const apiManager = new ApiManager();
-    const agent = new PersonalizedWorkplaceAgent(apiManager, storage, sessionManager);
+    async function runAnalysis({ isAuto = false } = {}) {
+        if ((isAuto && operationInProgress) || !state.settings.apiKey) return;
+        if (!dom.messageInput.value.trim()) return;
 
-    function queueRender() { if (!renderQueued) { renderQueued = true; requestAnimationFrame(() => { renderQueued = false; UIManager.updateUIState(); }); } }
+        const currentRequest = Symbol();
+        latestAnalysisRequest = currentRequest;
+        
+        if (!isAuto) { operationInProgress = true; dom.analyzeBtn.disabled = true; UIManager.showOptimisticResponse(); } 
+        else { dom.messageInput.style.borderColor = 'var(--primary-color)'; }
+        dom.aiInteractionSection.classList.remove('hidden');
 
-    async function handleResponseRefinement() {
-        if (!state.lastAnalysis) return;
-        UIManager.updateUIState(true); dom.outputLoader.style.display = 'flex'; dom.optionsContainer.replaceChildren();
-        try { const result = await agent.analyze(state.detectedMessage, dom.userInput.value, state.selectedPersonId, state.selectedPersona); UIManager.displayResponses(result.responses);
-        } catch (error) { showToast(error.message, 'error');
-        } finally { UIManager.updateUIState(false); dom.outputLoader.style.display = 'none'; }
+        try {
+            const result = await agent.analyze(dom.messageInput.value, state.sessionContext.join('\n'), state.selectedPersonId, state.selectedPersona);
+            if (latestAnalysisRequest !== currentRequest) return;
+            state.lastAnalysis = result.analysis; state.responses = result.responses; state.activeResponseIndex = 0;
+            UIManager.displayAnalysis(result.analysis); UIManager.displayResponses(result.responses);
+        } catch(error) {
+            if (latestAnalysisRequest === currentRequest) { showToast(error.message, 'error'); if(!isAuto) UIManager.setEmptyStateMessages(); }
+        } finally {
+            if (latestAnalysisRequest === currentRequest) {
+                if (isAuto) dom.messageInput.style.borderColor = '';
+                else { operationInProgress = false; dom.analyzeBtn.disabled = false; }
+            }
+        }
     }
+    
+    // --- EVENT HANDLERS & INITIALIZATION ---
+    async function handleEvent(e) {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
 
-    async function handleFullAnalysis() {
-        if (!state.settings.apiKey) { UIManager.showApiKeyCta(); return; }
-        const hasText = state.detectedMessage.trim().length > 0 || dom.userInput.value.trim().length > 0; if (!hasText) return;
-        UIManager.updateUIState(true); UIManager.showProgress(0); dom.analysisSection.classList.remove('hidden'); dom.responsesSection.classList.remove('hidden'); dom.translationResult.textContent = ''; dom.optionsContainer.replaceChildren(); state.lastAnalysis = null;
-        try { 
-            const resultPromise = agent.analyze(state.detectedMessage, dom.userInput.value, state.selectedPersonId, state.selectedPersona);
-            UIManager.showProgress(1);
-            const result = await resultPromise;
-            UIManager.showProgress(2);
-            state.lastAnalysis = result.analysis; UIManager.displayAnalysis(result.analysis); UIManager.displayResponses(result.responses);
-        } catch(error) { showToast(error.message, 'error'); dom.translationResult.textContent = 'An error occurred during analysis.';
-        } finally { UIManager.updateUIState(false); }
-    }
+        const { action, id, modalId, index, instruction, text } = target.dataset;
+        e.preventDefault();
 
-    function migrateStorage() { for (const keyType in CONFIG.OLD_STORAGE_KEYS) { const newKey = CONFIG.STORAGE_KEYS[keyType]; for (const oldKey of CONFIG.OLD_STORAGE_KEYS[keyType]) { const oldData = localStorage.getItem(oldKey); if (oldData) { if (!localStorage.getItem(newKey)) { localStorage.setItem(newKey, oldData); } localStorage.removeItem(oldKey); } } } }
-    function loadSettings() { migrateStorage(); const saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SETTINGS) || '{}'); state.settings.onboardingDismissed = saved.onboardingDismissed || false; state.settings.apiKey = saved.apiKey || null; }
-    async function saveSettings() {
-        state.settings.apiKey = dom.geminiApiKeyInput.value;
-        const wasApiKeyMissing = !state.settings.apiKey;
-        localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify({ onboardingDismissed: true, apiKey: state.settings.apiKey }));
-        UIManager.closeModal(dom.settingsModal);
-        if (state.settings.apiKey) { UIManager.hideApiKeyCta(); if (wasApiKeyMissing) { dom.translationResult.innerHTML = `<div class="empty-state-text"><strong>API key set!</strong> Paste a message to get started.</div>`; }
-        } else { UIManager.showApiKeyCta(); }
-        queueRender();
-    }
-    function renderSettings() { dom.geminiApiKeyInput.value = state.settings.apiKey || ''; }
-    function isInsideSidebar() { return window.innerWidth <= CONFIG.SIDEBAR_MAX_WIDTH; }
-
-    async function initializeApp() {
-        let debouncedRefinement;
-        UIManager.init();
-        await UIManager.populateRecipientSelector(await storage.getAllProfiles());
-        
-        if (debouncedRefinement) debouncedRefinement.cancel?.();
-        debouncedRefinement = debounce(handleResponseRefinement, CONFIG.DEBOUNCE_MS_FAST);
-
-        const updateUIMode = () => {
-            const hasMessage = dom.messageInput.value.trim().length > 0;
-            dom.userInputTitle.textContent = hasMessage ? "Add Context to Refine Responses" : "Compose Your Message";
-            dom.userInput.placeholder = hasMessage ? "e.g., 'make it more formal'" : "e.g., 'email my team about the deadline'";
-            dom.analyzeBtn.disabled = !hasMessage && !dom.userInput.value.trim().length > 0;
-            UIManager.updateAnalysisTitle(hasMessage ? 'analyze' : 'compose');
-        };
-
-        dom.messageInput.addEventListener('input', () => { state.detectedMessage = dom.messageInput.value; updateUIMode(); });
-        dom.userInput.addEventListener('input', () => { const hasMessage = dom.messageInput.value.trim().length > 0; if (hasMessage) { debouncedRefinement(); } else { updateUIMode(); } });
-        dom.userInput.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); dom.analyzeBtn.click(); } });
-        
-        dom.userInput.addEventListener('blur', () => {
-            const hasContent = dom.messageInput.value.trim().length > 0 || dom.userInput.value.trim().length > 0;
-            // Avoid triggering if an analysis is already running or a modal is open.
-            if (hasContent && !operationInProgress && !activeModal) {
-                handleFullAnalysis();
+        try {
+            switch (action) {
+                case 'run-analysis': await runAnalysis({}); break;
+                case 'clear-inputs': dom.messageInput.value = ''; dom.userInput.value = ''; state.sessionContext = []; await storage.set('draft', ''); UIManager.setEmptyStateMessages(); dom.aiInteractionSection.classList.add('hidden'); updateUI(); break;
+                case 'open-settings': dom.geminiApiKeyInput.value = state.settings.apiKey; showModal('settingsModal'); break;
+                case 'save-settings': state.settings.apiKey = dom.geminiApiKeyInput.value; await storage.set('settings', state.settings); hideModal('settingsModal'); if(!state.settings.apiKey) dom.apiKeyCta.classList.remove('hidden'); else dom.apiKeyCta.classList.add('hidden'); break;
+                case 'open-people-manager': hideModal('settingsModal'); CONFIG.STANDARD_RELATIONSHIPS.forEach(r => dom.newPersonRelationshipType.add(new Option(r,r))); dom.newPersonRelationshipType.add(new Option('Other', 'Other')); await UIManager.renderPeopleList(); showModal('peopleModal'); break;
+                case 'add-person': const name = dom.newPersonName.value.trim(); let role = dom.newPersonRelationshipType.value; if (role === 'Other') role = dom.newPersonRole.value.trim(); if (!name || !role) return showToast("Name and Relationship are required.", "error"); const newId = `p_${Date.now()}`; await storage.set('profiles', {id: newId, name, type: role, summary: ''}, newId); dom.newPersonName.value = ''; dom.newPersonRole.value = ''; await Promise.all([UIManager.renderPeopleList(), UIManager.populateRecipientSelector()]); break;
+                case 'delete-person': if (await showConfirmationModal("Delete Person?", "This cannot be undone.")) { const profiles = await storage.get('profiles'); delete profiles[id]; await storage.set('profiles', profiles); if(state.selectedPersonId === id) state.selectedPersonId = null; await Promise.all([UIManager.renderPeopleList(), UIManager.populateRecipientSelector()]); } break;
+                case 'clear-all-data': if(await showConfirmationModal('Clear All Data?', 'This will delete all profiles and settings.')) { Object.values(storage.keys).forEach(key => localStorage.removeItem(key)); window.location.reload(); } break;
+                case 'close-modal': hideModal(modalId); break;
+                case 'select-response-tab': state.activeResponseIndex = parseInt(index, 10); UIManager.displayResponses(state.responses); break;
+                case 'copy-response': agent._recordResponseSelection(parseInt(index, 10), agent._assessMessageContext(dom.messageInput.value), state.selectedPersona); navigator.clipboard.writeText(decodeURIComponent(text)).then(() => showToast("Copied!", "success")).catch(() => showToast("Copy failed.", "error")); break;
+                // More actions here...
             }
-        });
-
-        dom.analyzeBtn.addEventListener('click', () => handleFullAnalysis());
-        dom.personaSelector.addEventListener('change', (e) => { state.selectedPersona = e.target.value; if (state.lastAnalysis) { handleResponseRefinement(); } });
-        
-        dom.recipientSelector.addEventListener('change', async (e) => {
-            if (operationInProgress) return;
-            const switchId = Symbol();
-            pendingPersonSwitch = switchId;
-
-            const newPersonId = e.target.value;
-            if (newPersonId === 'add_new_person') {
-                dom.newPersonRelationshipType.innerHTML = '';
-                [...CONFIG.STANDARD_RELATIONSHIPS, "Other"].forEach(r => dom.newPersonRelationshipType.add(new Option(r,r)));
-                dom.customRoleGroup.classList.add('hidden');
-                await UIManager.renderPeopleList(await storage.getAllProfiles());
-                UIManager.openModal(dom.peopleModal);
-                dom.recipientSelector.value = state.selectedPersonId || "general";
-                return;
-            }
-            
-            operationInProgress = true;
-            UIManager.updateUIState(true);
-            try {
-                if (state.selectedPersonId) await agent.summarizeSession(state.selectedPersonId);
-                if (pendingPersonSwitch !== switchId) return; // FIX: Second check after async operation to prevent race condition.
-                state.selectedPersonId = newPersonId === 'general' ? null : newPersonId;
-            } catch (error) { console.warn('Failed to summarize session on person change:', error);
-            } finally { operationInProgress = false; UIManager.updateUIState(false); }
-        });
-
-        dom.clearInputsBtn.addEventListener('click', () => { state.detectedMessage = ''; dom.messageInput.value = ''; dom.userInput.value = ''; state.lastAnalysis = null; if(state.settings.apiKey) UIManager.hideApiKeyCta(); else UIManager.showApiKeyCta(); dom.optionsContainer.replaceChildren(); dom.analysisSection.classList.add('hidden'); dom.responsesSection.classList.add('hidden'); updateUIMode(); });
-        dom.endConversationBtn.addEventListener('click', async () => { UIManager.updateUIState(true); await agent.summarizeSession(state.selectedPersonId); UIManager.updateUIState(false); });
-
-        dom.settingsBtn.addEventListener('click', () => { renderSettings(); UIManager.openModal(dom.settingsModal); });
-        dom.ctaSettingsBtn.addEventListener('click', () => dom.settingsBtn.click());
-        dom.cancelSettingsBtn.addEventListener('click', () => UIManager.closeModal(dom.settingsModal));
-        dom.saveSettingsBtn.addEventListener('click', saveSettings);
-        dom.managePeopleSettingsBtn.addEventListener('click', () => {
-            UIManager.closeModal(dom.settingsModal);
-            dom.newPersonRelationshipType.innerHTML = '';
-            [...CONFIG.STANDARD_RELATIONSHIPS, "Other"].forEach(r => dom.newPersonRelationshipType.add(new Option(r,r)));
-            dom.customRoleGroup.classList.add('hidden');
-            UIManager.renderPeopleList(storage.getAllProfiles()).then(() => UIManager.openModal(dom.peopleModal));
-        });
-        dom.clearDataBtn.addEventListener('click', async () => { if(await showConfirmationModal('Clear Data', 'Are you sure you want to delete ALL local data? This is irreversible.')) { Object.values(CONFIG.STORAGE_KEYS).forEach(key => localStorage.removeItem(key)); window.location.reload(); } });
-        
-        dom.closePeopleBtn.addEventListener('click', () => UIManager.closeModal(dom.peopleModal));
-        dom.newPersonRelationshipType.addEventListener('change', e => dom.customRoleGroup.classList.toggle('hidden', e.target.value !== 'Other'));
-        dom.addPersonBtn.addEventListener('click', async () => {
-            const name = dom.newPersonName.value.trim();
-            let role = dom.newPersonRelationshipType.value;
-            if (role === 'Other') role = dom.newPersonRole.value.trim();
-            if (!name || !role) { showToast("Name and Relationship are required.", "error"); return; }
-            const id = `person_${Date.now()}`; 
-            await storage.savePersonProfile(id, { id, name, type: role, summary: `Profile for ${name}.` });
-            dom.newPersonName.value = ''; dom.newPersonRole.value = '';
-            const allProfiles = await storage.getAllProfiles();
-            await UIManager.renderPeopleList(allProfiles);
-            await UIManager.populateRecipientSelector(allProfiles);
-        });
-
-        dom.peopleList.addEventListener('click', async (e) => {
-            const button = e.target.closest('button'); if (!button) return;
-            const personId = button.dataset.id; const personItem = button.closest('.person-item');
-            if (button.classList.contains('view-profile-btn')) { const profile = await storage.getPersonProfile(personId); if(profile) UIManager.toggleProfileAccordion(personItem, profile); } 
-            else if (button.classList.contains('btn-danger')) { if (await showConfirmationModal("Delete Person", "Are you sure? This cannot be undone.")) { const profiles = await storage.getAllProfiles(); delete profiles[personId]; await storage.saveAllProfiles(profiles); if (state.selectedPersonId === personId) state.selectedPersonId = null; await UIManager.renderPeopleList(profiles); await UIManager.populateRecipientSelector(profiles); } }
-            else if (button.classList.contains('save-profile-btn')) {
-                const summaryTextarea = personItem.querySelector(`#summary-${personId}`);
-                const profile = await storage.getPersonProfile(personId); if (!profile) return;
-                profile.summary = summaryTextarea.value; await storage.savePersonProfile(personId, profile);
-                await UIManager.populateRecipientSelector(await storage.getAllProfiles());
-                button.textContent = 'Saved!'; setTimeout(() => { button.textContent = 'Save Profile'; }, 2000);
-            }
-        });
-
-        document.body.addEventListener('click', (e) => { const button = e.target.closest('.copy-btn'); if (button) { navigator.clipboard.writeText(button.dataset.text).then(() => { showToast("Copied to clipboard!", "success"); }).catch(err => { console.error("Failed to copy:", err); showToast("Could not copy text.", "error"); }); } });
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && activeModal) {
-                // FIX: Specifically handle the confirmation modal on Escape to ensure cleanup.
-                if (activeModal === dom.confirmModal) {
-                    dom.confirmCancelBtn.click();
-                } else {
-                    UIManager.closeModal(activeModal);
-                }
-            }
-            if (e.key === 'Tab' && activeModal) {
-                const els = activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-                const first = els[0], last = els[els.length - 1];
-                if (e.shiftKey) { if (document.activeElement === first) { last.focus(); e.preventDefault(); } } 
-                else { if (document.activeElement === last) { first.focus(); e.preventDefault(); } }
-            }
-        });
-        updateUIMode();
-        queueRender();
+        } catch(error) {
+            console.error(`Action "${action}" failed:`, error);
+            showToast('An unexpected error occurred.', 'error');
+        }
     }
     
     async function main() {
-        loadSettings();
-        if (!isInsideSidebar() && !state.settings.onboardingDismissed) {
+        state.settings = await storage.get('settings');
+        if ((!window.chrome || !window.chrome.sidePanel) && !state.settings.onboardingDismissed) {
             dom.onboardingOverlay.classList.remove('hidden');
-            dom.dismissOnboardingBtn.addEventListener('click', () => {
-                state.settings.onboardingDismissed = true;
-                localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings));
-                dom.onboardingOverlay.classList.add('hidden');
-                dom.app.classList.remove('hidden');
-                initializeApp().then(() => { if (!state.settings.apiKey) UIManager.showApiKeyCta(); }).catch(console.error);
+            dom.dismissOnboardingBtn.addEventListener('click', async () => {
+                state.settings.onboardingDismissed = true; await storage.set('settings', state.settings);
+                dom.onboardingOverlay.classList.add('hidden'); dom.app.classList.remove('hidden'); main();
             }, { once: true });
-        } else {
-            dom.app.classList.remove('hidden');
-            await initializeApp();
-            if (!state.settings.apiKey) UIManager.showApiKeyCta();
+            return;
         }
+
+        dom.app.classList.remove('hidden');
+        UIManager.init();
+        dom.messageInput.value = await storage.get('draft');
+        dom.autoAnalyzeToggle.checked = state.settings.autoAnalyzeEnabled;
+        if (!state.settings.apiKey) dom.apiKeyCta.classList.remove('hidden');
+        
+        await UIManager.populateRecipientSelector();
+        updateUI();
+
+        document.addEventListener('click', handleEvent);
+        dom.messageInput.addEventListener('input', () => { storage.set('draft', dom.messageInput.value); updateUI(); if (state.settings.autoAnalyzeEnabled) debouncedAutoAnalysis(); });
+        dom.autoAnalyzeToggle.addEventListener('change', async (e) => { state.settings.autoAnalyzeEnabled = e.target.checked; await storage.set('settings', state.settings); });
+        dom.personaSelector.addEventListener('change', (e) => { state.selectedPersona = e.target.value; if (state.responses.length > 0) runAnalysis({ isAuto: true }); });
+        dom.recipientSelector.addEventListener('change', (e) => { if (e.target.value === 'add_new_person') { handleEvent({ target: { dataset: { action: 'open-people-manager' } }, preventDefault: ()=>{} }); dom.recipientSelector.value = state.selectedPersonId || ""; } else { state.selectedPersonId = e.target.value || null; updateUI(); } });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && activeModal) hideModal(activeModal.id); });
     }
     
     main().catch(console.error);
