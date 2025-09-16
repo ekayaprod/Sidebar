@@ -30,277 +30,152 @@
             color: var(--text-color);
             font-size: 14px;
             display: flex;
-            overflow: hidden; /* Prevent body scroll with toasts */
+            overflow: hidden;
         }
 
-        /* --- Layout & Core Components --- */
+        /* --- Core Layout & Components --- */
         #app { width: 100%; height: 100vh; display: flex; flex-direction: column; padding: 0.75rem; box-sizing: border-box; gap: 0.5rem; }
         main { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 4px; }
-        footer { padding: 0.5rem 0; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-shrink: 0; }
         .section { background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.5rem; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
-        .section-title { font-size: 0.9rem; font-weight: 600; margin: 0; white-space: nowrap; }
+        .section-title { font-size: 0.9rem; font-weight: 600; margin: 0; }
         .input-field, select { width: 100%; box-sizing: border-box; font-size: 0.875rem; padding: 0.4rem 0.6rem; border-radius: 0.375rem; border: 1px solid var(--border-color); font-family: inherit; background-color: var(--info-bg); color: var(--text-color); }
-        .input-field:focus, select:focus { outline: 2px solid var(--primary-color); outline-offset: -1px; background-color: var(--panel-bg); }
+        .input-field:focus, select:focus { outline: 2px solid var(--primary-color); outline-offset: -1px; }
         textarea.input-field { resize: vertical; }
 
         /* --- Buttons & Controls --- */
-        .btn { padding: 0.35rem 0.6rem; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: 0.375rem; cursor: pointer; background-color: var(--panel-bg); transition: background-color 0.2s; font-weight: 500; color: var(--text-color); }
-        .section-header .controls .btn, .section-header .controls select { padding-top: 0.2rem; padding-bottom: 0.2rem; font-size: 0.75rem; }
+        .btn { padding: 0.35rem 0.6rem; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: 0.375rem; cursor: pointer; background-color: var(--panel-bg); font-weight: 500; }
         .btn:hover { background-color: var(--info-bg); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-primary { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
         .btn-primary:hover { filter: brightness(110%); }
         .btn-danger { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
-        .btn-danger:hover { filter: brightness(110%); }
-        #clearInputsBtn, #settingsBtn { background: none; border: none; font-size: 1.1rem; color: var(--subtle-text); cursor: pointer; padding: 0.2rem; }
-        #clearInputsBtn:hover, #settingsBtn:hover { color: var(--text-color); }
-        
-        /* --- Specific UI Sections --- */
-        .controls { display: flex; align-items: center; gap: 0.5rem; }
-        .footer-controls { display: flex; align-items: center; gap: 0.5rem; }
-        .section-header .controls { flex-grow: 1; justify-content: flex-end; flex-wrap: nowrap; min-width: 0; }
-        textarea#messageInput { min-height: 80px; max-height: 150px; }
-        #recipientSelectorContainer { position: relative; display: flex; flex-grow: 1; gap: 0.5rem; align-items: center; min-width: 100px; }
-        #recipientSelector { max-width: 160px; text-overflow: ellipsis; }
-        #recipientSelector.prompt { border-color: var(--warning-color); box-shadow: 0 0 5px color-mix(in srgb, var(--warning-color) 30%, transparent); }
-        #recipientPrompt { position: absolute; top: -10px; right: 0; font-size: 0.7rem; background-color: var(--warning-color); color: white; padding: 1px 5px; border-radius: 10px; }
-        #personaSelector { max-width: 120px; }
-        .loader { display: none; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--subtle-text); }
-        .loader-dot { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .input-group { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-        .toggle-switch { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-switch .slider { width: 34px; height: 20px; background-color: var(--border-color); border-radius: 17px; transition: 0.3s; position: relative; }
-        .toggle-switch .slider::before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
-        .toggle-switch input:checked + .slider { background-color: var(--primary-color); }
-        .toggle-switch input:checked + .slider::before { transform: translateX(14px); }
-        .toggle-switch span { font-size: 0.8rem; color: var(--subtle-text); }
-        
-        /* --- Analysis & Response Display --- */
-        #aiInteractionContainer { display: flex; flex-direction: row; gap: 0.75rem; }
-        #analysisWrapper { flex: 2; min-width: 0; }
-        #responsesWrapper { flex: 3; min-width: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-        #translationResult { font-size: 0.875rem; color: var(--text-color); padding: 0.75rem; border-radius: 0.375rem; background-color: var(--info-bg); }
-        #apiKeyCta { text-align: center; padding: 1rem; background-color: var(--info-bg); border-radius: .5rem; }
-        #apiKeyCta p { margin: 0 0 0.75rem 0; color: var(--text-color); }
-        .prose-styles p { margin: 0 0 0.75rem; line-height: 1.5; color: var(--text-color); }
-        .prose-styles strong { color: var(--subtle-text); font-weight: 600; }
-        .empty-state-text { color: var(--subtle-text); text-align: center; padding: 1rem; }
-        .response-tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border-color); }
-        .response-tab { background: none; border: none; padding: 0.4rem 0.6rem; font-size: 0.8rem; cursor: pointer; border-bottom: 2px solid transparent; color: var(--subtle-text); font-weight: 500; }
-        .response-tab.active { border-bottom-color: var(--primary-color); color: var(--primary-color); font-weight: 600; }
-        .response-content { padding: 0.75rem; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 0.5rem 0.5rem; }
-        .response-text { font-size: 0.875rem; white-space: pre-wrap; margin-bottom: 1rem; }
-        .refinement-controls { margin-top: 0.5rem; }
-        .refinement-chips { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.5rem; }
-        .chip { background-color: var(--info-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 1rem; cursor: pointer; }
-        .chip:hover { background-color: color-mix(in srgb, var(--primary-color) 10%, var(--info-bg)); }
-        #refinementInput { font-size: 0.8rem; }
-        #refineBtn { font-size: 0.8rem; }
-        .copy-btn-container { text-align: right; }
-        .response-skeleton { padding: 0.75rem; }
-        .skeleton-line { height: 1em; background-color: var(--info-bg); border-radius: 0.25rem; margin-bottom: 0.5rem; animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        .skeleton-line.short { width: 60%; }
 
-        /* --- Modals & Overlays --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(100,116,139,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--panel-bg); padding: 1.5rem; border-radius: 0.75rem; max-width: min(95vw, 420px); width: 420px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); display: flex; flex-direction: column; max-height: min(90vh, 600px); overflow-y: auto; }
-        .modal-content h2 { margin: 0 0 1rem 0; font-size: 1.25rem; }
-        .modal-content h3 { margin: 0 0 0.5rem 0; font-size: 0.9rem; font-weight: 600; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; flex-shrink: 0; }
-        #peopleList .person-item { display: flex; flex-direction: column; padding: 0.5rem; background-color: var(--info-bg); border-radius: 0.25rem; }
-        .person-item-header { display: flex; justify-content: space-between; align-items: center; }
-        #peopleList .person-controls { display: flex; gap: 0.5rem; }
-        #peopleList { display: flex; flex-direction: column; gap: 0.5rem; max-height: 240px; overflow-y: auto; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label, .form-group p, .help-link { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; }
-        .form-group p { font-size: 0.75rem; color: var(--subtle-text); margin-top: 0.25rem; }
-        .help-link { color: var(--primary-color); text-decoration: none; margin-top: 0.5rem; }
-        .profile-details { margin-top: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem; max-height: 250px; overflow-y: auto; }
-        .profile-details h4 { font-size: 0.8rem; font-weight: 600; margin: 0 0 0.5rem 0; }
-        .summary-warning { font-size: 0.75rem; color: var(--warning-color); margin-bottom: 0.5rem; }
-        .summary-char-count { font-size: 0.75rem; color: var(--subtle-text); text-align: right; }
-        .form-group .error-message { font-size: 0.75rem; color: var(--danger-color); margin-top: 0.25rem; }
-        
-        /* --- Toast Notifications --- */
+        /* --- Analysis & Response Display --- */
+        #analysisResult { padding: 0.75rem; border-radius: 0.375rem; background-color: var(--info-bg); font-size: 0.875rem; line-height: 1.5; white-space: pre-wrap; }
+        .empty-state-text { color: var(--subtle-text); text-align: center; padding: 1rem; font-style: italic; }
+        #responsesContainer { display: flex; flex-direction: column; gap: 0.75rem; }
+        .strategy-card { border: 1px solid var(--border-color); border-radius: 0.5rem; overflow: hidden; }
+        .strategy-header { background-color: var(--info-bg); padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .strategy-header h3 { font-size: 0.9rem; margin: 0; }
+        .strategy-header h3 span { font-weight: 500; color: var(--subtle-text); font-size: 0.8rem; }
+        .strategy-rationale { font-size: 0.8rem; color: var(--subtle-text); padding: 0.5rem 0.75rem; margin: 0; }
+        .strategy-text { white-space: pre-wrap; padding: 0.75rem; }
+        .strategy-actions { text-align: right; padding: 0 0.5rem 0.5rem; }
+
+        /* --- Modals, Toasts, & Overlays --- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(100,116,139,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--panel-bg); padding: 1.5rem; border-radius: 0.75rem; max-width: min(95vw, 420px); width: 100%; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); max-height: min(90vh, 600px); overflow-y: auto; }
         .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); padding: 0.75rem 1.25rem; border-radius: 0.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 0.875rem; z-index: 2000; transition: bottom 0.5s cubic-bezier(0.25, 1, 0.5, 1); color: white; }
         .toast.show { bottom: 20px; }
         .toast-error { background-color: var(--danger-color); }
         .toast-success { background-color: var(--success-color); }
         .toast-info { background-color: var(--primary-color); }
-
-        #onboardingOverlay { position: fixed; inset: 0; background: var(--bg-color); z-index: 2000; padding: 2rem; color: var(--text-color); }
-        #onboardingContent { max-width: 600px; margin: auto; }
-        #onboardingContent h1 { font-size: 1.5rem; margin-bottom: 1rem; }
-        #onboardingContent p, .onboarding-step { line-height: 1.6; margin-bottom: 1rem; }
-        .onboarding-grid { display: flex; flex-direction: column; gap: 0.5rem; }
-        .onboarding-step { display: flex; align-items: flex-start; gap: 0.75rem;}
-        .onboarding-step-icon { font-size: 1.2rem; margin-top: 0.1rem; }
         #onboardingContent kbd { background: var(--border-color); padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-family: monospace; }
-        
         .hidden { display: none !important; }
 
-        .text-success { color: var(--success-color); }
-        .text-warning { color: var(--warning-color); }
-        .text-danger { color: var(--danger-color); }
-
-        @media (max-width: 400px) { .modal-content { margin: 1rem; padding: 1rem; } }
+        /* --- Responsive Design --- */
         @media (max-width: 360px) {
-             #aiInteractionContainer { flex-direction: column; }
-            .section-header { flex-direction: column; align-items: stretch; gap: 0.5rem; }
-            .controls { justify-content: space-between; }
-        }
-        @media (max-width: 320px) {
-            #aiInteractionContainer { flex-direction: column !important; }
-            .section-header { flex-wrap: wrap; gap: 0.25rem; }
+            .section-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
             .controls { width: 100%; justify-content: space-between; }
-            #recipientSelector, #personaSelector { max-width: none; min-width: 0; flex: 1; }
-            .input-group { flex-direction: column; }
-            .modal-content { margin: 0.5rem; padding: 0.75rem; width: calc(100vw - 1rem); }
-        }
-        @media (max-width: 280px) {
-            .response-tabs { flex-wrap: wrap; }
-            .response-tab { flex: 1 1 auto; min-width: 60px; }
         }
     </style>
 </head>
 <body>
     <div id="onboardingOverlay" class="hidden">
-        <div id="onboardingContent">
+       <div style="max-width: 600px; margin: auto; padding: 2rem;">
             <h1>Welcome to Sidebar</h1>
-            <p>This application is designed to run in the Microsoft Edge sidebar for the best experience.</p>
-            <h3>Recommended Setup:</h3>
-            <div class="onboarding-grid">
-                <div class="onboarding-step"><span class="onboarding-step-icon">1.</span> <div><strong>Enable the Sidebar:</strong> In Edge, go to Settings (`...`) > `Sidebar`, or press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>/</kbd>.</div></div>
-                <div class="onboarding-step"><span class="onboarding-step-icon">2.</span> <div><strong>Add This App:</strong> In the sidebar, click the `+` icon, find this app under "Open tabs," and pin it.</div></div>
-                <div class="onboarding-step"><span class="onboarding-step-icon">3.</span> <div><strong>Set Your API Key:</strong> To activate the AI, you need a Google AI API key. You can add this in the app's settings (⚙️). <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="help-link">Get your key here.</a></div></div>
-                <div class="onboarding-step"><span class="onboarding-step-icon">4.</span> <div><strong>Keyboard Shortcut:</strong> Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> in the context box to trigger analysis.</div></div>
-            </div>
+            <p>This is a strategic co-pilot for workplace communication, designed to help you decode messages and respond with confidence.</p>
+            <h3>Setup:</h3>
+            <p>1. In Edge, press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd> to open the sidebar.</p>
+            <p>2. Click `+` to add this app.</p>
+            <p>3. Go to Settings (⚙️) and add your Google AI API key. <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Get a key here.</a></p>
             <button id="dismissOnboardingBtn" class="btn btn-primary" style="margin-top: 1rem;">Continue to App</button>
         </div>
     </div>
 
     <div id="app" class="hidden">
         <main>
+            <!-- Input Section -->
             <section class="section">
                 <div class="section-header">
-                    <h2 id="messageSectionTitle" class="section-title">Compose or Analyze</h2>
-                     <div class="controls">
-                        <div id="recipientSelectorContainer">
-                            <span id="recipientPrompt" class="hidden">Who to/from?</span>
-                            <select id="recipientSelector" title="Select the person you are communicating with."></select>
-                        </div>
+                    <h2 class="section-title">Message</h2>
+                    <div class="controls">
+                        <select id="recipientSelector" title="Select Person"></select>
                     </div>
                 </div>
-                <textarea id="messageInput" class="input-field" placeholder="Paste a received message to analyze, or start typing to compose a new one."></textarea>
+                <textarea id="messageInput" class="input-field" placeholder="Paste a message to analyze or start composing..."></textarea>
             </section>
             
-            <section id="contextSection" class="section hidden">
+            <!-- Analysis Section -->
+            <section id="analysisSection" class="section hidden">
                 <div class="section-header">
-                    <h2 class="section-title">Add Context</h2>
-                    <div id="contextControls" class="controls">
-                         <button id="endConversationBtn" class="btn hidden" data-action="summarize-session" title="Summarizes this conversation and adds it to the person's long-term profile.">Save Session</button>
-                    </div>
+                    <h2 class="section-title">The Briefing</h2>
                 </div>
-                <div class="input-group">
-                    <textarea id="userInput" class="input-field" rows="1" placeholder="Add details..."></textarea>
-                    <button id="sendContextBtn" class="btn btn-primary" data-action="send-context">Send</button>
+                <div id="analysisResult"></div>
+                <div class="input-group" style="margin-top: 0.5rem;">
+                    <input type="text" id="contextInput" class="input-field" placeholder="Add clarifying context...">
+                    <button class="btn" data-action="refine-analysis">Update Briefing</button>
                 </div>
             </section>
 
-             <button id="analyzeBtn" class="btn btn-primary" style="width: 100%;" data-action="run-analysis" disabled>Get Suggestions</button>
+             <!-- Actions Section -->
+            <section id="actionsSection" class="section hidden">
+                 <button id="getSuggestionsBtn" class="btn btn-primary" style="width: 100%;" data-action="get-suggestions">Get Response Playbook</button>
+            </section>
 
-            <section id="aiInteractionSection" class="section hidden">
-                <div id="aiInteractionContainer">
-                    <div id="analysisWrapper">
-                        <div class="section-header">
-                            <h2 id="analysisTitle" class="section-title">AI Analysis</h2>
-                            <div id="translationLoader" class="loader"><span class="loader-dot">●</span><span>Analyzing...</span></div>
-                        </div>
-                        <div id="translationResult" class="prose-styles"></div>
-                    </div>
-                    <div id="responsesWrapper">
-                        <div class="section-header">
-                            <h2 id="responsesTitle" class="section-title">Suggested Responses</h2>
-                             <div class="controls">
-                                <select id="personaSelector" title="Choose a persona to change the communication style.">
-                                    <option value="diplomat" selected>Diplomat</option>
-                                    <option value="challenger">Challenger</option>
-                                    <option value="coach">Coach</option>
-                                    <option value="visionary">Visionary</option>
-                                    <option value="pragmatist">Pragmatist</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div id="optionsContainer"></div>
-                    </div>
+            <!-- Responses Section -->
+            <section id="responsesSection" class="section hidden">
+                <div class="section-header">
+                     <h2 class="section-title">Response Playbook</h2>
                 </div>
-                 <div id="apiKeyCta" class="hidden">
-                    <p>Please set your API key to enable AI features.</p>
-                    <button id="ctaSettingsBtn" class="btn btn-primary" data-action="open-settings">Open Settings</button>
-                </div>
+                <div id="responsesContainer"></div>
             </section>
         </main>
         <footer>
-            <label class="toggle-switch" title="Toggle automatic analysis on/off">
-                <input type="checkbox" id="autoAnalyzeToggle">
-                <span class="slider"></span>
-                <span>Auto-Analyze</span>
-            </label>
-            <div class="footer-controls">
-                <button id="clearInputsBtn" title="Clear All Inputs" data-action="clear-inputs" aria-label="Clear all inputs">🗑️</button>
-                <button id="settingsBtn" title="Settings" data-action="open-settings" aria-label="Open settings">⚙️</button>
-            </div>
+            <button class="btn" data-action="clear-inputs" title="Clear All Inputs">🗑️ Clear</button>
+            <button class="btn" data-action="open-settings" title="Settings">⚙️ Settings</button>
         </footer>
     </div>
 
     <!-- Modals -->
-    <div id="settingsModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div id="settingsModal" class="modal-overlay hidden">
        <div class="modal-content">
             <h2>Settings</h2>
-            <div class="form-group">
+            <div style="margin-bottom: 1rem;">
                 <label for="geminiApiKeyInput">Google AI API Key</label>
                 <input type="password" id="geminiApiKeyInput" class="input-field" placeholder="Enter your API key">
-                <p>Your key is stored in this browser's local storage. Do not use this on a shared computer.</p>
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="help-link">How to get a Google AI API key?</a>
             </div>
-             <div class="form-group" style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+            <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
                 <label>Data Management</label>
-                <button id="managePeopleSettingsBtn" class="btn" data-action="open-people-manager">Manage People</button>
-                <button id="clearDataBtn" class="btn btn-danger" data-action="clear-all-data">Clear All Local Data</button>
-                <p>This will permanently delete all saved profiles and session history from this browser.</p>
-             </div>
-            <div class="modal-actions">
+                <button class="btn" data-action="open-people-manager">Manage People</button>
+                <button class="btn btn-danger" data-action="clear-all-data">Clear All Data</button>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top: 1.5rem;">
                 <button class="btn" data-action="close-modal" data-modal-id="settingsModal">Cancel</button>
                 <button class="btn btn-primary" data-action="save-settings">Save</button>
             </div>
         </div>
     </div>
-    <div id="peopleModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div id="peopleModal" class="modal-overlay hidden">
        <div class="modal-content">
             <h2>Manage People</h2>
-            <div class="form-group">
+            <div style="margin-bottom: 1rem;">
                 <h3>Add New Person</h3>
                 <input type="text" id="newPersonName" class="input-field" placeholder="Person's Name" style="margin-bottom: 0.5rem;">
-                <select id="newPersonRelationshipType" class="input-field" style="margin-bottom: 0.5rem;"></select>
-                <div id="customRoleGroup" class="form-group hidden">
-                    <input type="text" id="newPersonRole" class="input-field" placeholder="Specify Relationship (e.g., Contractor)">
-                </div>
-                <button class="btn btn-primary" data-action="add-person">Add</button>
+                <input type="text" id="newPersonRole" class="input-field" placeholder="Relationship (e.g., Manager)">
+                <button class="btn btn-primary" data-action="add-person" style="margin-top: 0.5rem;">Add</button>
             </div>
             <div id="peopleList"></div>
-            <div class="modal-actions">
+            <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top: 1.5rem;">
                 <button class="btn" data-action="close-modal" data-modal-id="peopleModal">Close</button>
             </div>
         </div>
     </div>
-     <div id="confirmModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+     <div id="confirmModal" class="modal-overlay hidden">
        <div class="modal-content">
-            <h2 id="confirmTitle">Confirm Action</h2>
-            <p id="confirmMessage" style="line-height: 1.5;"></p>
-            <div class="modal-actions">
+            <h2 id="confirmTitle">Confirm</h2>
+            <p id="confirmMessage"></p>
+            <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top: 1.5rem;">
                 <button id="confirmCancelBtn" class="btn">Cancel</button>
                 <button id="confirmOkBtn" class="btn btn-danger">OK</button>
             </div>
@@ -309,397 +184,415 @@
     
     <script type="module">
     'use strict';
+    // --- LLM-NOTE: SCRIPT OVERVIEW ---
+    // This script is a single-file application designed for the Microsoft Edge sidebar.
+    // It acts as a "strategic co-pilot" for workplace communication.
+    // Core functionality is managed by the `PersonalizedWorkplaceAgent` which follows a specific interactive workflow.
+    // All UI manipulation is handled by the `UIManager`, and all data is stored in localStorage via `UnifiedStorage`.
+    // Event handling is centralized using a `data-action` delegation model. State is managed by the `StateManager` class.
 
     const CONFIG = {
-        API_RETRY_COUNT: 2, API_TIMEOUT_MS: 15000,
-        STANDARD_RELATIONSHIPS: ["Manager", "Teammate", "Client", "Direct Report", "Stakeholder", "Vendor"],
-        API_CACHE_MAX_SIZE: 10, DEBOUNCE_MS_AUTO: 1200,
-        REFINEMENT_CHIPS: ["Shorter", "Longer", "More Formal", "More Casual", "Add a question"]
-    };
-    
-    const PERSONAS = {
-        diplomat: { traits: "prioritizes harmony, uses collaborative language", tone: "warm, inclusive, diplomatic" },
-        challenger: { traits: "sets clear boundaries, asks direct questions", tone: "direct, confident, assertive" },
-        coach: { traits: "empowers and guides through questioning", tone: "supportive, inquisitive" },
-        visionary: { traits: "inspires action, focuses on long-term goals", tone: "inspirational, forward-looking" },
-        pragmatist: { traits: "is data-driven, direct, and efficient", tone: "analytical, straightforward" }
-    };
-
-    const UI_CONFIGS = {
-        compose: { title: "Compose Message", contextHidden: true, buttonText: "Get Suggestions", analysisHidden: true },
-        analyze: { title: "Analyze Received Message", contextHidden: false, buttonText: "Analyze", analysisHidden: false }
+        DEBOUNCE_MS: 750,
+        MODAL_IDS: {
+            SETTINGS: 'settingsModal',
+            PEOPLE: 'peopleModal',
+            CONFIRM: 'confirmModal'
+        },
+        STORAGE_KEYS: { 
+            PROFILES: 'sidebar_profiles_v13', 
+            SETTINGS: 'sidebar_settings_v10', 
+            DRAFT: 'sidebar_draft_v3' 
+        }
     };
 
     const dom = {
-        app: document.getElementById('app'), 
-        onboardingOverlay: document.getElementById('onboardingOverlay'),
-        dismissOnboardingBtn: document.getElementById('dismissOnboardingBtn'), // FIX: Added missing DOM reference
-        messageInput: document.getElementById('messageInput'),
-        messageSectionTitle: document.getElementById('messageSectionTitle'),
-        contextSection: document.getElementById('contextSection'),
-        userInput: document.getElementById('userInput'),
-        recipientSelector: document.getElementById('recipientSelector'), recipientPrompt: document.getElementById('recipientPrompt'),
-        personaSelector: document.getElementById('personaSelector'),
-        autoAnalyzeToggle: document.getElementById('autoAnalyzeToggle'),
-        translationResult: document.getElementById('translationResult'),
-        analyzeBtn: document.getElementById('analyzeBtn'),
-        apiKeyCta: document.getElementById('apiKeyCta'),
-        optionsContainer: document.getElementById('optionsContainer'),
-        responsesTitle: document.getElementById('responsesTitle'),
+        app: document.getElementById('app'), onboardingOverlay: document.getElementById('onboardingOverlay'), dismissOnboardingBtn: document.getElementById('dismissOnboardingBtn'),
+        messageInput: document.getElementById('messageInput'), recipientSelector: document.getElementById('recipientSelector'),
+        analysisSection: document.getElementById('analysisSection'), analysisResult: document.getElementById('analysisResult'),
+        contextInput: document.getElementById('contextInput'),
+        actionsSection: document.getElementById('actionsSection'),
+        responsesSection: document.getElementById('responsesSection'), responsesContainer: document.getElementById('responsesContainer'),
         geminiApiKeyInput: document.getElementById('geminiApiKeyInput'),
-        peopleList: document.getElementById('peopleList'), 
-        newPersonName: document.getElementById('newPersonName'), 
-        newPersonRelationshipType: document.getElementById('newPersonRelationshipType'),
-        customRoleGroup: document.getElementById('customRoleGroup'), newPersonRole: document.getElementById('newPersonRole'),
-        aiInteractionSection: document.getElementById('aiInteractionSection'),
-        analysisWrapper: document.getElementById('analysisWrapper'),
-        confirmModal: document.getElementById('confirmModal'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
+        peopleList: document.getElementById('peopleList'), newPersonName: document.getElementById('newPersonName'), newPersonRole: document.getElementById('newPersonRole'),
+        confirmModal: document.getElementById(CONFIG.MODAL_IDS.CONFIRM), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
         confirmCancelBtn: document.getElementById('confirmCancelBtn'), confirmOkBtn: document.getElementById('confirmOkBtn'),
     };
 
-    let state = {
-        selectedPersonId: null, selectedPersona: 'diplomat',
-        settings: { apiKey: null, onboardingDismissed: false, autoAnalyzeEnabled: true },
-        lastAnalysis: null, sessionContext: [], responses: [], activeResponseIndex: 0
+    let activeModal = null, focusedElementBeforeModal = null;
+    
+    // --- UTILITIES & HELPERS ---
+    const ErrorHandler = {
+        handle(error, context = 'General') {
+            console.error(`Error in ${context}:`, error);
+            showToast(`An error occurred: ${error.message}`, 'error');
+        }
     };
 
-    let activeModal = null; let focusedElementBeforeModal = null;
-    let operationInProgress = false; let latestAnalysisRequest = null;
-    
-    // --- UTILITIES ---
-    const debounce = (fn, delay) => { let t; const d = (...a) => { clearTimeout(t); t = setTimeout(()=>fn(...a), delay); }; d.cancel = () => clearTimeout(t); return d; };
-    function decodeHtmlEntities(text) { if (!text) return ''; const ta = document.createElement('textarea'); ta.innerHTML = text; return ta.value; }
-    function showToast(message, type = 'info', duration = 4000) {
+    const ValidationService = {
+        isApiKeyValid(key) {
+            return typeof key === 'string' && key.length > 10; // Basic check
+        },
+        isPersonDataValid(name, role) {
+            return name.trim().length > 0 && role.trim().length > 0;
+        }
+    };
+
+    const debounce = (func, delay) => {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    };
+    const sanitizeHTML = (str) => {
+        if (!str) return '';
+        return str.replace(/[&<>"']/g, (match) => {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
+        });
+    };
+    const showToast = (message, type = 'info', duration = 3000) => {
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.textContent = message;
         document.body.appendChild(toast);
         setTimeout(() => toast.classList.add('show'), 100);
         setTimeout(() => { toast.classList.remove('show'); setTimeout(() => document.body.removeChild(toast), 500); }, duration);
+    };
+    
+    const showModal = (modalElement) => {
+        if (!modalElement) return;
+        activeModal = modalElement;
+        focusedElementBeforeModal = document.activeElement;
+        activeModal.classList.remove('hidden');
+        activeModal.querySelector('input, button, select, textarea')?.focus();
+    };
+    const hideModal = (modalElement) => {
+        if(modalElement) modalElement.classList.add('hidden');
+        if (activeModal === modalElement) activeModal = null;
+        if (focusedElementBeforeModal) focusedElementBeforeModal.focus();
+    };
+    const showConfirmationModal = (title, message) => new Promise((resolve) => {
+        dom.confirmTitle.textContent = title;
+        dom.confirmMessage.textContent = message;
+        showModal(dom.confirmModal);
+        const onConfirm = () => { cleanup(); resolve(true); };
+        const onCancel = () => { cleanup(); resolve(false); };
+        const cleanup = () => {
+            dom.confirmOkBtn.removeEventListener('click', onConfirm);
+            dom.confirmCancelBtn.removeEventListener('click', onCancel);
+            hideModal(dom.confirmModal);
+        };
+        dom.confirmOkBtn.addEventListener('click', onConfirm, { once: true });
+        dom.confirmCancelBtn.addEventListener('click', onCancel, { once: true });
+    });
+
+    // --- ENCAPSULATED STATE MANAGEMENT ---
+    class StateManager {
+        constructor() {
+            this.state = {
+                selectedPersonId: null, settings: {}, currentBriefing: null, lastContext: '', currentPlaybook: null
+            };
+        }
+        get(key) { return this.state[key]; }
+        set(key, value) { this.state[key] = value; }
+        resetBriefingState() {
+            this.set('currentBriefing', null);
+            this.set('currentPlaybook', null);
+            this.set('lastContext', '');
+        }
     }
-    function showModal(modalId) { activeModal = document.getElementById(modalId); if(!activeModal) return; focusedElementBeforeModal = document.activeElement; activeModal.classList.remove('hidden'); activeModal.querySelector('input, button, select, textarea')?.focus(); }
-    function hideModal(modalId) { const modal = document.getElementById(modalId); if(modal) modal.classList.add('hidden'); if(activeModal === modal) activeModal = null; if(focusedElementBeforeModal) focusedElementBeforeModal.focus(); }
-    function showConfirmationModal(title, message) {
-        return new Promise((resolve) => {
-            dom.confirmTitle.textContent = title; dom.confirmMessage.textContent = message; showModal('confirmModal');
-            const onConfirm = () => { cleanup(); resolve(true); }; const onCancel = () => { cleanup(); resolve(false); };
-            const cleanup = () => { dom.confirmOkBtn.removeEventListener('click', onConfirm); dom.confirmCancelBtn.removeEventListener('click', onCancel); hideModal('confirmModal'); };
-            dom.confirmOkBtn.addEventListener('click', onConfirm, { once: true }); dom.confirmCancelBtn.addEventListener('click', onCancel, { once: true });
-        });
-    }
+    const stateManager = new StateManager();
 
     // --- CONSOLIDATED STORAGE ---
     class UnifiedStorage {
-        constructor() { this.keys = { profiles: 'sidebar_profiles_v12', sessions: 'sidebar_sessions_v6', settings: 'sidebar_settings_v9', draft: 'sidebar_draft_v2', stats: 'sidebar_response_stats_v1' }; }
-        async get(type, id = null) { const data = JSON.parse(localStorage.getItem(this.keys[type]) || (type === 'draft' ? '""' : '{}')); return id ? data[id] : data; }
-        async set(type, data, id = null) { if (id) { const existing = await this.get(type); existing[id] = data; localStorage.setItem(this.keys[type], JSON.stringify(existing)); } else { localStorage.setItem(this.keys[type], JSON.stringify(data)); } }
+        constructor() { this.keys = CONFIG.STORAGE_KEYS; }
+        async get(type, id = null) { const data = JSON.parse(localStorage.getItem(this.keys[type.toUpperCase()]) || '{}'); return id ? data[id] : data; }
+        async set(type, data, id = null) { if (id) { const d = await this.get(type); d[id] = data; localStorage.setItem(this.keys[type.toUpperCase()], JSON.stringify(d)); } else { localStorage.setItem(this.keys[type.toUpperCase()], JSON.stringify(data)); } }
     }
     const storage = new UnifiedStorage();
     
+    // --- API CLIENT ---
     class GeminiApiClient {
-        constructor(apiKey) { this.apiKey = apiKey; this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent'; }
-        async call(prompt, options = {}) {
-            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: options.temperature || 0.6, maxOutputTokens: 2048 } };
-            if(options.responseSchema) { payload.generationConfig.responseMimeType = "application/json"; payload.generationConfig.responseSchema = options.responseSchema; }
-            const responseText = await this._makeRequest(payload);
-            try { return JSON.parse(decodeHtmlEntities(responseText)); } catch (e) { console.error("API JSON Parse Error:", responseText); throw new Error("The AI returned an invalid response."); }
-        }
-        async _makeRequest(payload) {
-            if (!this.apiKey) throw new Error("API Key not set.");
-            for (let attempt = 0; attempt < CONFIG.API_RETRY_COUNT; attempt++) {
-                const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT_MS);
-                try {
-                    const response = await fetch(this.baseUrl, { method: 'POST', headers: { 'X-Goog-Api-Key': this.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(`API Error ${response.status}: ${errorData.error?.message || response.statusText}`); }
-                    const result = await response.json();
-                    if (!result.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error('Invalid API response structure received.');
-                    return result.candidates[0].content.parts[0].text;
-                } catch (error) { clearTimeout(timeoutId); if (attempt === CONFIG.API_RETRY_COUNT - 1 || error.name === 'AbortError') throw error; await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt))); }
-            }
-            throw new Error("API request failed after multiple retries.");
+        constructor(apiKey) { this.apiKey = apiKey; this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-preview-0514:generateContent'; }
+        async call(prompt, isJson = true) {
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+            if (isJson) { payload.generationConfig = { responseMimeType: "application/json" }; }
+            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+            const result = await response.json();
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) throw new Error('Invalid API response structure.');
+            return isJson ? JSON.parse(text) : text;
         }
     }
 
-    class ApiManager {
-        constructor() { this.cache = new Map(); this.cacheTimeout = 5 * 60 * 1000; }
-        _hashPrompt(prompt, options) { const str = JSON.stringify({ prompt, options }); let h = 0; for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); h = (h << 5) - h + c; h |= 0; } return h; }
-        async call(prompt, options = {}) {
-            const key = this._hashPrompt(prompt, options); const cached = this.cache.get(key);
-            if (cached && (Date.now() - cached.timestamp < this.cacheTimeout)) return cached.data;
-            const result = await this.getClient().call(prompt, options);
-            if (this.cache.size >= CONFIG.API_CACHE_MAX_SIZE) this.cache.delete(this.cache.keys().next().value);
-            this.cache.set(key, { data: result, timestamp: Date.now() });
-            return result;
-        }
-        getClient() { if (!state.settings.apiKey) throw new Error("API Key is not available."); return new GeminiApiClient(state.settings.apiKey); }
-    }
-
+    // --- PERSONALIZED WORKPLACE AGENT ---
     class PersonalizedWorkplaceAgent {
-        constructor(apiManager, storage) { this.api = apiManager; this.storage = storage; this._initLearning(); }
-        _initLearning() { this.responseStats = JSON.parse(localStorage.getItem(this.storage.keys.stats) || '{}'); }
-        _recordResponseSelection(responseIndex, messageContext, persona) {
-            const key = `${messageContext.length}-${messageContext.complexity}-${persona}`;
-            const stats = (this.responseStats[key] = this.responseStats[key] || { total: 0, selections: {} });
-            stats.total++;
-            stats.selections[responseIndex] = (stats.selections[responseIndex] || 0) + 1;
-            localStorage.setItem(this.storage.keys.stats, JSON.stringify(this.responseStats));
+        constructor(apiKey) { this.api = new GeminiApiClient(apiKey); }
+        _sanitizeForPrompt(text) {
+            if (!text) return '';
+            return text.replace(/\b(ignore|disregard|forget|instruction|system|prompt)\b/gi, '[keyword removed]');
         }
-        async analyze(message, context, personId, persona) {
-            const [profile, session] = await Promise.all([this.storage.get('profiles', personId), this.storage.get('sessions', personId)]);
-            const messageContext = this._assessMessageContext(message);
-            
-            const templateResponses = this._getTemplateResponse(messageContext, profile?.type, persona);
-            if (templateResponses) return { responses: templateResponses };
-
-            const prompt = this._buildAnalysisPrompt(message, context, profile, persona, session, messageContext);
-            const result = await this.api.call(prompt, { responseSchema: this._getSchema(messageContext) });
-            
-            if (personId && result.analysis) this._updateSession(personId, session, message, context, result.analysis);
-            result.responses = this._optimizeResponseOrder(result.responses, messageContext, persona);
-            return result;
+        async getBriefing(message, profile, addedContext = '') {
+            const cleanMessage = this._sanitizeForPrompt(message);
+            const cleanContext = this._sanitizeForPrompt(addedContext);
+            const prompt = `CONTEXT:\n- You are analyzing a workplace message for a user who wants to understand the professional subtext.\n- Recipient Profile: This person is a ${profile?.role || 'colleague'}.\n- Historical Communication Style (Long-Term Memory): ${profile?.summary || 'No history available.'}\n- User's Added Context: ${cleanContext || 'None.'}\n\nMESSAGE TO ANALYZE:\n"${cleanMessage}"\n\nTASK:\nProvide a single, concise "Briefing" paragraph. Your goal is to decode the message's true meaning, seriousness, and tone. CRITICALLY, compare the message to their known historical style. If it deviates (e.g., more formal, more blunt), highlight this anomaly as it's a key insight. Focus ONLY on the analysis. Do not suggest actions.`;
+            return this.api.call(prompt, false);
         }
-        _getSchema(messageContext) {
-            const responseSchema = { type: "ARRAY", items: { type: "OBJECT", properties: { "title": { "type": "STRING" }, "text": { "type": "STRING" } } } };
-            const isCompose = UI_CONFIGS[getCurrentUIMode()].analysisHidden;
-            if(isCompose) return { type: "OBJECT", properties: { "responses": responseSchema } };
-            return { type: "OBJECT", properties: { "analysis": { type: "OBJECT", properties: { "insight": { "type": "STRING" }, "strategy": { "type": "STRING" }, "risk": { "type": "STRING" } } }, "responses": responseSchema } };
+        async getResponsePlaybook(briefing, message, profile) {
+            const PERSONAS = { Diplomat: "Focus on collaboration, find common ground, and validate their perspective.", Pragmatist: "Focus on data, efficiency, and logical next steps. Be direct and concise.", Challenger: "Respectfully question assumptions, introduce a different perspective, or clarify boundaries." };
+            const prompt = `SITUATION BRIEFING:\n"${briefing}"\n\nORIGINAL MESSAGE:\n"${message}"\n\nTASK:\nGenerate a playbook of 2-3 distinct strategic responses. For each response:\n1. Assign a Persona (${Object.keys(PERSONAS).join(', ')}).\n2. Write a brief Rationale explaining *why* this strategy is effective for this specific situation.\n3. Write the response Text.\n\nRespond with a JSON object: { "responses": [{ "persona": "...", "rationale": "...", "text": "..." }] }`;
+            return this.api.call(prompt);
         }
-        _updateSession(personId, session, message, context, analysis) {
-            const newSession = session || { history: [], insights: [] };
-            newSession.history.push({ role: 'user', content: [message, context].filter(Boolean).join('\n') });
-            newSession.insights.push((analysis.insight || '').slice(0, 300));
-            newSession.lastActivity = Date.now();
-            this.storage.set('sessions', newSession, personId);
+        async summarizeInteraction(message, briefing, playbook) {
+            if(!playbook || !playbook.responses) return "";
+            const prompt = `PREVIOUS INTERACTION:\n- Initial Message: "${message}"\n- Our Analysis: "${briefing}"\n- Generated Responses: ${JSON.stringify(playbook.responses)}\n\nTASK:\nUpdate the long-term memory summary for this person. Do NOT summarize the topic. Instead, identify and describe their communication BEHAVIOR and STYLE from this interaction. Good examples: "Tends to be indirect when giving criticism." or "Responds well to collaborative language." or "Becomes very formal when discussing deadlines." Provide a single sentence.`;
+            return this.api.call(prompt, false);
         }
-        _optimizeResponseOrder(responses, messageContext, persona) {
-            const key = `${messageContext.length}-${messageContext.complexity}-${persona}`;
-            const stats = this.responseStats[key];
-            if (stats && stats.total > 5) {
-                return responses.sort((a, b) => {
-                    const aIndex = responses.indexOf(a), bIndex = responses.indexOf(b);
-                    return (stats.selections[bIndex] || 0) - (stats.selections[aIndex] || 0);
-                });
-            }
-            return responses;
-        }
-        _getTemplateResponse(messageContext, relationship, persona) {
-            const templates = { 'acknowledgment-short': { diplomat: ["Got it, thanks!", "Understood!", "Perfect, thank you"], challenger: ["Noted.", "Confirmed."] }, 'question-simple': { coach: ["What's your take?", "How do you see it?"], pragmatist: ["Need more details?", "Next step?"] } };
-            const key = (messageContext.complexity === 'simple' && messageContext.length === 'short' && messageContext.questions === 0) ? 'acknowledgment-short' : (messageContext.questions > 0 && messageContext.complexity === 'simple') ? 'question-simple' : null;
-            const pTemplates = templates[key]?.[persona];
-            if (pTemplates && Math.random() < 0.3) return pTemplates.map((text, i) => ({ title: `Option ${i+1}`, text, isTemplate: true }));
-            return null;
-        }
-        _assessMessageContext(message) {
-            const words = message.trim().split(/\s+/).length;
-            const sentences = (message.match(/[.!?]/g) || []).length || 1;
-            const questions = (message.match(/\?/g) || []).length;
-            const urgent = /\b(urgent|asap|immediately|deadline)\b/i.test(message);
-            const emotional = /\b(frustrated|excited|concerned|worried)\b/i.test(message);
-            return { length: words < 15 ? 'short' : words < 50 ? 'medium' : 'long', complexity: sentences > 2 || questions > 1 ? 'complex' : 'simple', urgency: urgent, emotional: emotional, questions: questions };
-        }
-        _adaptPersonaToContext(basePersona, relationship, messageContext) {
-            const adaptations = { 'Manager': { urgent: 'Be direct and solution-focused.', emotional: 'Acknowledge concerns professionally.' }, 'Client': { urgent: 'Prioritize reassurance and clear timelines.', emotional: 'Use empathetic language.' } };
-            const baseConfig = PERSONAS[basePersona];
-            const rAdapt = adaptations[relationship] || {};
-            let dynamicTraits = baseConfig.traits;
-            if (messageContext.urgency && rAdapt.urgent) dynamicTraits += `. ${rAdapt.urgent}`;
-            if (messageContext.emotional && rAdapt.emotional) dynamicTraits += `. ${rAdapt.emotional}`;
-            return { ...baseConfig, traits: dynamicTraits };
-        }
-        _buildAnalysisPrompt(message, context, profile, persona, session, messageContext) {
-            const mode = getCurrentUIMode();
-            const dynamicPersona = this._adaptPersonaToContext(persona, profile?.type, messageContext);
-            const state = this._analyzeConversationState(session?.history);
-
-            const prompt = `
-            <persona_config>
-              Your persona is "${persona}". Use a ${dynamicPersona.tone} tone.
-              TRAITS: ${dynamicPersona.traits}.
-            </persona_config>
-            <conversation_state>
-              Current state: ${state}. ${this._adjustForConversationState(state)}.
-            </conversation_state>
-            <context>
-              <relationship>${profile?.type || 'Not specified'}</relationship>
-              <long_term_memory>${(profile?.summary || 'No summary').slice(0, 500)}</long_term_memory>
-              <short_term_memory>${(session?.history || []).slice(-3).map(h => `${h.role}: ${h.content}`).join('\n')}</short_term_memory>
-            </context>
-            <input>
-              <mode>${mode}</mode>
-              <message_to_process>${this._sanitize(message)}</message_to_process>
-              <user_guidance>${this._sanitize(context) || 'Initial analysis.'}</user_guidance>
-            </input>`;
-            return prompt;
-        }
-        _analyzeConversationState(history) { if (!history || history.length === 0) return 'initial'; const recent = history.slice(-2); if (recent.some(h => h.content.includes('?'))) return 'awaiting_response'; if (recent.some(h => /\b(please|could you)\b/i.test(h.content))) return 'action_requested'; if (recent.some(h => /\b(decided|chosen)\b/i.test(h.content))) return 'resolution'; return 'continuing'; }
-        _adjustForConversationState(state) { const adj = { 'awaiting_response': 'Provide requested info directly.', 'action_requested': 'Confirm understanding and next steps.', 'resolution': 'Acknowledge the decision.', 'continuing': 'Keep the conversation moving.' }; return adj[state] || 'Respond appropriately.'; }
-        _sanitize(c) { return c ? c.replace(/[<>]/g, '').slice(0,1500) : ''; }
     }
-    const agent = new PersonalizedWorkplaceAgent(new ApiManager(), storage);
 
-    // --- UI MANAGEMENT ---
+    // --- UI MANAGER ---
     const UIManager = {
-        init() { this.setEmptyStateMessages(); },
-        setEmptyStateMessages() { dom.translationResult.innerHTML = `<div class="empty-state-text">Analysis will appear here.</div>`; dom.optionsContainer.innerHTML = `<div class="empty-state-text">Suggestions will appear here.</div>`; },
-        showOptimisticResponse() { const s = `<div class="response-skeleton"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>`; dom.translationResult.innerHTML = s; dom.optionsContainer.innerHTML = s.repeat(3); },
-        displayAnalysis(analysis) {
-            dom.translationResult.innerHTML = ''; 
-            if (!analysis) { this.setEmptyStateMessages(); return; }
-            const p = (strong, val) => `<p><strong>${strong}: </strong><span>${val || 'N/A'}</span></p>`;
-            dom.translationResult.innerHTML = p('Insight', analysis.insight) + p('Strategy', analysis.strategy) + p('Risk', analysis.risk);
+        async init() {
+            this.renderPeopleSelector();
+            const draft = await storage.get('draft');
+            if (draft && draft.message) {
+                dom.messageInput.value = draft.message;
+                stateManager.set('selectedPersonId', draft.personId);
+                dom.recipientSelector.value = stateManager.get('selectedPersonId') || '';
+                this.updateSectionVisibility('analysis');
+            }
         },
-        displayResponses(responses) {
-            dom.optionsContainer.innerHTML = '';
-            if (!Array.isArray(responses) || responses.length === 0) return;
-            const tabs = responses.map((r, i) => `<button class="response-tab ${i === state.activeResponseIndex ? 'active' : ''}" data-action="select-response-tab" data-index="${i}">${r.title}</button>`).join('');
-            const contents = responses.map((r, i) => `
-                <div class="response-content ${i !== state.activeResponseIndex ? 'hidden' : ''}" data-response-content-index="${i}">
-                    <div class="response-text">${r.text}</div>
-                    ${this.createRefinementControls()}
-                    <div class="copy-btn-container"><button class="btn" data-action="copy-response" data-index="${i}" data-text="${encodeURIComponent(r.text)}">Copy</button></div>
-                </div>`).join('');
-            dom.optionsContainer.innerHTML = `<div class="response-tabs">${tabs}</div><div>${contents}</div>`;
+        updateSectionVisibility(mode) {
+            const isAnalysisVisible = mode === 'analysis' && dom.messageInput.value.length > 0;
+            dom.analysisSection.classList.toggle('hidden', !isAnalysisVisible);
+            dom.actionsSection.classList.toggle('hidden', !isAnalysisVisible);
+            dom.responsesSection.classList.add('hidden');
         },
-        createRefinementControls() {
-            const chips = CONFIG.REFINEMENT_CHIPS.map(c => `<button class="chip" data-action="refine-response" data-instruction="${c}">${c}</button>`).join('');
-            return `<div class="refinement-controls"><div class="refinement-chips">${chips}</div><div class="input-group"><input type="text" class="input-field refinement-input" placeholder="Custom refinement..."><button class="btn btn-primary" data-action="refine-response-custom">Refine</button></div></div>`;
+        renderBriefing(briefingText) {
+            dom.analysisResult.textContent = briefingText;
         },
-        updateActiveResponse(newText) {
-            const content = dom.optionsContainer.querySelector(`[data-response-content-index="${state.activeResponseIndex}"]`);
-            if(!content) return;
-            content.querySelector('.response-text').textContent = newText;
-            content.querySelector('[data-action="copy-response"]').dataset.text = encodeURIComponent(newText);
-            state.responses[state.activeResponseIndex].text = newText;
+        renderResponsePlaybook(playbook) {
+            dom.responsesSection.classList.remove('hidden');
+            stateManager.set('currentPlaybook', playbook);
+            if (!playbook || !playbook.responses || playbook.responses.length === 0) {
+                dom.responsesContainer.innerHTML = '<p class="empty-state-text">No suggestions generated.</p>';
+                return;
+            }
+            dom.responsesContainer.innerHTML = playbook.responses.map(card => {
+                const safePersona = sanitizeHTML(card.persona);
+                const safeRationale = sanitizeHTML(card.rationale);
+                const safeText = sanitizeHTML(card.text);
+                return `
+                <div class="strategy-card">
+                    <div class="strategy-header"><h3>${safePersona} <span>Strategy</span></h3></div>
+                    <p class="strategy-rationale">${safeRationale}</p>
+                    <div class="strategy-text">${safeText}</div>
+                    <div class="strategy-actions"><button class="btn" data-action="copy-response" data-text="${encodeURIComponent(card.text)}">Copy</button></div>
+                </div>`;
+            }).join('');
         },
-        async populateRecipientSelector() {
+        async renderPeopleSelector() {
             const profiles = await storage.get('profiles');
-            dom.recipientSelector.innerHTML = `<option value="">-- Select Recipient --</option>`;
-            const profileList = Object.values(profiles);
-            if(profileList.length === 0) { dom.recipientSelector.add(new Option('+ Add New Person', 'add_new_person')); return; }
-            
-            const grouped = profileList.reduce((acc, p) => { (acc[p.type] = acc[p.type] || []).push(p); return acc; }, {});
-            Object.keys(grouped).sort().forEach(type => { const optgroup = document.createElement('optgroup'); optgroup.label = type; grouped[type].forEach(p => optgroup.appendChild(new Option(p.name, p.id))); dom.recipientSelector.appendChild(optgroup); });
+            dom.recipientSelector.innerHTML = '<option value="">-- Select Person --</option>';
+            Object.values(profiles).forEach(p => dom.recipientSelector.add(new Option(p.name, p.id)));
             dom.recipientSelector.add(new Option('+ Add New Person', 'add_new_person'));
-            
-            dom.recipientSelector.value = state.selectedPersonId || "";
-            if (profileList.length === 1 && !state.selectedPersonId) { state.selectedPersonId = profileList[0].id; dom.recipientSelector.value = state.selectedPersonId; showToast(`Selected ${profileList[0].name}.`, 'info'); }
+            dom.recipientSelector.value = stateManager.get('selectedPersonId') || '';
         },
         async renderPeopleList() {
             const profiles = await storage.get('profiles');
-            dom.peopleList.innerHTML = Object.values(profiles).map(p => `
-                <div class="person-item" data-person-id="${p.id}">
-                    <div class="person-item-header">
-                        <span>${p.name} (${p.type})</span>
-                        <div class="person-controls">
-                            <button class="btn" data-action="view-profile" data-id="${p.id}">Profile</button>
-                            <button class="btn btn-danger" data-action="delete-person" data-id="${p.id}">Delete</button>
-                        </div>
-                    </div>
-                </div>`).join('');
-        },
+            dom.peopleList.innerHTML = Object.values(profiles).map(p => `<div class="person-item" style="display:flex; justify-content:space-between; align-items:center; padding: 0.25rem 0;"><span>${sanitizeHTML(p.name)} (${sanitizeHTML(p.role)})</span><button class="btn btn-danger" data-action="delete-person" data-id="${p.id}">Delete</button></div>`).join('');
+        }
     };
 
-    // --- APPLICATION LOGIC ---
-    function getCurrentUIMode() { return dom.messageInput.value.trim().length === 0 ? 'compose' : 'analyze'; }
-    function updateUI() {
-        const mode = getCurrentUIMode();
-        const config = UI_CONFIGS[mode];
-        dom.messageSectionTitle.textContent = config.title;
-        dom.contextSection.classList.toggle('hidden', config.contextHidden);
-        dom.analyzeBtn.textContent = config.buttonText;
-        dom.analysisWrapper?.classList.toggle('hidden', config.analysisHidden);
-        dom.analyzeBtn.disabled = mode === 'compose';
-        const needsRecipient = mode === 'analyze' && !state.selectedPersonId;
-        dom.recipientSelector.classList.toggle('prompt', needsRecipient);
-        dom.recipientPrompt.classList.toggle('hidden', !needsRecipient);
-    }
-    const debouncedAutoAnalysis = debounce(() => runAnalysis({ isAuto: true }), CONFIG.DEBOUNCE_MS_AUTO);
-    
-    async function runAnalysis({ isAuto = false } = {}) {
-        if ((isAuto && operationInProgress) || !state.settings.apiKey) return;
-        if (!dom.messageInput.value.trim()) return;
+    // --- CORE APPLICATION LOGIC ---
+    let agent;
 
-        const currentRequest = Symbol();
-        latestAnalysisRequest = currentRequest;
+    async function runBriefing() {
+        const selectedPersonId = stateManager.get('selectedPersonId');
+        if (!selectedPersonId) {
+            if(dom.messageInput.value.trim().length > 0) showToast('Please select a person first.', 'warning');
+            return;
+        }
+        const message = dom.messageInput.value.trim();
+        if (!message) return;
         
-        if (!isAuto) { operationInProgress = true; dom.analyzeBtn.disabled = true; UIManager.showOptimisticResponse(); } 
-        else { dom.messageInput.style.borderColor = 'var(--primary-color)'; }
-        dom.aiInteractionSection.classList.remove('hidden');
-
+        dom.analysisResult.innerHTML = '<p class="empty-state-text">Getting briefing...</p>';
+        dom.responsesSection.classList.add('hidden');
+        stateManager.set('currentPlaybook', null);
+        
         try {
-            const result = await agent.analyze(dom.messageInput.value, state.sessionContext.join('\n'), state.selectedPersonId, state.selectedPersona);
-            if (latestAnalysisRequest !== currentRequest) return;
-            state.lastAnalysis = result.analysis; state.responses = result.responses; state.activeResponseIndex = 0;
-            UIManager.displayAnalysis(result.analysis); UIManager.displayResponses(result.responses);
+            const profile = await storage.get('profiles', selectedPersonId);
+            const lastContext = dom.contextInput.value.trim();
+            stateManager.set('lastContext', lastContext);
+            const briefing = await agent.getBriefing(message, profile, lastContext);
+            stateManager.set('currentBriefing', briefing);
+            UIManager.renderBriefing(briefing);
         } catch(error) {
-            if (latestAnalysisRequest === currentRequest) { showToast(error.message, 'error'); if(!isAuto) UIManager.setEmptyStateMessages(); }
-        } finally {
-            if (latestAnalysisRequest === currentRequest) {
-                if (isAuto) dom.messageInput.style.borderColor = '';
-                else { operationInProgress = false; dom.analyzeBtn.disabled = false; }
-            }
+            ErrorHandler.handle(error, 'runBriefing');
+            dom.analysisResult.innerHTML = '<p class="empty-state-text">Could not get briefing.</p>';
+        }
+    }
+
+    async function runResponseGeneration() {
+        const currentBriefing = stateManager.get('currentBriefing');
+        if (!currentBriefing) return showToast('Please get a briefing first.', 'error');
+        dom.responsesContainer.innerHTML = '<p class="empty-state-text">Generating playbook...</p>';
+        
+        try {
+            const profile = await storage.get('profiles', stateManager.get('selectedPersonId'));
+            const playbook = await agent.getResponsePlaybook(currentBriefing, dom.messageInput.value.trim(), profile);
+            UIManager.renderResponsePlaybook(playbook);
+        } catch(error) {
+            ErrorHandler.handle(error, 'runResponseGeneration');
+            dom.responsesContainer.innerHTML = '<p class="empty-state-text">Could not get responses.</p>';
         }
     }
     
-    // --- EVENT HANDLERS & INITIALIZATION ---
+    // --- ACTIONS COMMAND OBJECT ---
+    const actions = {
+        'refine-analysis': async () => await runBriefing(),
+        'get-suggestions': async () => await runResponseGeneration(),
+        'copy-response': async ({ text }) => {
+            navigator.clipboard.writeText(decodeURIComponent(text)).then(() => showToast("Copied!", "success"));
+            const profile = await storage.get('profiles', stateManager.get('selectedPersonId'));
+            if (profile) {
+                const newSummary = await agent.summarizeInteraction(dom.messageInput.value.trim(), stateManager.get('currentBriefing'), stateManager.get('currentPlaybook'));
+                if (newSummary) {
+                     profile.summary = (profile.summary ? profile.summary + ' ' : '') + newSummary;
+                     await storage.set('profiles', profile, stateManager.get('selectedPersonId'));
+                }
+            }
+        },
+        'clear-inputs': async () => {
+            dom.messageInput.value = ''; dom.contextInput.value = '';
+            stateManager.resetBriefingState();
+            UIManager.updateSectionVisibility('compose');
+            await storage.set('draft', { message: '', personId: stateManager.get('selectedPersonId') });
+        },
+        'open-settings': () => {
+            showModal(document.getElementById(CONFIG.MODAL_IDS.SETTINGS)); 
+            dom.geminiApiKeyInput.value = stateManager.get('settings').apiKey || '';
+        },
+        'save-settings': async () => {
+            const settings = stateManager.get('settings');
+            const newApiKey = dom.geminiApiKeyInput.value;
+            if(!ValidationService.isApiKeyValid(newApiKey)) return showToast('API Key appears invalid.', 'error');
+            
+            settings.apiKey = newApiKey;
+            stateManager.set('settings', settings); 
+            await storage.set('settings', settings); 
+            agent = settings.apiKey ? new PersonalizedWorkplaceAgent(settings.apiKey) : null;
+            hideModal(document.getElementById(CONFIG.MODAL_IDS.SETTINGS)); 
+            showToast('Settings saved.', 'success');
+        },
+        'open-people-manager': async () => {
+            hideModal(document.getElementById(CONFIG.MODAL_IDS.SETTINGS)); 
+            await UIManager.renderPeopleList(); 
+            showModal(document.getElementById(CONFIG.MODAL_IDS.PEOPLE));
+        },
+        'add-person': async () => {
+            const name = dom.newPersonName.value;
+            const role = dom.newPersonRole.value;
+            if (!ValidationService.isPersonDataValid(name, role)) return showToast("Name and relationship are required.", "error");
+            
+            const newId = `p_${Date.now()}`;
+            await storage.set('profiles', { id: newId, name: name.trim(), role: role.trim(), summary: '' }, newId);
+            dom.newPersonName.value = ''; dom.newPersonRole.value = '';
+            await Promise.all([UIManager.renderPeopleList(), UIManager.renderPeopleSelector()]);
+        },
+        'delete-person': async ({ id }) => {
+            if (await showConfirmationModal("Delete Person?", "This cannot be undone.")) {
+                const profiles = await storage.get('profiles');
+                delete profiles[id];
+                await storage.set('profiles', profiles);
+                if(stateManager.get('selectedPersonId') === id) stateManager.set('selectedPersonId', null);
+                await Promise.all([UIManager.renderPeopleList(), UIManager.renderPeopleSelector()]);
+            }
+        },
+        'clear-all-data': async () => {
+             if(await showConfirmationModal('Clear All Data?', 'This will delete all profiles, settings, and drafts.')) { 
+                 Object.values(CONFIG.STORAGE_KEYS).forEach(key => localStorage.removeItem(key)); 
+                 window.location.reload(); 
+             }
+        },
+        'close-modal': ({ modalId }) => hideModal(document.getElementById(modalId)),
+    };
+
+    // --- EVENT HANDLING & INITIALIZATION ---
     async function handleEvent(e) {
         const target = e.target.closest('[data-action]');
         if (!target) return;
-
-        const { action, id, modalId, index, instruction, text } = target.dataset;
         e.preventDefault();
-
-        try {
-            switch (action) {
-                case 'run-analysis': await runAnalysis({}); break;
-                case 'clear-inputs': dom.messageInput.value = ''; dom.userInput.value = ''; state.sessionContext = []; await storage.set('draft', ''); UIManager.setEmptyStateMessages(); dom.aiInteractionSection.classList.add('hidden'); updateUI(); break;
-                case 'open-settings': dom.geminiApiKeyInput.value = state.settings.apiKey; showModal('settingsModal'); break;
-                case 'save-settings': state.settings.apiKey = dom.geminiApiKeyInput.value; await storage.set('settings', state.settings); hideModal('settingsModal'); if(!state.settings.apiKey) dom.apiKeyCta.classList.remove('hidden'); else dom.apiKeyCta.classList.add('hidden'); break;
-                case 'open-people-manager': hideModal('settingsModal'); CONFIG.STANDARD_RELATIONSHIPS.forEach(r => dom.newPersonRelationshipType.add(new Option(r,r))); dom.newPersonRelationshipType.add(new Option('Other', 'Other')); await UIManager.renderPeopleList(); showModal('peopleModal'); break;
-                case 'add-person': const name = dom.newPersonName.value.trim(); let role = dom.newPersonRelationshipType.value; if (role === 'Other') role = dom.newPersonRole.value.trim(); if (!name || !role) return showToast("Name and Relationship are required.", "error"); const newId = `p_${Date.now()}`; await storage.set('profiles', {id: newId, name, type: role, summary: ''}, newId); dom.newPersonName.value = ''; dom.newPersonRole.value = ''; await Promise.all([UIManager.renderPeopleList(), UIManager.populateRecipientSelector()]); break;
-                case 'delete-person': if (await showConfirmationModal("Delete Person?", "This cannot be undone.")) { const profiles = await storage.get('profiles'); delete profiles[id]; await storage.set('profiles', profiles); if(state.selectedPersonId === id) state.selectedPersonId = null; await Promise.all([UIManager.renderPeopleList(), UIManager.populateRecipientSelector()]); } break;
-                case 'clear-all-data': if(await showConfirmationModal('Clear All Data?', 'This will delete all profiles and settings.')) { Object.values(storage.keys).forEach(key => localStorage.removeItem(key)); window.location.reload(); } break;
-                case 'close-modal': hideModal(modalId); break;
-                case 'select-response-tab': state.activeResponseIndex = parseInt(index, 10); UIManager.displayResponses(state.responses); break;
-                case 'copy-response': agent._recordResponseSelection(parseInt(index, 10), agent._assessMessageContext(dom.messageInput.value), state.selectedPersona); navigator.clipboard.writeText(decodeURIComponent(text)).then(() => showToast("Copied!", "success")).catch(() => showToast("Copy failed.", "error")); break;
-                // More actions here...
-            }
-        } catch(error) {
-            console.error(`Action "${action}" failed:`, error);
-            showToast('An unexpected error occurred.', 'error');
-        }
-    }
-    
-    async function main() {
-        state.settings = await storage.get('settings');
-        if ((!window.chrome || !window.chrome.sidePanel) && !state.settings.onboardingDismissed) {
-            dom.onboardingOverlay.classList.remove('hidden');
-            dom.dismissOnboardingBtn.addEventListener('click', async () => {
-                state.settings.onboardingDismissed = true; await storage.set('settings', state.settings);
-                dom.onboardingOverlay.classList.add('hidden'); dom.app.classList.remove('hidden'); main();
-            }, { once: true });
-            return;
-        }
-
-        dom.app.classList.remove('hidden');
-        UIManager.init();
-        dom.messageInput.value = await storage.get('draft');
-        dom.autoAnalyzeToggle.checked = state.settings.autoAnalyzeEnabled;
-        if (!state.settings.apiKey) dom.apiKeyCta.classList.remove('hidden');
         
-        await UIManager.populateRecipientSelector();
-        updateUI();
-
-        document.addEventListener('click', handleEvent);
-        dom.messageInput.addEventListener('input', () => { storage.set('draft', dom.messageInput.value); updateUI(); if (state.settings.autoAnalyzeEnabled) debouncedAutoAnalysis(); });
-        dom.autoAnalyzeToggle.addEventListener('change', async (e) => { state.settings.autoAnalyzeEnabled = e.target.checked; await storage.set('settings', state.settings); });
-        dom.personaSelector.addEventListener('change', (e) => { state.selectedPersona = e.target.value; if (state.responses.length > 0) runAnalysis({ isAuto: true }); });
-        dom.recipientSelector.addEventListener('change', (e) => { if (e.target.value === 'add_new_person') { handleEvent({ target: { dataset: { action: 'open-people-manager' } }, preventDefault: ()=>{} }); dom.recipientSelector.value = state.selectedPersonId || ""; } else { state.selectedPersonId = e.target.value || null; updateUI(); } });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && activeModal) hideModal(activeModal.id); });
+        const action = actions[target.dataset.action];
+        if (action) {
+            try {
+                await action(target.dataset);
+            } catch (error) {
+                ErrorHandler.handle(error, `actions.${target.dataset.action}`);
+            }
+        }
     }
-    
-    main().catch(console.error);
+
+    async function main() {
+        try {
+            const settings = await storage.get('settings');
+            stateManager.set('settings', settings);
+            if (!settings.onboardingDismissed) {
+                 dom.onboardingOverlay.classList.remove('hidden');
+                 dom.dismissOnboardingBtn.addEventListener('click', async () => {
+                    const s = stateManager.get('settings');
+                    s.onboardingDismissed = true;
+                    stateManager.set('settings', s);
+                    await storage.set('settings', s);
+                    dom.onboardingOverlay.classList.add('hidden'); dom.app.classList.remove('hidden');
+                    await main(); // Re-run main to initialize the app
+                 }, { once: true });
+                 return;
+            }
+
+            dom.app.classList.remove('hidden');
+            if (ValidationService.isApiKeyValid(settings.apiKey)) {
+                agent = new PersonalizedWorkplaceAgent(settings.apiKey);
+            } else {
+                showToast('API Key not set. Please add it in Settings.', 'warning');
+            }
+
+            await UIManager.init();
+            document.addEventListener('click', handleEvent);
+            
+            const debouncedBriefing = debounce(runBriefing, CONFIG.DEBOUNCE_MS);
+            
+            const handleInputChange = () => {
+                UIManager.updateSectionVisibility('analysis');
+                storage.set('draft', { message: dom.messageInput.value, personId: stateManager.get('selectedPersonId') });
+                if (agent) debouncedBriefing();
+            };
+            
+            dom.messageInput.addEventListener('input', handleInputChange);
+            dom.recipientSelector.addEventListener('change', (e) => {
+                const value = e.target.value;
+                if (value === 'add_new_person') {
+                    actions['open-people-manager']();
+                    dom.recipientSelector.value = stateManager.get('selectedPersonId') || "";
+                    return;
+                }
+                stateManager.resetBriefingState();
+                dom.contextInput.value = '';
+                dom.analysisResult.innerHTML = '<p class="empty-state-text">Select a person and type a message to get started...</p>';
+                dom.responsesSection.classList.add('hidden');
+                
+                stateManager.set('selectedPersonId', value || null);
+                handleInputChange();
+            });
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && activeModal) hideModal(activeModal); });
+        } catch(e) {
+            ErrorHandler.handle(e, 'main');
+        }
+    }
+
+    main();
     </script>
 </body>
 </html>
