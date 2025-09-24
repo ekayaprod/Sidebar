@@ -1,599 +1,635 @@
-<!DOCTYPE html>
-<!-- LLM-NOTE: This application is optimized exclusively for Microsoft Edge. Do not add cross-browser compatibility code. -->
-<html lang="en" class="h-full">
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sidebar</title>
-    <style>
-        /* LLM-NOTE: All styling is self-contained. Do not introduce external CSS frameworks. */
-        :root {
-            --bg-color: #f4f7fa; --panel-bg: #ffffff; --border-color: #e2e8f0;
-            --text-color: #1e293b; --subtle-text: #64748b; --primary-color: #3b82f6;
-            --danger-color: #ef4444; --success-color: #22c55e; --warning-color: #f97316;
-            --info-bg: #f8fafc; --danger-hover-bg: #fee2e2;
-            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cultural Coinage Generator</title>
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #111827; --panel-bg: #1f2937; --border-color: #374151;
-                --text-color: #f9fafb; --subtle-text: #9ca3af; --primary-color: #60a5fa;
-                --info-bg: #111827; --danger-hover-bg: #4b1d1d;
-            }
-        }
-
-        html, body { height: 100%; margin: 0; }
-        body {
-            font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-size: 14px;
-            display: flex;
-            overflow: hidden;
-        }
-
-        /* --- Core Layout & Components --- */
-        #app { width: 100%; height: 100vh; display: flex; flex-direction: column; padding: 0.75rem; box-sizing: border-box; gap: 0.5rem; }
-        main { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 4px; }
-        .section { background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.5rem; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
-        .section-title { font-size: 0.9rem; font-weight: 600; margin: 0; }
-        .input-field, select { width: 100%; box-sizing: border-box; font-size: 0.875rem; padding: 0.4rem 0.6rem; border-radius: 0.375rem; border: 1px solid var(--border-color); font-family: inherit; background-color: var(--info-bg); color: var(--text-color); }
-        .input-field:focus, select:focus { outline: 2px solid var(--primary-color); outline-offset: -1px; }
-        textarea.input-field { resize: vertical; }
-
-        /* --- Buttons & Controls --- */
-        .btn { padding: 0.35rem 0.6rem; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: 0.375rem; cursor: pointer; background-color: var(--panel-bg); font-weight: 500; }
-        .btn:hover { background-color: var(--info-bg); }
-        .btn-primary { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
-        .btn-primary:hover { filter: brightness(110%); }
-        .btn-danger { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
-
-        /* --- Analysis & Response Display --- */
-        #analysisResult { padding: 0.75rem; border-radius: 0.375rem; background-color: var(--info-bg); font-size: 0.875rem; line-height: 1.5; white-space: pre-wrap; }
-        .empty-state-text { color: var(--subtle-text); text-align: center; padding: 1rem; font-style: italic; }
-        #responsesContainer { display: flex; flex-direction: column; gap: 0.75rem; }
-        .strategy-card { border: 1px solid var(--border-color); border-radius: 0.5rem; overflow: hidden; }
-        .strategy-header { background-color: var(--info-bg); padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border-color); }
-        .strategy-header h3 { font-size: 0.9rem; margin: 0; }
-        .strategy-header h3 span { font-weight: 500; color: var(--subtle-text); font-size: 0.8rem; }
-        .strategy-rationale { font-size: 0.8rem; color: var(--subtle-text); padding: 0.5rem 0.75rem; margin: 0; }
-        .strategy-text { white-space: pre-wrap; padding: 0.75rem; }
-        .strategy-actions { text-align: right; padding: 0 0.5rem 0.5rem; }
-
-        /* --- Modals, Toasts, & Overlays --- */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(100,116,139,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--panel-bg); padding: 1.5rem; border-radius: 0.75rem; max-width: min(95vw, 420px); width: 100%; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); max-height: min(90vh, 600px); overflow-y: auto; }
-        .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); padding: 0.75rem 1.25rem; border-radius: 0.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 0.875rem; z-index: 2000; transition: bottom 0.5s cubic-bezier(0.25, 1, 0.5, 1); color: white; }
-        .toast.show { bottom: 20px; }
-        .toast-error { background-color: var(--danger-color); }
-        .toast-success { background-color: var(--success-color); }
-        .toast-info { background-color: var(--primary-color); }
-        #onboardingContent kbd { background: var(--border-color); padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-family: monospace; }
-        .hidden { display: none !important; }
-
-        /* --- Responsive Design --- */
-        @media (max-width: 360px) {
-            .section-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-            .controls { width: 100%; justify-content: space-between; }
-        }
-    </style>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#071022; color:#E6EEF9; }
+    .scrolling-panel::-webkit-scrollbar{ width:10px } .scrolling-panel::-webkit-scrollbar-thumb{ background:#213449; border-radius:8px }
+    .fade { animation: fade 220ms ease-out; } @keyframes fade{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+    .small-muted { color:#9fb0c7; font-size:13px }
+    .chip { padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); cursor:pointer; user-select:none }
+    .chip.active { background: linear-gradient(90deg,#294e86,#2b6fb3); color:white; box-shadow:0 6px 18px rgba(41,78,134,0.14) }
+    .spinner{ border:4px solid rgba(255,255,255,0.06); border-top-color:#60a5fa; border-radius:999px; width:36px; height:36px; animation:spin 0.9s linear infinite } @keyframes spin{ to{transform:rotate(360deg)} }
+    a.debug { color:#8fb6ff; text-decoration:underline }
+    .debug-panel { max-height: 200px; overflow-y: auto; }
+  </style>
 </head>
 <body>
-    <div id="onboardingOverlay" class="hidden">
-       <div style="max-width: 600px; margin: auto; padding: 2rem;">
-            <h1>Welcome to Sidebar</h1>
-            <p>This is a strategic co-pilot for workplace communication, designed to help you decode messages and respond with confidence.</p>
-            <h3>Setup:</h3>
-            <p>1. In Edge, press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd> to open the sidebar.</p>
-            <p>2. Click `+` to add this app.</p>
-            <p>3. Go to Settings (⚙️) and add your Google AI API key. <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Get a key here.</a></p>
-            <button id="dismissOnboardingBtn" class="btn btn-primary" style="margin-top: 1rem;">Continue to App</button>
-        </div>
-    </div>
+  <div id="app" class="min-h-screen p-6"></div>
 
-    <div id="app" class="hidden">
-        <main>
-            <!-- Input Section -->
-            <section class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Message</h2>
-                    <div class="controls">
-                        <select id="recipientSelector" title="Select Person"></select>
-                    </div>
-                </div>
-                <textarea id="messageInput" class="input-field" placeholder="Paste a message to analyze or start composing..."></textarea>
-            </section>
-            
-            <!-- Analysis Section -->
-            <section id="analysisSection" class="section hidden">
-                <div class="section-header">
-                    <h2 class="section-title">The Briefing</h2>
-                </div>
-                <div id="analysisResult"></div>
-                <div class="input-group" style="margin-top: 0.5rem;">
-                    <input type="text" id="contextInput" class="input-field" placeholder="Add clarifying context...">
-                    <button class="btn" data-action="refine-analysis">Update Briefing</button>
-                </div>
-            </section>
+  <script>
+(function () {
+  // Philosophy for LLMs
+  const PHILOSOPHY = `
+  CULTURAL COINAGE GENERATOR
 
-             <!-- Actions Section -->
-            <section id="actionsSection" class="section hidden">
-                 <button id="getSuggestionsBtn" class="btn btn-primary" style="width: 100%;" data-action="get-suggestions">Get Response Playbook</button>
-            </section>
+  Names are artifacts, not random strings.
+  Blend cultural morphemes, syllables, and phonetic textures into poetic,
+  pronounceable names that are culturally respectful.
 
-            <!-- Responses Section -->
-            <section id="responsesSection" class="section hidden">
-                <div class="section-header">
-                     <h2 class="section-title">Response Playbook</h2>
-                </div>
-                <div id="responsesContainer"></div>
-            </section>
-        </main>
-        <footer>
-            <button class="btn" data-action="clear-inputs" title="Clear All Inputs">🗑️ Clear</button>
-            <button class="btn" data-action="open-settings" title="Settings">⚙️ Settings</button>
-        </footer>
-    </div>
+  North Star: Treat this tool as a craft workshop, not just a generator.
+  All contributors and LLMs must preserve this intent.
+  `;
 
-    <!-- Modals -->
-    <div id="settingsModal" class="modal-overlay hidden">
-       <div class="modal-content">
-            <h2>Settings</h2>
-            <div style="margin-bottom: 1rem;">
-                <label for="geminiApiKeyInput">Google AI API Key</label>
-                <input type="password" id="geminiApiKeyInput" class="input-field" placeholder="Enter your API key">
-            </div>
-            <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
-                <label>Data Management</label>
-                <button class="btn" data-action="open-people-manager">Manage People</button>
-                <button class="btn btn-danger" data-action="clear-all-data">Clear All Data</button>
-            </div>
-            <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top: 1.5rem;">
-                <button class="btn" data-action="close-modal" data-modal-id="settingsModal">Cancel</button>
-                <button class="btn btn-primary" data-action="save-settings">Save</button>
-            </div>
-        </div>
-    </div>
-    <div id="peopleModal" class="modal-overlay hidden">
-       <div class="modal-content">
-            <h2>Manage People</h2>
-            <div style="margin-bottom: 1rem;">
-                <h3>Add New Person</h3>
-                <input type="text" id="newPersonName" class="input-field" placeholder="Person's Name" style="margin-bottom: 0.5rem;">
-                <input type="text" id="newPersonRole" class="input-field" placeholder="Relationship (e.g., Manager)">
-                <button class="btn btn-primary" data-action="add-person" style="margin-top: 0.5rem;">Add</button>
-            </div>
-            <div id="peopleList"></div>
-            <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top: 1.5rem;">
-                <button class="btn" data-action="close-modal" data-modal-id="peopleModal">Close</button>
-            </div>
-        </div>
-    </div>
-     <div id="confirmModal" class="modal-overlay hidden">
-       <div class="modal-content">
-            <h2 id="confirmTitle">Confirm</h2>
-            <p id="confirmMessage"></p>
-            <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top: 1.5rem;">
-                <button id="confirmCancelBtn" class="btn">Cancel</button>
-                <button id="confirmOkBtn" class="btn btn-danger">OK</button>
-            </div>
-        </div>
-    </div>
-    
-    <script type="module">
-    'use strict';
-    // --- LLM-NOTE: SCRIPT OVERVIEW ---
-    // This script is a single-file application designed for the Microsoft Edge sidebar.
-    // It acts as a "strategic co-pilot" for workplace communication.
-    // Core functionality is managed by the `PersonalizedWorkplaceAgent` which follows a specific interactive workflow.
-    // All UI manipulation is handled by the `UIManager`, and all data is stored in localStorage via `UnifiedStorage`.
-    // Event handling is centralized using a `data-action` delegation model. State is managed by the `StateManager` class.
+  // --- CONFIG ---
+  const API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent";
+  const DEFAULT_COUNT = 6;
+  const LANG_OPTIONS = ["Turkish","Nordic","Latin","Celtic","Slavic","Japanese","Greek","Sanskrit","Arabic"];
+  const THEME_OPTIONS = ["Nature","Cosmic","Balance","Strength","Water","Light","Shadow","Music", "Fire", "Mountain", "Ocean", "Sky", "Forest", "Mythic"];
+  const STYLE_OPTIONS = ["Lyrical & Melodic","Archaic & Mythic","Minimalist & Modern","Heroic & Resonant", "Elegant & Refined", "Grounded & Earthy", "Mystical & Ethereal"];
+  const SYSTEM_BLACKLIST = ["tuna","ilay","baran","nur","solren","kuzel","anal"];
+  const MORPHEME_DICTIONARY = { sol: "Latin, sun", ren: "Japanese, lotus", dra: "Greek, serpent", astro: "Greek, star", luna: "Latin, moon" };
 
-    const CONFIG = {
-        DEBOUNCE_MS: 750,
-        MODAL_IDS: {
-            SETTINGS: 'settingsModal',
-            PEOPLE: 'peopleModal',
-            CONFIRM: 'confirmModal'
-        },
-        STORAGE_KEYS: { 
-            PROFILES: 'sidebar_profiles_v13', 
-            SETTINGS: 'sidebar_settings_v10', 
-            DRAFT: 'sidebar_draft_v3' 
-        }
-    };
+  // --- State ---
+  const appState = {
+    apiKey: "",
+    isLoading: false,
+    error: null,
+    results: [],
+    likedNames: [],
+    selectedLanguages: ["Celtic", "Sanskrit"],
+    selectedThemes: ["Light","Balance"],
+    selectedStyle: "Lyrical & Melodic",
+    gender: "Unisex",
+    surname: "",
+    siblingNames: "",
+    firstNameForMiddle: "",
+    userLanguages: [],
+    userBlacklist: [],
+    rawApiResponse: null,
+    sessionGeneratedNames: [],
+    sortOrder: "generated",
+  };
+  
+  // --- UI Element Cache ---
+  const ui = {
+      root: document.getElementById('app'),
+      controls: {},
+      results: {}
+  };
 
-    const dom = {
-        app: document.getElementById('app'), onboardingOverlay: document.getElementById('onboardingOverlay'), dismissOnboardingBtn: document.getElementById('dismissOnboardingBtn'),
-        messageInput: document.getElementById('messageInput'), recipientSelector: document.getElementById('recipientSelector'),
-        analysisSection: document.getElementById('analysisSection'), analysisResult: document.getElementById('analysisResult'),
-        contextInput: document.getElementById('contextInput'),
-        actionsSection: document.getElementById('actionsSection'),
-        responsesSection: document.getElementById('responsesSection'), responsesContainer: document.getElementById('responsesContainer'),
-        geminiApiKeyInput: document.getElementById('geminiApiKeyInput'),
-        peopleList: document.getElementById('peopleList'), newPersonName: document.getElementById('newPersonName'), newPersonRole: document.getElementById('newPersonRole'),
-        confirmModal: document.getElementById(CONFIG.MODAL_IDS.CONFIRM), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
-        confirmCancelBtn: document.getElementById('confirmCancelBtn'), confirmOkBtn: document.getElementById('confirmOkBtn'),
-    };
-
-    let activeModal = null, focusedElementBeforeModal = null;
-    
-    // --- UTILITIES & HELPERS ---
-    const ErrorHandler = {
-        handle(error, context = 'General') {
-            console.error(`Error in ${context}:`, error);
-            showToast(`An error occurred: ${error.message}`, 'error');
-        }
-    };
-
-    const ValidationService = {
-        isApiKeyValid(key) {
-            return typeof key === 'string' && key.length > 10; // Basic check
-        },
-        isPersonDataValid(name, role) {
-            return name.trim().length > 0 && role.trim().length > 0;
-        }
-    };
-
-    const debounce = (func, delay) => {
-        let timeout;
-        return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
+  // --- Helpers ---
+  const el = (tag, cls='') => { const d = document.createElement(tag); if (cls) d.className = cls; return d; };
+  
+  function saveState() {
+    try {
+        const stateToSave = {
+            apiKey: appState.apiKey,
+            selectedLanguages: appState.selectedLanguages,
+            selectedThemes: appState.selectedThemes,
+            selectedStyle: appState.selectedStyle,
+            likedNames: appState.likedNames,
+            userLanguages: appState.userLanguages,
+            surname: appState.surname,
+            siblingNames: appState.siblingNames,
+            firstNameForMiddle: appState.firstNameForMiddle,
+            userBlacklist: appState.userBlacklist,
+            gender: appState.gender,
         };
-    };
-    const sanitizeHTML = (str) => {
-        if (!str) return '';
-        return str.replace(/[&<>"']/g, (match) => {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
-        });
-    };
-    const showToast = (message, type = 'info', duration = 3000) => {
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.classList.add('show'), 100);
-        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => document.body.removeChild(toast), 500); }, duration);
-    };
+        localStorage.setItem('culturalCoinageState', JSON.stringify(stateToSave));
+    } catch (e) { console.warn("Could not save state to localStorage:", e); }
+  }
+
+  function loadState() {
+      try {
+        const saved = localStorage.getItem('culturalCoinageState');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            const defaults = { likedNames: [], userLanguages: [], userBlacklist: [], gender: "Unisex" };
+            Object.assign(appState, { ...defaults, ...parsed });
+        }
+      } catch (e) { console.warn("Could not load state from localStorage:", e); }
+  }
+
+  function parseApiResponse(text) {
+    if (!text) return [];
+    let cleanedText = text.replace(/```[\s\S]*?```/g, '').trim();
+    const firstBracket = cleanedText.search(/[\[\{]/);
+    if (firstBracket > 0) cleanedText = cleanedText.slice(firstBracket);
+    const lastBracket = Math.max(cleanedText.lastIndexOf(']'), cleanedText.lastIndexOf('}'));
+    if (lastBracket !== -1) cleanedText = cleanedText.slice(0, lastBracket + 1);
     
-    const showModal = (modalElement) => {
-        if (!modalElement) return;
-        activeModal = modalElement;
-        focusedElementBeforeModal = document.activeElement;
-        activeModal.classList.remove('hidden');
-        activeModal.querySelector('input, button, select, textarea')?.focus();
-    };
-    const hideModal = (modalElement) => {
-        if(modalElement) modalElement.classList.add('hidden');
-        if (activeModal === modalElement) activeModal = null;
-        if (focusedElementBeforeModal) focusedElementBeforeModal.focus();
-    };
-    const showConfirmationModal = (title, message) => new Promise((resolve) => {
-        dom.confirmTitle.textContent = title;
-        dom.confirmMessage.textContent = message;
-        showModal(dom.confirmModal);
-        const onConfirm = () => { cleanup(); resolve(true); };
-        const onCancel = () => { cleanup(); resolve(false); };
-        const cleanup = () => {
-            dom.confirmOkBtn.removeEventListener('click', onConfirm);
-            dom.confirmCancelBtn.removeEventListener('click', onCancel);
-            hideModal(dom.confirmModal);
-        };
-        dom.confirmOkBtn.addEventListener('click', onConfirm, { once: true });
-        dom.confirmCancelBtn.addEventListener('click', onCancel, { once: true });
-    });
-
-    // --- ENCAPSULATED STATE MANAGEMENT ---
-    class StateManager {
-        constructor() {
-            this.state = {
-                selectedPersonId: null, settings: {}, currentBriefing: null, lastContext: '', currentPlaybook: null
-            };
-        }
-        get(key) { return this.state[key]; }
-        set(key, value) { this.state[key] = value; }
-        resetBriefingState() {
-            this.set('currentBriefing', null);
-            this.set('currentPlaybook', null);
-            this.set('lastContext', '');
-        }
+    if (!cleanedText) return [];
+    try {
+        const parsed = JSON.parse(cleanedText);
+        if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+        console.warn("JSON parsing failed.", e);
     }
-    const stateManager = new StateManager();
+    return [];
+  }
 
-    // --- CONSOLIDATED STORAGE ---
-    class UnifiedStorage {
-        constructor() { this.keys = CONFIG.STORAGE_KEYS; }
-        async get(type, id = null) { const data = JSON.parse(localStorage.getItem(this.keys[type.toUpperCase()]) || '{}'); return id ? data[id] : data; }
-        async set(type, data, id = null) { if (id) { const d = await this.get(type); d[id] = data; localStorage.setItem(this.keys[type.toUpperCase()], JSON.stringify(d)); } else { localStorage.setItem(this.keys[type.toUpperCase()], JSON.stringify(data)); } }
-    }
-    const storage = new UnifiedStorage();
-    
-    // --- API CLIENT ---
-    class GeminiApiClient {
-        constructor(apiKey) { this.apiKey = apiKey; this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-preview-0514:generateContent'; }
-        async call(prompt, isJson = true) {
-            const payload = { contents: [{ parts: [{ text: prompt }] }] };
-            if (isJson) { payload.generationConfig = { responseMimeType: "application/json" }; }
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-            const result = await response.json();
-            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (!text) throw new Error('Invalid API response structure.');
-            return isJson ? JSON.parse(text) : text;
-        }
-    }
+  function processApiResponse(rawArray) {
+    if (!rawArray?.length) return [];
+    const fullBlacklist = [...SYSTEM_BLACKLIST, ...appState.userBlacklist.map(b=>b.toLowerCase())];
 
-    // --- PERSONALIZED WORKPLACE AGENT ---
-    class PersonalizedWorkplaceAgent {
-        constructor(apiKey) { this.api = new GeminiApiClient(apiKey); }
-        _sanitizeForPrompt(text) {
-            if (!text) return '';
-            return text.replace(/\b(ignore|disregard|forget|instruction|system|prompt)\b/gi, '[keyword removed]');
-        }
-        async getBriefing(message, profile, addedContext = '') {
-            const cleanMessage = this._sanitizeForPrompt(message);
-            const cleanContext = this._sanitizeForPrompt(addedContext);
-            const prompt = `CONTEXT:\n- You are analyzing a workplace message for a user who wants to understand the professional subtext.\n- Recipient Profile: This person is a ${profile?.role || 'colleague'}.\n- Historical Communication Style (Long-Term Memory): ${profile?.summary || 'No history available.'}\n- User's Added Context: ${cleanContext || 'None.'}\n\nMESSAGE TO ANALYZE:\n"${cleanMessage}"\n\nTASK:\nProvide a single, concise "Briefing" paragraph. Your goal is to decode the message's true meaning, seriousness, and tone. CRITICALLY, compare the message to their known historical style. If it deviates (e.g., more formal, more blunt), highlight this anomaly as it's a key insight. Focus ONLY on the analysis. Do not suggest actions.`;
-            return this.api.call(prompt, false);
-        }
-        async getResponsePlaybook(briefing, message, profile) {
-            const PERSONAS = { Diplomat: "Focus on collaboration, find common ground, and validate their perspective.", Pragmatist: "Focus on data, efficiency, and logical next steps. Be direct and concise.", Challenger: "Respectfully question assumptions, introduce a different perspective, or clarify boundaries." };
-            const prompt = `SITUATION BRIEFING:\n"${briefing}"\n\nORIGINAL MESSAGE:\n"${message}"\n\nTASK:\nGenerate a playbook of 2-3 distinct strategic responses. For each response:\n1. Assign a Persona (${Object.keys(PERSONAS).join(', ')}).\n2. Write a brief Rationale explaining *why* this strategy is effective for this specific situation.\n3. Write the response Text.\n\nRespond with a JSON object: { "responses": [{ "persona": "...", "rationale": "...", "text": "..." }] }`;
-            return this.api.call(prompt);
-        }
-        async summarizeInteraction(message, briefing, playbook) {
-            if(!playbook || !playbook.responses) return "";
-            const prompt = `PREVIOUS INTERACTION:\n- Initial Message: "${message}"\n- Our Analysis: "${briefing}"\n- Generated Responses: ${JSON.stringify(playbook.responses)}\n\nTASK:\nUpdate the long-term memory summary for this person. Do NOT summarize the topic. Instead, identify and describe their communication BEHAVIOR and STYLE from this interaction. Good examples: "Tends to be indirect when giving criticism." or "Responds well to collaborative language." or "Becomes very formal when discussing deadlines." Provide a single sentence.`;
-            return this.api.call(prompt, false);
-        }
-    }
+    return rawArray.map(it => {
+        let name = (it.name || "").toString().trim();
+        let meaning = (it.meaning || "").toString().trim();
+        let roots = (it.roots || "").toString().trim();
+        let cluster = (it.cluster || "").toString().trim();
 
-    // --- UI MANAGER ---
-    const UIManager = {
-        async init() {
-            this.renderPeopleSelector();
-            const draft = await storage.get('draft');
-            if (draft && draft.message) {
-                dom.messageInput.value = draft.message;
-                stateManager.set('selectedPersonId', draft.personId);
-                dom.recipientSelector.value = stateManager.get('selectedPersonId') || '';
-                this.updateSectionVisibility('analysis');
-            }
-        },
-        updateSectionVisibility(mode) {
-            const isAnalysisVisible = mode === 'analysis' && dom.messageInput.value.length > 0;
-            dom.analysisSection.classList.toggle('hidden', !isAnalysisVisible);
-            dom.actionsSection.classList.toggle('hidden', !isAnalysisVisible);
-            dom.responsesSection.classList.add('hidden');
-        },
-        renderBriefing(briefingText) {
-            dom.analysisResult.textContent = briefingText;
-        },
-        renderResponsePlaybook(playbook) {
-            dom.responsesSection.classList.remove('hidden');
-            stateManager.set('currentPlaybook', playbook);
-            if (!playbook || !playbook.responses || playbook.responses.length === 0) {
-                dom.responsesContainer.innerHTML = '<p class="empty-state-text">No suggestions generated.</p>';
-                return;
-            }
-            dom.responsesContainer.innerHTML = playbook.responses.map(card => {
-                const safePersona = sanitizeHTML(card.persona);
-                const safeRationale = sanitizeHTML(card.rationale);
-                const safeText = sanitizeHTML(card.text);
-                return `
-                <div class="strategy-card">
-                    <div class="strategy-header"><h3>${safePersona} <span>Strategy</span></h3></div>
-                    <p class="strategy-rationale">${safeRationale}</p>
-                    <div class="strategy-text">${safeText}</div>
-                    <div class="strategy-actions"><button class="btn" data-action="copy-response" data-text="${encodeURIComponent(card.text)}">Copy</button></div>
-                </div>`;
-            }).join('');
-        },
-        async renderPeopleSelector() {
-            const profiles = await storage.get('profiles');
-            dom.recipientSelector.innerHTML = '<option value="">-- Select Person --</option>';
-            Object.values(profiles).forEach(p => dom.recipientSelector.add(new Option(p.name, p.id)));
-            dom.recipientSelector.add(new Option('+ Add New Person', 'add_new_person'));
-            dom.recipientSelector.value = stateManager.get('selectedPersonId') || '';
-        },
-        async renderPeopleList() {
-            const profiles = await storage.get('profiles');
-            dom.peopleList.innerHTML = Object.values(profiles).map(p => `<div class="person-item" style="display:flex; justify-content:space-between; align-items:center; padding: 0.25rem 0;"><span>${sanitizeHTML(p.name)} (${sanitizeHTML(p.role)})</span><button class="btn btn-danger" data-action="delete-person" data-id="${p.id}">Delete</button></div>`).join('');
-        }
-    };
+        // Substring blacklist check
+        if (fullBlacklist.some(b => name.toLowerCase().includes(b))) return null;
 
-    // --- CORE APPLICATION LOGIC ---
-    let agent;
+        // Enrich meaning if too short
+        if (meaning.split(' ').length < 3) {
+            meaning += ` — a name that feels ${cluster.toLowerCase().split('&')[0].trim()} and expansive.`;
+        }
 
-    async function runBriefing() {
-        const selectedPersonId = stateManager.get('selectedPersonId');
-        if (!selectedPersonId) {
-            if(dom.messageInput.value.trim().length > 0) showToast('Please select a person first.', 'warning');
-            return;
-        }
-        const message = dom.messageInput.value.trim();
-        if (!message) return;
-        
-        dom.analysisResult.innerHTML = '<p class="empty-state-text">Getting briefing...</p>';
-        dom.responsesSection.classList.add('hidden');
-        stateManager.set('currentPlaybook', null);
-        
-        try {
-            const profile = await storage.get('profiles', selectedPersonId);
-            const lastContext = dom.contextInput.value.trim();
-            stateManager.set('lastContext', lastContext);
-            const briefing = await agent.getBriefing(message, profile, lastContext);
-            stateManager.set('currentBriefing', briefing);
-            UIManager.renderBriefing(briefing);
-        } catch(error) {
-            ErrorHandler.handle(error, 'runBriefing');
-            dom.analysisResult.innerHTML = '<p class="empty-state-text">Could not get briefing.</p>';
-        }
-    }
-
-    async function runResponseGeneration() {
-        const currentBriefing = stateManager.get('currentBriefing');
-        if (!currentBriefing) return showToast('Please get a briefing first.', 'error');
-        dom.responsesContainer.innerHTML = '<p class="empty-state-text">Generating playbook...</p>';
-        
-        try {
-            const profile = await storage.get('profiles', stateManager.get('selectedPersonId'));
-            const playbook = await agent.getResponsePlaybook(currentBriefing, dom.messageInput.value.trim(), profile);
-            UIManager.renderResponsePlaybook(playbook);
-        } catch(error) {
-            ErrorHandler.handle(error, 'runResponseGeneration');
-            dom.responsesContainer.innerHTML = '<p class="empty-state-text">Could not get responses.</p>';
-        }
-    }
-    
-    // --- ACTIONS COMMAND OBJECT ---
-    const actions = {
-        'refine-analysis': async () => await runBriefing(),
-        'get-suggestions': async () => await runResponseGeneration(),
-        'copy-response': async ({ text }) => {
-            navigator.clipboard.writeText(decodeURIComponent(text)).then(() => showToast("Copied!", "success"));
-            const profile = await storage.get('profiles', stateManager.get('selectedPersonId'));
-            if (profile) {
-                const newSummary = await agent.summarizeInteraction(dom.messageInput.value.trim(), stateManager.get('currentBriefing'), stateManager.get('currentPlaybook'));
-                if (newSummary) {
-                     profile.summary = (profile.summary ? profile.summary + ' ' : '') + newSummary;
-                     await storage.set('profiles', profile, stateManager.get('selectedPersonId'));
+        // Enrich roots if shallow
+        if (roots && !roots.includes('+')) {
+            for (const [key, value] of Object.entries(MORPHEME_DICTIONARY)) {
+                if (name.toLowerCase().includes(key) && !roots.toLowerCase().includes(key)) {
+                    roots += ` + ${value}`;
                 }
             }
-        },
-        'clear-inputs': async () => {
-            dom.messageInput.value = ''; dom.contextInput.value = '';
-            stateManager.resetBriefingState();
-            UIManager.updateSectionVisibility('compose');
-            await storage.set('draft', { message: '', personId: stateManager.get('selectedPersonId') });
-        },
-        'open-settings': () => {
-            showModal(document.getElementById(CONFIG.MODAL_IDS.SETTINGS)); 
-            dom.geminiApiKeyInput.value = stateManager.get('settings').apiKey || '';
-        },
-        'save-settings': async () => {
-            const settings = stateManager.get('settings');
-            const newApiKey = dom.geminiApiKeyInput.value;
-            if(!ValidationService.isApiKeyValid(newApiKey)) return showToast('API Key appears invalid.', 'error');
-            
-            settings.apiKey = newApiKey;
-            stateManager.set('settings', settings); 
-            await storage.set('settings', settings); 
-            agent = settings.apiKey ? new PersonalizedWorkplaceAgent(settings.apiKey) : null;
-            hideModal(document.getElementById(CONFIG.MODAL_IDS.SETTINGS)); 
-            showToast('Settings saved.', 'success');
-        },
-        'open-people-manager': async () => {
-            hideModal(document.getElementById(CONFIG.MODAL_IDS.SETTINGS)); 
-            await UIManager.renderPeopleList(); 
-            showModal(document.getElementById(CONFIG.MODAL_IDS.PEOPLE));
-        },
-        'add-person': async () => {
-            const name = dom.newPersonName.value;
-            const role = dom.newPersonRole.value;
-            if (!ValidationService.isPersonDataValid(name, role)) return showToast("Name and relationship are required.", "error");
-            
-            const newId = `p_${Date.now()}`;
-            await storage.set('profiles', { id: newId, name: name.trim(), role: role.trim(), summary: '' }, newId);
-            dom.newPersonName.value = ''; dom.newPersonRole.value = '';
-            await Promise.all([UIManager.renderPeopleList(), UIManager.renderPeopleSelector()]);
-        },
-        'delete-person': async ({ id }) => {
-            if (await showConfirmationModal("Delete Person?", "This cannot be undone.")) {
-                const profiles = await storage.get('profiles');
-                delete profiles[id];
-                await storage.set('profiles', profiles);
-                if(stateManager.get('selectedPersonId') === id) stateManager.set('selectedPersonId', null);
-                await Promise.all([UIManager.renderPeopleList(), UIManager.renderPeopleSelector()]);
-            }
-        },
-        'clear-all-data': async () => {
-             if(await showConfirmationModal('Clear All Data?', 'This will delete all profiles, settings, and drafts.')) { 
-                 Object.values(CONFIG.STORAGE_KEYS).forEach(key => localStorage.removeItem(key)); 
-                 window.location.reload(); 
-             }
-        },
-        'close-modal': ({ modalId }) => hideModal(document.getElementById(modalId)),
-    };
-
-    // --- EVENT HANDLING & INITIALIZATION ---
-    async function handleEvent(e) {
-        const target = e.target.closest('[data-action]');
-        if (!target) return;
-        e.preventDefault();
-        
-        const action = actions[target.dataset.action];
-        if (action) {
-            try {
-                await action(target.dataset);
-            } catch (error) {
-                ErrorHandler.handle(error, `actions.${target.dataset.action}`);
-            }
         }
-    }
-
-    async function main() {
-        try {
-            const settings = await storage.get('settings');
-            stateManager.set('settings', settings);
-            if (!settings.onboardingDismissed) {
-                 dom.onboardingOverlay.classList.remove('hidden');
-                 dom.dismissOnboardingBtn.addEventListener('click', async () => {
-                    const s = stateManager.get('settings');
-                    s.onboardingDismissed = true;
-                    stateManager.set('settings', s);
-                    await storage.set('settings', s);
-                    dom.onboardingOverlay.classList.add('hidden'); dom.app.classList.remove('hidden');
-                    await main(); // Re-run main to initialize the app
-                 }, { once: true });
-                 return;
-            }
-
-            dom.app.classList.remove('hidden');
-            if (ValidationService.isApiKeyValid(settings.apiKey)) {
-                agent = new PersonalizedWorkplaceAgent(settings.apiKey);
+        
+        // Fallback for cluster
+        if (!cluster) {
+            const vowels = (name.toLowerCase().match(/[aeiouy]/g) || []).length;
+            const consonants = (name.toLowerCase().match(/[bcdfghjklmnpqrstvwxz]/g) || []).length;
+            if (Object.keys(MORPHEME_DICTIONARY).some(m => name.toLowerCase().includes(m))) {
+                cluster = "Mythic & Cosmic";
+            } else if (vowels > consonants) {
+                cluster = "Airy & Flowing";
             } else {
-                showToast('API Key not set. Please add it in Settings.', 'warning');
+                cluster = "Strong & Grounded";
             }
-
-            await UIManager.init();
-            document.addEventListener('click', handleEvent);
-            
-            const debouncedBriefing = debounce(runBriefing, CONFIG.DEBOUNCE_MS);
-            
-            const handleInputChange = () => {
-                UIManager.updateSectionVisibility('analysis');
-                storage.set('draft', { message: dom.messageInput.value, personId: stateManager.get('selectedPersonId') });
-                if (agent) debouncedBriefing();
-            };
-            
-            dom.messageInput.addEventListener('input', handleInputChange);
-            dom.recipientSelector.addEventListener('change', (e) => {
-                const value = e.target.value;
-                if (value === 'add_new_person') {
-                    actions['open-people-manager']();
-                    dom.recipientSelector.value = stateManager.get('selectedPersonId') || "";
-                    return;
-                }
-                stateManager.resetBriefingState();
-                dom.contextInput.value = '';
-                dom.analysisResult.innerHTML = '<p class="empty-state-text">Select a person and type a message to get started...</p>';
-                dom.responsesSection.classList.add('hidden');
-                
-                stateManager.set('selectedPersonId', value || null);
-                handleInputChange();
-            });
-            document.addEventListener('keydown', e => { if (e.key === 'Escape' && activeModal) hideModal(activeModal); });
-        } catch(e) {
-            ErrorHandler.handle(e, 'main');
         }
-    }
+        
+        return {
+            name, meaning, roots, cluster,
+            confidence: parseFloat(it.confidence) || 0.7,
+        };
+    }).filter(Boolean); // Filter out nulls from blacklist
+  }
 
-    main();
-    </script>
+  // --- UI Update Functions ---
+  function updateResultsPanel() {
+      ui.results.panel.innerHTML = '';
+      if (appState.isLoading) {
+          ui.results.panel.innerHTML = '<div class="flex items-center justify-center py-8"><div class="spinner"></div></div>';
+      } else if (appState.error) {
+          ui.results.panel.innerHTML = `<div class="bg-[#2b1a1a] border border-[#5b2626] rounded p-4"><div class="text-red-300 font-semibold">Error</div><div class="small-muted mt-2">${escapeHtml(appState.error)}</div></div>`;
+          updateDebugViewer();
+      } else if (!appState.results.length) {
+          ui.results.panel.innerHTML = '<div class="flex-1 flex items-center justify-center small-muted h-full">No names yet — click Generate.</div>';
+          updateDebugViewer();
+      } else {
+          let sortedResults = [...appState.results];
+          if (appState.sortOrder === 'alphabetical') {
+              sortedResults.sort((a, b) => a.name.localeCompare(b.name));
+          } else if (appState.sortOrder === 'cluster') {
+              sortedResults.sort((a, b) => a.cluster.localeCompare(b.cluster) || a.name.localeCompare(b.name));
+          }
+
+          const clusters = sortedResults.reduce((acc, item) => {
+              (acc[item.cluster] = acc[item.cluster] || []).push(item);
+              return acc;
+          }, {});
+
+          Object.keys(clusters).sort().forEach(clusterName => {
+              const clusterTitle = el('h3', 'text-md font-semibold text-blue-300 mt-4 first:mt-0');
+              clusterTitle.textContent = clusterName;
+              ui.results.panel.append(clusterTitle);
+              
+              const grid = el('div','grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2');
+              clusters[clusterName].forEach(item => grid.append(createNameCard(item)));
+              ui.results.panel.append(grid);
+          });
+      }
+  }
+  
+  function updateControls() {
+    updateChipSelector(ui.controls.languageChips, [...new Set([...LANG_OPTIONS, ...appState.userLanguages])]);
+    updateChipSelector(ui.controls.themeChips, THEME_OPTIONS);
+    updateLikedNamesSection();
+    updateUserBlacklist();
+    ui.controls.generateButton.textContent = appState.likedNames.length > 0 ? 'Riff on Liked' : 'Generate Names';
+  }
+
+  function updateChipSelector(container, options) {
+      container.innerHTML = '';
+      const stateKey = container.dataset.stateKey;
+      options.forEach(opt => {
+          const c = el('button', 'chip'); c.textContent = opt; c.dataset.option = opt;
+          if (appState[stateKey].includes(opt)) c.classList.add('active');
+          container.append(c);
+      });
+  }
+  
+  function updateUserBlacklist() {
+      ui.controls.blacklistChips.innerHTML = '';
+      appState.userBlacklist.forEach(word => {
+          const chip = el('div', 'chip flex items-center gap-2');
+          chip.innerHTML = `<span>${word}</span><button class="font-mono text-xs opacity-70" data-action="remove-blacklist" data-word="${word}">x</button>`;
+          ui.controls.blacklistChips.append(chip);
+      });
+  }
+
+  function updateLikedNamesSection() {
+      ui.controls.likedNamesContainer.innerHTML = '';
+      if (appState.likedNames.length > 0) {
+        const label = el('label', 'text-sm font-medium'); label.textContent = 'Liked Names (Inspiration)';
+        const wrap = el('div', 'flex flex-wrap gap-2 mt-1');
+        appState.likedNames.forEach(nameObj => {
+            const chip = el('div', 'chip active flex items-center gap-2');
+            chip.innerHTML = `<span>${nameObj.name}</span><button class="font-mono text-xs opacity-70" data-action="remove-liked" data-name="${nameObj.name}">x</button>`;
+            wrap.append(chip);
+        });
+        ui.controls.likedNamesContainer.append(label, wrap);
+      }
+  }
+
+  function updateDebugViewer() {
+    ui.debug.container.innerHTML = '';
+    if (appState.rawApiResponse) {
+      const details = el('details', 'mt-4');
+      details.innerHTML = `<summary class="cursor-pointer text-sm small-muted">Show Raw Model Output</summary>
+      <pre class="debug-panel bg-[#0b1622] border border-[#223447] rounded p-2 text-xs mt-2 whitespace-pre-wrap"></pre>
+      <button class="chip mt-2" data-action="copy-debug">Copy Debug JSON</button>`;
+      details.querySelector('pre').textContent = appState.rawApiResponse;
+      ui.debug.container.append(details);
+    }
+  }
+
+  // --- UI Creation ---
+  function createNameCard(item) {
+      const isLiked = appState.likedNames.some(n => n.name === item.name);
+      const card = el('div','bg-[#081426] border border-[#123047] rounded p-4 flex flex-col gap-2 fade');
+      
+      const header = el('div', 'flex items-start justify-between gap-2');
+      const nameEl = el('div', 'text-xl font-semibold'); nameEl.textContent = item.name;
+      header.append(nameEl);
+
+      const meaningEl = el('div', 'italic small-muted'); meaningEl.textContent = item.meaning || '—';
+      
+      const rootsEl = el('div', 'text-xs mt-auto small-muted');
+      const strongTag = el('strong');
+      strongTag.textContent = 'Roots: ';
+      rootsEl.append(strongTag, document.createTextNode(item.roots || '—'));
+      
+      const actions = el('div', 'flex flex-wrap gap-2 mt-2');
+      const copyBtn = el('button', 'chip');
+      copyBtn.dataset.action = 'copy-name';
+      copyBtn.dataset.name = item.name;
+      copyBtn.textContent = 'Copy';
+
+      const likeBtn = el('button', `chip ${isLiked ? 'active' : ''}`);
+      likeBtn.dataset.action = 'like-name';
+      likeBtn.dataset.name = item.name;
+      likeBtn.innerHTML = '&hearts; Like'; // Using innerHTML for the heart entity is safe and standard practice.
+
+      const variantsBtn = el('button', 'chip');
+      variantsBtn.dataset.action = 'variants';
+      variantsBtn.dataset.name = item.name;
+      variantsBtn.textContent = 'Variants';
+      
+      actions.append(copyBtn, likeBtn, variantsBtn);
+      
+      card.append(header, meaningEl, rootsEl, actions);
+      return card;
+  }
+  
+  function createContextInput(placeholder, stateKey, className = '') {
+    const input = el('input', `w-full bg-[#0b1622] border border-[#223447] rounded px-3 py-2 text-sm ${className}`);
+    input.placeholder = placeholder; input.value = appState[stateKey];
+    input.addEventListener('change', e => { appState[stateKey] = e.target.value.trim(); saveState(); });
+    return input;
+  }
+
+  function createAddButton(clickHandler) {
+    const btn = el('button', 'bg-[#0e2436] border border-[#1b3146] px-3 py-2 rounded text-sm small-muted');
+    btn.textContent = 'Add';
+    btn.addEventListener('click', clickHandler);
+    return btn;
+  }
+
+  // --- Event Handlers ---
+  function handleControlsClick(event) {
+      const chip = event.target.closest('.chip[data-option]');
+      if (chip) {
+          const option = chip.dataset.option;
+          const stateKey = chip.parentElement.dataset.stateKey;
+          const max = stateKey === 'selectedLanguages' ? 3 : 2;
+          appState[stateKey] = appState[stateKey].includes(option)
+              ? appState[stateKey].filter(x => x !== option)
+              : [...appState[stateKey], option].slice(-max);
+          saveState();
+          updateControls();
+          return;
+      }
+
+      const removeLikedBtn = event.target.closest('[data-action="remove-liked"]');
+      if (removeLikedBtn) {
+          appState.likedNames = appState.likedNames.filter(n => n.name !== removeLikedBtn.dataset.name);
+          saveState();
+          updateControls();
+          updateResultsPanel();
+          return;
+      }
+      
+      const removeBlacklistBtn = event.target.closest('[data-action="remove-blacklist"]');
+      if(removeBlacklistBtn) {
+          appState.userBlacklist = appState.userBlacklist.filter(w => w !== removeBlacklistBtn.dataset.word);
+          saveState();
+          updateUserBlacklist();
+      }
+  }
+  
+  function handleResultsPanelClick(event) {
+      const btn = event.target.closest('button[data-action]');
+      if (!btn) return;
+      const { action, name } = btn.dataset;
+      
+      if (action === 'copy-name') {
+          navigator.clipboard.writeText(name);
+          showToast('Copied!');
+      } else if (action === 'like-name') {
+          const isLiked = appState.likedNames.some(n => n.name === name);
+          if (isLiked) {
+              appState.likedNames = appState.likedNames.filter(n => n.name !== name);
+              showToast('Unliked!');
+          } else {
+              const nameObj = appState.results.find(r => r.name === name);
+              if (nameObj) appState.likedNames.push(nameObj);
+              showToast('Liked!');
+          }
+          saveState();
+          btn.classList.toggle('active');
+          updateLikedNamesSection();
+          ui.controls.generateButton.textContent = appState.likedNames.length > 0 ? 'Riff on Liked' : 'Generate Names';
+      } else if (action === 'variants') {
+          doGenerate('variants', name);
+      } else if (action === 'copy-debug') {
+          navigator.clipboard.writeText(appState.rawApiResponse);
+          showToast('Copied Debug Info!');
+      }
+  }
+
+  function initLayout() {
+    ui.root.innerHTML = '';
+    const appWrap = el('div','max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6');
+    const left = el('div','md-col-span-1 bg-[#071425] border border-[#0e2334] rounded-xl p-5 flex flex-col gap-4 h-fit');
+    left.innerHTML = `<h1 class="text-xl font-semibold">Cultural Coinage</h1><div class="small-muted mt-1">Blend culture, sound & meaning</div>`;
+    
+    const apiKeySection = el('div');
+    apiKeySection.innerHTML = `<label class="text-sm font-medium">Gemini API Key</label>`;
+    const inputKey = el('input','w-full bg-[#0b1622] border border-[#223447] rounded px-3 py-2 text-sm mt-1');
+    inputKey.type = 'password'; inputKey.placeholder = 'Paste API key'; inputKey.value = appState.apiKey;
+    inputKey.addEventListener('change', e => { appState.apiKey = e.target.value.trim(); saveState(); });
+    apiKeySection.append(inputKey);
+
+    const contextSection = el('div');
+    contextSection.innerHTML = `<label class="text-sm font-medium">Real-World Context (Optional)</label>`;
+    const contextGrid = el('div', 'grid grid-cols-2 gap-2 mt-1');
+    contextGrid.append(createContextInput("Surname", "surname"), createContextInput("Sibling Names", "siblingNames"), createContextInput("First Name (for middle names)", "firstNameForMiddle", "col-span-2"));
+    contextSection.append(contextGrid);
+    
+    const languagesSection = el('div');
+    languagesSection.innerHTML = `<label class="text-sm font-medium">Languages (choose 1–3)</label>`;
+    ui.controls.languageChips = el('div', 'flex flex-wrap gap-2 mt-1');
+    ui.controls.languageChips.dataset.stateKey = 'selectedLanguages';
+    const addLangWrap = el('div', 'flex gap-2 mt-2');
+    const langInput = el('input', 'w-full bg-[#0b1622] border border-[#223447] rounded px-3 py-2 text-sm');
+    langInput.placeholder = 'Add a language...';
+    const addLangBtn = createAddButton(() => {
+        const newLang = langInput.value.trim();
+        const allLangs = [...new Set([...LANG_OPTIONS, ...appState.userLanguages])];
+        if (newLang && !allLangs.map(l => l.toLowerCase()).includes(newLang.toLowerCase())) {
+            appState.userLanguages.push(newLang);
+            appState.selectedLanguages = [...appState.selectedLanguages, newLang].slice(-3);
+            saveState(); updateControls();
+        }
+        langInput.value = '';
+    });
+    addLangWrap.append(langInput, addLangBtn);
+    languagesSection.append(ui.controls.languageChips, addLangWrap);
+
+    const themesSection = el('div');
+    themesSection.innerHTML = `<label class="text-sm font-medium">Themes (choose 1–2)</label>`;
+    ui.controls.themeChips = el('div', 'flex flex-wrap gap-2 mt-1');
+    ui.controls.themeChips.dataset.stateKey = 'selectedThemes';
+    themesSection.append(ui.controls.themeChips);
+
+    const styleSection = el('div');
+    styleSection.innerHTML = `<label class="text-sm font-medium">Style</label>`;
+    const styleSel = el('select','w-full bg-[#0b1622] border border-[#223447] rounded px-3 py-2 text-sm mt-1');
+    STYLE_OPTIONS.forEach(s => { const op = el('option'); op.value = s; op.textContent = s; if (appState.selectedStyle === s) op.selected = true; styleSel.append(op); });
+    styleSel.addEventListener('change', e => { appState.selectedStyle = e.target.value; saveState(); });
+    styleSection.append(styleSel);
+    
+    const genderSection = el('div');
+    genderSection.innerHTML = `<label class="text-sm font-medium">Gender</label>`;
+    const genderSel = el('select','w-full bg-[#0b1622] border border-[#223447] rounded px-3 py-2 text-sm mt-1');
+    ["Unisex","Male","Female"].forEach(g => { 
+      const op = el('option'); op.value = g; op.textContent = g; 
+      if (appState.gender === g) op.selected = true; 
+      genderSel.append(op); 
+    });
+    genderSel.addEventListener('change', e => { appState.gender = e.target.value; saveState(); });
+    genderSection.append(genderSel);
+
+    const blacklistSection = el('div');
+    blacklistSection.innerHTML = `<label class="text-sm font-medium">User Blacklist</label>`;
+    ui.controls.blacklistChips = el('div', 'flex flex-wrap gap-2 mt-1');
+    const addBlacklistWrap = el('div', 'flex gap-2 mt-2');
+    const blacklistInput = el('input', 'w-full bg-[#0b1622] border border-[#223447] rounded px-3 py-2 text-sm');
+    blacklistInput.placeholder = 'Add a word to blacklist...';
+    const addBlacklistBtn = createAddButton(() => {
+        const newWord = blacklistInput.value.trim().toLowerCase();
+        if (newWord && !appState.userBlacklist.includes(newWord)) {
+            appState.userBlacklist.push(newWord);
+            saveState(); updateUserBlacklist();
+        }
+        blacklistInput.value = '';
+    });
+    addBlacklistWrap.append(blacklistInput, addBlacklistBtn);
+    blacklistSection.append(ui.controls.blacklistChips, addBlacklistWrap);
+
+    ui.controls.likedNamesContainer = el('div');
+    
+    const btnWrap = el('div','flex flex-wrap gap-2 mt-2');
+    ui.controls.generateButton = el('button','bg-gradient-to-r from-[#3b82f6] to-[#2563eb] text-white px-4 py-2 rounded font-semibold shadow flex-1');
+    ui.controls.generateButton.addEventListener('click', () => doGenerate('first'));
+    const middleBtn = el('button','bg-[#1e3a8a] text-white px-4 py-2 rounded font-semibold shadow'); middleBtn.textContent = 'Middle Names';
+    middleBtn.addEventListener('click', () => doGenerate('middle'));
+    const exportBtn = el('button','bg-[#0e2436] border border-[#1b3146] px-3 py-2 rounded text-sm small-muted'); exportBtn.textContent = 'Export';
+    exportBtn.addEventListener('click', exportCSV);
+    const clearBtn = el('button','bg-transparent border border-[#233542] px-3 py-2 rounded text-sm small-muted'); clearBtn.textContent = 'Clear';
+    clearBtn.addEventListener('click', ()=>{ appState.results=[]; appState.error=null; appState.rawApiResponse=null; appState.sessionGeneratedNames = []; updateResultsPanel(); });
+    btnWrap.append(ui.controls.generateButton, middleBtn, exportBtn, clearBtn);
+    
+    const controlsContainer = el('div'); 
+    controlsContainer.append(apiKeySection, contextSection, languagesSection, themesSection, styleSection, genderSection, ui.controls.likedNamesContainer, blacklistSection, btnWrap);
+    left.append(controlsContainer);
+
+    const right = el('div','md:col-span-2 bg-[#071427] border border-[#0e2030] rounded-xl p-5 flex flex-col gap-4');
+    const resultsHeader = el('div', 'flex items-center justify-between');
+    resultsHeader.innerHTML = '<div><h2 class="text-lg font-semibold">Results</h2><div class="small-muted">Poetic, culturally coined names</div></div>';
+    const sortSel = el('select', 'bg-[#0b1622] border border-[#223447] rounded px-3 py-2 text-sm');
+    sortSel.innerHTML = `<option value="generated">As Generated</option><option value="alphabetical">Alphabetical</option><option value="cluster">By Cluster</option>`;
+    sortSel.addEventListener('change', e => {
+        appState.sortOrder = e.target.value;
+        updateResultsPanel();
+    });
+    resultsHeader.append(sortSel);
+    
+    ui.results.panel = el('div','mt-2 p-3 bg-[#071a25] border border-[#0f2a3a] rounded-lg min-h-[280px] flex flex-col');
+    ui.debug = { container: el('div') };
+    right.append(resultsHeader, ui.results.panel, ui.debug.container);
+
+    controlsContainer.addEventListener('click', handleControlsClick);
+    right.addEventListener('click', handleResultsPanelClick); // Delegated listener for results panel + debug
+    
+    appWrap.append(left, right);
+    ui.root.append(appWrap);
+  }
+
+  function showToast(msg) {
+    const t = el('div','fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#0f2a41] px-4 py-2 rounded shadow text-sm fade');
+    t.textContent = msg; document.body.appendChild(t);
+    setTimeout(()=> t.remove(), 1400);
+  }
+
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function buildSystemPrompt(task, gender, sessionHistory) {
+    const fullBlacklist = [...SYSTEM_BLACKLIST, ...appState.userBlacklist];
+    const sessionMemoryInstruction = sessionHistory.length > 0
+      ? `Avoid repeating or resembling these names: ${sessionHistory.join(', ')}.`
+      : `This is the first generation of this session.`;
+
+    return `
+You are the Cultural Coinage Agent. (See philosophy baked into codebase for guiding intent.)
+
+MISSION
+- Craft short, poetic, pronounceable ${gender || "unisex"} names from the specified languages.
+- Treat names as cultural artifacts, not random strings.
+- Each generation must be fresh, iterative, and responsive to user refinement.
+
+SESSION MEMORY
+${sessionMemoryInstruction}
+Blacklist: ${fullBlacklist.join(", ")} (strictly exclude).
+
+OUTPUT FORMAT
+Return ONLY JSON (no prose, no markdown).
+Each object must include:
+{
+  "name": "string",
+  "meaning": "poetic interpretation",
+  "roots": "morpheme breakdown with origins",
+  "cluster": "stylistic grouping label",
+  "confidence": 0.85
+}
+
+RULES
+1. Use ONLY specified languages; blend harmoniously if multiple.
+2. Name length: 4–10 letters, 2–3 syllables preferred.
+3. Gender:
+   - Unisex → neutral.
+   - Male → consonant-strong, firm endings.
+   - Female → vowel-rich, melodic.
+4. Roots: Always ≥2 fragments, with language + meaning. If invented, describe as “coined fragment”.
+5. Clusters: Always include (e.g., “Airy & Flowing”, “Mythic & Cosmic”).
+6. Style (e.g., “Lyrical & Melodic”) must shape rhythm and sound choices, not just description.
+7. Variants mode: Keep ≥50% phonetic overlap with the source name, but shift thematic resonance.
+8. Harmonize with surname and sibling names if provided.
+
+TASK:
+${task}
+    `;
+  }
+
+  async function callGeminiOnce(prompt) {
+    const key = appState.apiKey.trim();
+    if (!key) throw new Error('Missing API key.');
+    const body = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 1200, candidateCount: 1 } };
+    const res = await fetch(API_BASE_URL + '?key=' + encodeURIComponent(key), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error(`Gemini API error ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  }
+
+  async function doGenerate(mode = 'first', contextName = '') {
+    if (!appState.apiKey) {
+        appState.error = "Please enter your Gemini API key to begin."; updateResultsPanel(); return;
+    }
+    appState.error = null; appState.results = []; appState.rawApiResponse = null; appState.isLoading = true;
+    updateResultsPanel();
+
+    let task;
+    const allLangs = [...new Set([...appState.selectedLanguages, ...appState.userLanguages])];
+    
+    if (mode === 'middle') {
+        if (!appState.firstNameForMiddle) { appState.error = "Please provide a first name to generate middle names."; appState.isLoading = false; updateResultsPanel(); return; }
+        task = `Generate ${DEFAULT_COUNT} middle names for "${appState.firstNameForMiddle}". Consider themes: ${appState.selectedThemes.join(', ')} and style: ${appState.selectedStyle}.`;
+    } else if (mode === 'variants') {
+        task = `Generate ${DEFAULT_COUNT} variants of the name "${contextName}", keeping a similar phonetic and thematic feel. Use languages ${allLangs.join(', ')}.`;
+    } else if (appState.likedNames.length > 0) {
+        const likedStr = appState.likedNames.map(n => n.name).join(', ');
+        task = `Analyze these liked names: ${likedStr}. Generate ${DEFAULT_COUNT} new names in a similar style, using themes of ${appState.selectedThemes.join(', ')}.`;
+    } else {
+        task = `Languages: ${allLangs.join(', ')} | Themes: ${appState.selectedThemes.join(', ')} | Style: ${appState.selectedStyle} | Return ${DEFAULT_COUNT} names.`;
+    }
+    if (appState.siblingNames) task += ` Keep stylistically compatible with siblings: ${appState.siblingNames}.`;
+    if (appState.surname) task += ` Harmonize with surname: ${appState.surname}.`;
+    
+    let prompt = buildSystemPrompt(task, appState.gender, appState.sessionGeneratedNames);
+    try {
+        let raw = await callGeminiOnce(prompt);
+        let parsed = parseApiResponse(raw);
+        
+        if (!parsed.length && raw) {
+            appState.rawApiResponse = raw; 
+        }
+
+        const processed = processApiResponse(parsed);
+        if (processed.length) {
+            appState.sessionGeneratedNames.push(...processed.map(p => p.name));
+        }
+
+        appState.results = processed;
+        if (!appState.results.length) {
+            appState.error = "No suitable names generated. The model may be having trouble with the request. You can try adjusting your selections.";
+            if (!appState.rawApiResponse) appState.rawApiResponse = raw; 
+        }
+    } catch (err) {
+      console.error('Generation error:', err);
+      appState.error = err.message || String(err);
+    } finally {
+      appState.isLoading = false;
+      updateResultsPanel();
+    }
+  }
+
+  function exportCSV() {
+    if (!appState.results.length) { showToast('No results'); return; }
+    const header = ['Name','Meaning','Roots','Cluster','Confidence'];
+    const rows = appState.results.map(r => [`"${r.name.replace(/"/g,'""')}"`,`"${(r.meaning||'').replace(/"/g,'""')}"`,`"${(r.roots||'').replace(/"/g,'""')}"`, `"${r.cluster.replace(/"/g,'""')}"`, r.confidence].join(','));
+    const csv = [header.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = el('a'); a.href = url; a.download = `cultural-coinage-${Date.now()}.csv`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    showToast('Exported CSV');
+  }
+
+  // --- Init ---
+  loadState();
+  initLayout();
+  updateControls();
+  updateResultsPanel();
+})();
+  </script>
 </body>
 </html>
 
